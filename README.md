@@ -24,10 +24,10 @@
 ### 核心组件
 
 #### 主要模块
-- **LoginWindow.py**: PyQt5登录界面，航天员身份选择和会话初始化
-- **main.py**: Pygame主游戏引擎，执行绘图实验
-- **InterfaceWindow.py**: 主实验界面控制器
-- **paint.py**: 核心绘图机制和曲线生成系统
+- **src/ui/LoginWindow.py**: PyQt5登录界面，航天员身份选择和会话初始化
+- **src/core/main.py**: Pygame主游戏引擎，执行绘图实验
+- **src/ui/InterfaceWindow.py**: 主实验界面控制器
+- **src/core/paint.py**: 核心绘图机制和曲线生成系统
 
 #### 数据管理
 - **Behavioral_data/**: 实验会话数据存储（按时间戳和被试组织）
@@ -35,13 +35,13 @@
 - **user_account/Experimenter.db**: 参与者管理SQLite数据库
 
 #### 核心功能模块
-- **level.py**: 游戏级别管理，Player类光标控制
-- **game_function.py**: 事件处理和游戏状态管理
-- **settings.py**: 屏幕和游戏配置常量
-- **serial_marker.py**: EEG标记同步
-- **Calculate_pixel_difference.py**: 图像分析，支持暂停时间补偿的绘图精度计算
-- **likert_scale.py**: 任务后问卷实现
-- **handle_slider_event.py**: 速度调整事件处理（按钮式）
+- **src/core/level.py**: 游戏级别管理，Player类光标控制
+- **src/core/game_function.py**: 事件处理和游戏状态管理
+- **src/config/settings.py**: 屏幕和游戏配置常量
+- **src/hardware/serial_marker.py**: EEG标记同步
+- **src/data/Calculate_pixel_difference.py**: 图像分析，支持暂停时间补偿的绘图精度计算
+- **src/ui/likert_scale.py**: 任务后问卷实现
+- **src/data/handle_slider_event.py**: 速度调整事件处理（按钮式）
 
 ## 最新更新 (v4.3)
 
@@ -80,24 +80,24 @@
 ### 系统启动
 ```bash
 # 启动登录界面（推荐方式）
-python LoginWindow.py
+python src/ui/LoginWindow.py
 
 # 直接运行主实验（测试用）
-python main.py
+python src/core/main.py
 
 # 模拟模式
-python main_simulation.py
+python src/core/main_simulation.py
 ```
 
 ### 测试命令
 ```bash
 # 不同实验模式测试
-python Atest.py    # 测试个体A模式
-python Btest.py    # 测试个体B模式  
-python ABtest.py   # 测试协作模式
+python src/tests/Atest.py    # 测试个体A模式
+python src/tests/Btest.py    # 测试个体B模式  
+python src/tests/ABtest.py   # 测试协作模式
 
 # 检查串口连接
-python check_serial_connection.py
+python src/hardware/check_serial_connection.py
 ```
 
 ### 实验控制
@@ -138,6 +138,49 @@ Behavioral_data/
 - **config.txt**: 当前模式指示器（1=个体A, 3=协作）
 - **scroll_value.txt**: 实时速度控制参数
 - **Behavioral_data/id.txt**: 当前会话标识符
+
+## 项目结构
+
+```
+src/
+├── config/          # 配置管理
+│   ├── config_manager.py
+│   └── settings.py
+├── core/           # 核心游戏逻辑
+│   ├── main.py
+│   ├── main_simulation.py
+│   ├── game_function.py
+│   ├── game_function_simulation.py
+│   ├── level.py
+│   ├── paint.py
+│   └── painting.py
+├── data/           # 数据处理
+│   ├── Calculate_pixel_difference.py
+│   ├── Deviation_area.py
+│   ├── export_txt.py
+│   ├── handle_slider_event.py
+│   └── login_info_handler.py
+├── hardware/       # 硬件接口
+│   ├── check_serial_connection.py
+│   └── serial_marker.py
+├── tests/          # 测试模块
+│   ├── Atest.py
+│   ├── Btest.py
+│   ├── ABtest.py
+│   ├── ACtest.py
+│   └── Ctest.py
+├── ui/             # 用户界面
+│   ├── LoginWindow.py
+│   ├── InterfaceWindow.py
+│   ├── InterfaceUI.py
+│   ├── Button.py
+│   ├── likert_scale.py
+│   └── login.py
+└── utils/          # 工具函数
+    ├── game_stats.py
+    ├── resouce_rc.py
+    └── shared_data.py
+```
 
 ## 游戏分数范围
 
