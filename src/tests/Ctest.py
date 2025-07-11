@@ -122,7 +122,7 @@ class Game:
         # Value display area
         value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
 
-        self.display_task_instructions_formatted(subject='B')
+        self.display_task_instructions_formatted(subject='C')
         waiting_for_space = True
         while waiting_for_space:
             for event in pygame.event.get():
@@ -309,10 +309,13 @@ class Game:
                     draw_data(self, self.screen, data)
                     mouse_pos = pygame.mouse.get_pos()
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN: mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
-                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked)
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
+                            else: key_pressed = event.key
+                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked, key_pressed=key_pressed)
                     pygame.display.flip()
                     if score is not None: likert_running = False
                 if score is not None:
