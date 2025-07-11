@@ -1,20 +1,56 @@
-# 默认忽略的文件
-/shelf/
-/workspace.xml
-# 基于编辑器的 HTTP 客户端请求
-/httpRequests/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
-/.idea
+# ----------------------------------------
+#  PyCharm / IntelliJ IDEA 设置文件（局部忽略）
+.idea/
+*.iml
+*.iws
+# 单独保留项目结构设置的话，可以只忽略下面几个：
+.idea/shelf/
+.idea/workspace.xml
+.idea/httpRequests/
+
+# ----------------------------------------
+#  Python 缓存和虚拟环境
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+# 虚拟环境
+venv/
+.venv/
+env/
+ENV/
+
+# ----------------------------------------
+#  用户和隐私相关数据
+/user_account/
+
+# ----------------------------------------
+#  本地生成或临时数据（建议忽略）
 /Behavioral_data/
-/font/
-/icons/
-/images/
+/Training_Behavioral_data/
 /output_data/
-/pic/
 /results/
 /setting_parameter/
+/font/
 /sound/
-/Training_Behavioral_data/
-/user_account/
+/icons/
+/images/
+/pic/
+
+# ----------------------------------------
+#  系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------------------------
+#  Git 忽略文件的文件本身
+.gitignore
