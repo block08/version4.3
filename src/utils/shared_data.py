@@ -1,0 +1,24 @@
+global_port = None
+global_baudrate = None
+global_bytesize = None
+global_parity = None
+global_stopbits = None
+global_timeout = None
+global_flag = None
+global_sub1 = None
+global_sub2 = None
+user1_id = None
+user2_id = None
+user3_id = None
+user1_gender = None
+user2_gender = None
+user3_gender = None
+user1_hand = None
+user2_hand = None
+user3_hand = None
+user1_mark = None
+user2_mark = None
+user3_mark = None
+
+global_response_delay = 0.01  # 响应延时，默认0.1ms
+global_clear_delay = 0.00005    # 清零延时，默认0.05ms
