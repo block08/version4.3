@@ -250,9 +250,7 @@ class LoginWindow(QMainWindow):
             users = cursor.fetchall()
             # 只为主航天员创建按钮，副航天员根据选择自动确定
             self.create_ellipse_buttons_for_subject(users, "A")
-            # 隐藏副航天员的选择区域
-            self.ui.subject_b_card.hide()
-            self.ui.subject_c_card.hide()
+
         except Exception as e:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "错误", f"加载用户数据失败: {e}")
         finally:
@@ -263,12 +261,7 @@ class LoginWindow(QMainWindow):
         if subject_type == "A":
             container = self.ui.subject_a_ellipse_container
             button_list = self.subject_a_buttons
-        elif subject_type == "B":
-            container = self.ui.subject_b_ellipse_container
-            button_list = self.subject_b_buttons
-        else:  # subject_type == "C"
-            container = self.ui.subject_c_ellipse_container
-            button_list = self.subject_c_buttons
+
         layout = QGridLayout(container)
         layout.setSpacing(8)
         layout.setContentsMargins(5, 5, 5, 5)

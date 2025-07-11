@@ -147,7 +147,7 @@ class Ui_MainWindow(object):
 "}")
         self.subject_a_card.setObjectName("subject_a_card")
         self.subject_a_icon = QtWidgets.QLabel(self.subject_a_card)
-        self.subject_a_icon.setGeometry(QtCore.QRect(-100, 20, 80, 40))  # 隐藏图标
+        self.subject_a_icon.setGeometry(QtCore.QRect(-100, 20, 80, 40))
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
@@ -162,7 +162,7 @@ class Ui_MainWindow(object):
         self.subject_a_icon.setAlignment(QtCore.Qt.AlignCenter)
         self.subject_a_icon.setObjectName("subject_a_icon")
         self.subject_a_title = QtWidgets.QLabel(self.subject_a_card)
-        self.subject_a_title.setGeometry(QtCore.QRect(20, 20, 350, 40))  # 与任务编号对齐
+        self.subject_a_title.setGeometry(QtCore.QRect(20, 20, 350, 40))
         font = QtGui.QFont()
         font.setPointSize(18)
         font.setBold(True)
@@ -175,103 +175,11 @@ class Ui_MainWindow(object):
         self.subject_a_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.subject_a_title.setObjectName("subject_a_title")
         self.subject_a_ellipse_container = QtWidgets.QWidget(self.subject_a_card)
-        self.subject_a_ellipse_container.setGeometry(QtCore.QRect(20, 65, 460, 85))  # 与文字对齐
+        self.subject_a_ellipse_container.setGeometry(QtCore.QRect(20, 65, 460, 85))
         self.subject_a_ellipse_container.setStyleSheet("QWidget {\n"
 "    background: transparent;\n"
 "}")
         self.subject_a_ellipse_container.setObjectName("subject_a_ellipse_container")
-        self.subject_b_card = QtWidgets.QWidget(self.right_panel)
-        self.subject_b_card.setGeometry(QtCore.QRect(50, 320, 500, 140))
-        self.subject_b_card.setStyleSheet("QWidget#subject_b_card {\n"
-"    background: white;\n"
-"    border: 2px solid #e1e5e9;\n"
-"    border-radius: 16px;\n"
-"}\n"
-"QWidget#subject_b_card:hover {\n"
-"    border: 2px solid #f093fb;\n"
-"    background: #fef7ff;\n"
-"}")
-        self.subject_b_card.setObjectName("subject_b_card")
-        self.subject_b_icon = QtWidgets.QLabel(self.subject_b_card)
-        self.subject_b_icon.setGeometry(QtCore.QRect(30, 20, 80, 40))
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        font.setWeight(75)
-        self.subject_b_icon.setFont(font)
-        self.subject_b_icon.setStyleSheet("QLabel {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(240, 147, 251, 255), stop:1 rgba(245, 87, 108, 255));\n"
-"    border-radius: 20px;\n"
-"    color: white;\n"
-"}")
-        self.subject_b_icon.setAlignment(QtCore.Qt.AlignCenter)
-        self.subject_b_icon.setObjectName("subject_b_icon")
-        self.subject_b_title = QtWidgets.QLabel(self.subject_b_card)
-        self.subject_b_title.setGeometry(QtCore.QRect(125, 20, 200, 40))
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setBold(True)
-        font.setWeight(75)
-        self.subject_b_title.setFont(font)
-        self.subject_b_title.setStyleSheet("QLabel {\n"
-"    color: #333;\n"
-"    background: transparent;\n"
-"}")
-        self.subject_b_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.subject_b_title.setObjectName("subject_b_title")
-        self.subject_b_ellipse_container = QtWidgets.QWidget(self.subject_b_card)
-        self.subject_b_ellipse_container.setGeometry(QtCore.QRect(30, 65, 440, 65))
-        self.subject_b_ellipse_container.setStyleSheet("QWidget {\n"
-"    background: transparent;\n"
-"}")
-        self.subject_b_ellipse_container.setObjectName("subject_b_ellipse_container")
-        self.subject_c_card = QtWidgets.QWidget(self.right_panel)
-        self.subject_c_card.setGeometry(QtCore.QRect(50, 480, 500, 140))
-        self.subject_c_card.setStyleSheet("QWidget#subject_c_card {\n"
-"    background: white;\n"
-"    border: 2px solid #e1e5e9;\n"
-"    border-radius: 16px;\n"
-"}\n"
-"QWidget#subject_c_card:hover {\n"
-"    border: 2px solid #e67e22;\n"
-"    background: #fef9f3;\n"
-"}")
-        self.subject_c_card.setObjectName("subject_c_card")
-        self.subject_c_icon = QtWidgets.QLabel(self.subject_c_card)
-        self.subject_c_icon.setGeometry(QtCore.QRect(30, 20, 80, 40))
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        font.setWeight(75)
-        self.subject_c_icon.setFont(font)
-        self.subject_c_icon.setStyleSheet("QLabel {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(230, 126, 34, 255), stop:1 rgba(211, 84, 0, 255));\n"
-"    border-radius: 20px;\n"
-"    color: white;\n"
-"}")
-        self.subject_c_icon.setAlignment(QtCore.Qt.AlignCenter)
-        self.subject_c_icon.setObjectName("subject_c_icon")
-        self.subject_c_title = QtWidgets.QLabel(self.subject_c_card)
-        self.subject_c_title.setGeometry(QtCore.QRect(125, 20, 200, 40))
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setBold(True)
-        font.setWeight(75)
-        self.subject_c_title.setFont(font)
-        self.subject_c_title.setStyleSheet("QLabel {\n"
-"    color: #333;\n"
-"    background: transparent;\n"
-"}")
-        self.subject_c_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.subject_c_title.setObjectName("subject_c_title")
-        self.subject_c_ellipse_container = QtWidgets.QWidget(self.subject_c_card)
-        self.subject_c_ellipse_container.setGeometry(QtCore.QRect(30, 65, 440, 65))
-        self.subject_c_ellipse_container.setStyleSheet("QWidget {\n"
-"    background: transparent;\n"
-"}")
-        self.subject_c_ellipse_container.setObjectName("subject_c_ellipse_container")
         self.final_login_button = QtWidgets.QPushButton(self.right_panel)
         self.final_login_button.setGeometry(QtCore.QRect(150, 550, 300, 60))
         font = QtGui.QFont()
@@ -311,9 +219,5 @@ class Ui_MainWindow(object):
         self.task_selection_title.setText(_translate("MainWindow", "任务代号:"))
         self.subject_a_icon.setText(_translate("MainWindow", "航天员"))
         self.subject_a_title.setText(_translate("MainWindow", "佩戴脑电帽的航天员"))
-        self.subject_b_icon.setText(_translate("MainWindow", "副航天员"))
-        self.subject_b_title.setText(_translate("MainWindow", "人员②"))
-        self.subject_c_icon.setText(_translate("MainWindow", "副航天员"))
-        self.subject_c_title.setText(_translate("MainWindow", "人员③"))
         self.final_login_button.setText(_translate("MainWindow", "登录"))
 from src.utils import resouce_rc

@@ -15,7 +15,6 @@ from src.utils import shared_data
 
 
 class Ui_MainWindow(object):
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowFlags(QtCore.Qt.FramelessWindowHint)
@@ -27,7 +26,7 @@ class Ui_MainWindow(object):
         self.frame.setGeometry(QtCore.QRect(290, 90, 1481, 831))
         self.frame.setMinimumSize(QtCore.QSize(1481, 831))
         self.frame.setStyleSheet("#frame{\n"
-"    \n"
+"\n"
 "    background-color: rgb(255, 255, 255);\n"
 "}")
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -90,7 +89,7 @@ class Ui_MainWindow(object):
         self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
-        font.setPointSize(35)
+        font.setPointSize(28)
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
@@ -445,147 +444,121 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_main)
         self.page_highestscore = QtWidgets.QWidget()
         self.page_highestscore.setObjectName("page_highestscore")
-
-        # 创建主标题
         self.title_label = QtWidgets.QLabel(self.page_highestscore)
         self.title_label.setGeometry(QtCore.QRect(300, 30, 500, 60))
-        self.title_label.setText("🏆 准确度排行榜 TOP 3")
-        self.title_label.setStyleSheet("""
-            QLabel {
-                font: bold 28pt "幼圆";
-                color: rgb(34, 92, 102);
-                text-align: center;
-            }
-        """)
+        self.title_label.setStyleSheet("\n"
+"            QLabel {\n"
+"                font: bold 28pt \"幼圆\";\n"
+"                color: rgb(34, 92, 102);\n"
+"                text-align: center;\n"
+"            }\n"
+"        ")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
-
-        # 第一名框架
+        self.title_label.setObjectName("title_label")
         self.first_place_frame = QtWidgets.QFrame(self.page_highestscore)
         self.first_place_frame.setGeometry(QtCore.QRect(100, 120, 280, 160))
-        self.first_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #FFD700, stop:1 #FFA500);
-                border: 3px solid #DAA520;
-                border-radius: 12px;
-            }
-        """)
-
-        # 第一名内容
+        self.first_place_frame.setStyleSheet("\n"
+"            QFrame {\n"
+"                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
+"                    stop:0 #FFD700, stop:1 #FFA500);\n"
+"                border: 3px solid #DAA520;\n"
+"                border-radius: 12px;\n"
+"            }\n"
+"        ")
+        self.first_place_frame.setObjectName("first_place_frame")
         self.first_rank_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_rank_label.setGeometry(QtCore.QRect(10, 5, 40, 30))
-        self.first_rank_label.setText("🥇")
         self.first_rank_label.setStyleSheet("font: 24pt; border: none;")
-
+        self.first_rank_label.setObjectName("first_rank_label")
         self.first_user_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_user_label.setGeometry(QtCore.QRect(55, 5, 220, 30))
-        self.first_user_label.setText("玩家名称")
-        self.first_user_label.setStyleSheet("font: bold 16pt '幼圆'; color: #8B4513; border: none;")
-
+        self.first_user_label.setStyleSheet("font: bold 16pt \'幼圆\'; color: #8B4513; border: none;")
+        self.first_user_label.setObjectName("first_user_label")
         self.first_accuracy_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_accuracy_label.setGeometry(QtCore.QRect(10, 40, 260, 30))
-        self.first_accuracy_label.setText("准确度: 98.5%")
-        self.first_accuracy_label.setStyleSheet("font: bold 14pt '幼圆'; color: #8B4513; border: none;")
-
+        self.first_accuracy_label.setStyleSheet("font: bold 14pt \'幼圆\'; color: #8B4513; border: none;")
+        self.first_accuracy_label.setObjectName("first_accuracy_label")
         self.first_deviation_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_deviation_label.setGeometry(QtCore.QRect(10, 75, 260, 25))
-        self.first_deviation_label.setText("偏差面积: 0.25")
-        self.first_deviation_label.setStyleSheet("font: 12pt '幼圆'; color: #8B4513; border: none;")
-
+        self.first_deviation_label.setStyleSheet("font: 12pt \'幼圆\'; color: #8B4513; border: none;")
+        self.first_deviation_label.setObjectName("first_deviation_label")
         self.first_time_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_time_label.setGeometry(QtCore.QRect(10, 105, 260, 25))
-        self.first_time_label.setText("用时: 2分30秒")
-        self.first_time_label.setStyleSheet("font: 12pt '幼圆'; color: #8B4513; border: none;")
-
-        # 第二名框架
+        self.first_time_label.setStyleSheet("font: 12pt \'幼圆\'; color: #8B4513; border: none;")
+        self.first_time_label.setObjectName("first_time_label")
         self.second_place_frame = QtWidgets.QFrame(self.page_highestscore)
         self.second_place_frame.setGeometry(QtCore.QRect(420, 140, 260, 140))
-        self.second_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #C0C0C0, stop:1 #A9A9A9);
-                border: 3px solid #808080;
-                border-radius: 12px;
-            }
-        """)
-
-        # 第二名内容
+        self.second_place_frame.setStyleSheet("\n"
+"            QFrame {\n"
+"                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
+"                    stop:0 #C0C0C0, stop:1 #A9A9A9);\n"
+"                border: 3px solid #808080;\n"
+"                border-radius: 12px;\n"
+"            }\n"
+"        ")
+        self.second_place_frame.setObjectName("second_place_frame")
         self.second_rank_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_rank_label.setGeometry(QtCore.QRect(10, 5, 40, 30))
-        self.second_rank_label.setText("🥈")
         self.second_rank_label.setStyleSheet("font: 22pt; border: none;")
-
+        self.second_rank_label.setObjectName("second_rank_label")
         self.second_user_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_user_label.setGeometry(QtCore.QRect(55, 5, 200, 30))
-        self.second_user_label.setText("玩家名称")
-        self.second_user_label.setStyleSheet("font: bold 14pt '幼圆'; color: #2F4F4F; border: none;")
-
+        self.second_user_label.setStyleSheet("font: bold 14pt \'幼圆\'; color: #2F4F4F; border: none;")
+        self.second_user_label.setObjectName("second_user_label")
         self.second_accuracy_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_accuracy_label.setGeometry(QtCore.QRect(10, 40, 240, 25))
-        self.second_accuracy_label.setText("准确度: 96.8%")
-        self.second_accuracy_label.setStyleSheet("font: bold 12pt '幼圆'; color: #2F4F4F; border: none;")
-
+        self.second_accuracy_label.setStyleSheet("font: bold 12pt \'幼圆\'; color: #2F4F4F; border: none;")
+        self.second_accuracy_label.setObjectName("second_accuracy_label")
         self.second_deviation_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_deviation_label.setGeometry(QtCore.QRect(10, 70, 240, 20))
-        self.second_deviation_label.setText("偏差面积: 0.42")
-        self.second_deviation_label.setStyleSheet("font: 11pt '幼圆'; color: #2F4F4F; border: none;")
-
+        self.second_deviation_label.setStyleSheet("font: 11pt \'幼圆\'; color: #2F4F4F; border: none;")
+        self.second_deviation_label.setObjectName("second_deviation_label")
         self.second_time_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_time_label.setGeometry(QtCore.QRect(10, 95, 240, 20))
-        self.second_time_label.setText("用时: 3分15秒")
-        self.second_time_label.setStyleSheet("font: 11pt '幼圆'; color: #2F4F4F; border: none;")
-
-        # 第三名框架
+        self.second_time_label.setStyleSheet("font: 11pt \'幼圆\'; color: #2F4F4F; border: none;")
+        self.second_time_label.setObjectName("second_time_label")
         self.third_place_frame = QtWidgets.QFrame(self.page_highestscore)
         self.third_place_frame.setGeometry(QtCore.QRect(720, 160, 240, 120))
-        self.third_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #CD7F32, stop:1 #B8860B);
-                border: 3px solid #8B4513;
-                border-radius: 12px;
-            }
-        """)
-
-        # 第三名内容
+        self.third_place_frame.setStyleSheet("\n"
+"            QFrame {\n"
+"                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
+"                    stop:0 #CD7F32, stop:1 #B8860B);\n"
+"                border: 3px solid #8B4513;\n"
+"                border-radius: 12px;\n"
+"            }\n"
+"        ")
+        self.third_place_frame.setObjectName("third_place_frame")
         self.third_rank_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_rank_label.setGeometry(QtCore.QRect(10, 5, 35, 25))
-        self.third_rank_label.setText("🥉")
         self.third_rank_label.setStyleSheet("font: 20pt; border: none;")
-
+        self.third_rank_label.setObjectName("third_rank_label")
         self.third_user_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_user_label.setGeometry(QtCore.QRect(50, 5, 180, 25))
-        self.third_user_label.setText("玩家名称")
-        self.third_user_label.setStyleSheet("font: bold 12pt '幼圆'; color: #FFFAF0; border: none;")
-
+        self.third_user_label.setStyleSheet("font: bold 12pt \'幼圆\'; color: #FFFAF0; border: none;")
+        self.third_user_label.setObjectName("third_user_label")
         self.third_accuracy_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_accuracy_label.setGeometry(QtCore.QRect(10, 35, 220, 20))
-        self.third_accuracy_label.setText("准确度: 94.2%")
-        self.third_accuracy_label.setStyleSheet("font: bold 11pt '幼圆'; color: #FFFAF0; border: none;")
-
+        self.third_accuracy_label.setStyleSheet("font: bold 11pt \'幼圆\'; color: #FFFAF0; border: none;")
+        self.third_accuracy_label.setObjectName("third_accuracy_label")
         self.third_deviation_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_deviation_label.setGeometry(QtCore.QRect(10, 60, 220, 18))
-        self.third_deviation_label.setText("偏差面积: 0.68")
-        self.third_deviation_label.setStyleSheet("font: 10pt '幼圆'; color: #FFFAF0; border: none;")
-
+        self.third_deviation_label.setStyleSheet("font: 10pt \'幼圆\'; color: #FFFAF0; border: none;")
+        self.third_deviation_label.setObjectName("third_deviation_label")
         self.third_time_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_time_label.setGeometry(QtCore.QRect(10, 83, 220, 18))
-        self.third_time_label.setText("用时: 4分02秒")
-        self.third_time_label.setStyleSheet("font: 10pt '幼圆'; color: #FFFAF0; border: none;")
-
-        # 底部说明文字
+        self.third_time_label.setStyleSheet("font: 10pt \'幼圆\'; color: #FFFAF0; border: none;")
+        self.third_time_label.setObjectName("third_time_label")
         self.info_label = QtWidgets.QLabel(self.page_highestscore)
         self.info_label.setGeometry(QtCore.QRect(200, 320, 600, 40))
-        self.info_label.setText("💡 排名基于准确度高低，偏差面积越小越好，用时越短越好")
-        self.info_label.setStyleSheet("""
-            QLabel {
-                font: 14pt "幼圆";
-                color: rgb(100, 100, 100);
-                text-align: center;
-            }
-        """)
+        self.info_label.setStyleSheet("\n"
+"            QLabel {\n"
+"                font: 14pt \"幼圆\";\n"
+"                color: rgb(100, 100, 100);\n"
+"                text-align: center;\n"
+"            }\n"
+"        ")
         self.info_label.setAlignment(QtCore.Qt.AlignCenter)
-
+        self.info_label.setObjectName("info_label")
         self.stackedWidget.addWidget(self.page_highestscore)
         self.page_data = QtWidgets.QWidget()
         self.page_data.setObjectName("page_data")
@@ -612,7 +585,6 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_data)
         self.page_serial = QtWidgets.QWidget()
         self.page_serial.setObjectName("page_serial")
-        # 英文输入法提醒标签
         self.label_input_method_reminder = QtWidgets.QLabel(self.page_serial)
         self.label_input_method_reminder.setGeometry(QtCore.QRect(200, 10, 800, 60))
         self.label_input_method_reminder.setStyleSheet("QLabel{\n"
@@ -718,7 +690,7 @@ class Ui_MainWindow(object):
         self.pushButton_test_send.setGeometry(QtCore.QRect(1110, 640, 140, 71))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
-        font.setPointSize(50)
+        font.setPointSize(40)
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
@@ -792,7 +764,25 @@ class Ui_MainWindow(object):
         else:
             self.pushButton_10.setText(_translate("MainWindow", "人员①&人员③绘图练习模块"))
         self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))
+        self.title_label.setText(_translate("MainWindow", "🏆 准确度排行榜 TOP 3"))
+        self.first_rank_label.setText(_translate("MainWindow", "🥇"))
+        self.first_user_label.setText(_translate("MainWindow", "玩家名称"))
+        self.first_accuracy_label.setText(_translate("MainWindow", "准确度: 98.5%"))
+        self.first_deviation_label.setText(_translate("MainWindow", "偏差面积: 0.25"))
+        self.first_time_label.setText(_translate("MainWindow", "用时: 2分30秒"))
+        self.second_rank_label.setText(_translate("MainWindow", "🥈"))
+        self.second_user_label.setText(_translate("MainWindow", "玩家名称"))
+        self.second_accuracy_label.setText(_translate("MainWindow", "准确度: 96.8%"))
+        self.second_deviation_label.setText(_translate("MainWindow", "偏差面积: 0.42"))
+        self.second_time_label.setText(_translate("MainWindow", "用时: 3分15秒"))
+        self.third_rank_label.setText(_translate("MainWindow", "🥉"))
+        self.third_user_label.setText(_translate("MainWindow", "玩家名称"))
+        self.third_accuracy_label.setText(_translate("MainWindow", "准确度: 94.2%"))
+        self.third_deviation_label.setText(_translate("MainWindow", "偏差面积: 0.68"))
+        self.third_time_label.setText(_translate("MainWindow", "用时: 4分02秒"))
+        self.info_label.setText(_translate("MainWindow", "💡 排名基于准确度高低，偏差面积越小越好，用时越短越好"))
         self.label_4.setText(_translate("MainWindow", "点击按钮查看行为数据"))
+        self.label_input_method_reminder.setText(_translate("MainWindow", "⚠️提醒：请确保切换到英文输入法"))
         self.label_com.setText(_translate("MainWindow", "端口号："))
         self.label_bote.setText(_translate("MainWindow", "波特率："))
         self.comboBox_bote.setItemText(0, _translate("MainWindow", "9600"))
@@ -807,7 +797,6 @@ class Ui_MainWindow(object):
         self.comboBox_com.setItemText(4, _translate("MainWindow", "COM5"))
         self.comboBox_com.setItemText(5, _translate("MainWindow", "COM6"))
         self.label_status_text.setText(_translate("MainWindow", "未连接"))
-        self.label_input_method_reminder.setText(_translate("MainWindow", "⚠️提醒：请确保切换到英文输入法"))
         self.pushButton_quereng.setText(_translate("MainWindow", "确定"))
         self.pushButton_test_send.setText(_translate("MainWindow", "测试发送指令"))
 from src.utils import resouce_rc
