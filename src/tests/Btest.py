@@ -330,7 +330,6 @@ class Game:
                     wait = False
             self.clock.tick(60)
 
-        # self.display_end_screen() # This function was not defined in the provided code
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -373,6 +372,10 @@ class Game:
         # --- 1. 标题 ---
         if subject == 'A':
             title_surf = title_font.render(f"{user1}单人绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'B':
+            title_surf = title_font.render(f"{user2}合作绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'C':
+            title_surf = title_font.render(f"{user3}合作绘图任务指导语", True, TEXT_COLOR)
         elif subject == 'AB':
             title_surf = title_font.render(f"{user1}和{user2}合作绘图任务指导语", True, TEXT_COLOR)
         else:
