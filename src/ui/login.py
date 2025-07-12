@@ -63,15 +63,17 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.close_button.setFont(font)
-        self.close_button.setStyleSheet("QPushButton {\n"
-"    background: #ff5f56;\n"
-"    border: none;\n"
-"    border-radius: 15px;\n"
-"    color: white;\n"
+        self.close_button.setStyleSheet("QPushButton{\n"
+"    border:none;\n"
 "}\n"
-"QPushButton:hover {\n"
-"    background: #ff3b30;\n"
+"QPushButton:hover{\n"
+"    padding-bottom:10px\n"
+"\n"
 "}")
+        self.close_button.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/close.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.close_button.setIcon(icon)
         self.close_button.setObjectName("close_button")
         self.minimize_button = QtWidgets.QPushButton(self.right_panel)
         self.minimize_button.setGeometry(QtCore.QRect(500, 15, 30, 30))
@@ -80,18 +82,20 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.minimize_button.setFont(font)
-        self.minimize_button.setStyleSheet("QPushButton {\n"
-"    background: #ffbd2e;\n"
-"    border: none;\n"
-"    border-radius: 15px;\n"
-"    color: white;\n"
+        self.minimize_button.setStyleSheet("QPushButton{\n"
+"    border:none;\n"
 "}\n"
-"QPushButton:hover {\n"
-"    background: #ff9500;\n"
+"QPushButton:hover{\n"
+"    padding-bottom:10px\n"
+"\n"
 "}")
+        self.minimize_button.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/minimize (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.minimize_button.setIcon(icon1)
         self.minimize_button.setObjectName("minimize_button")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(50, 20, 500, 40))
+        self.login_title.setGeometry(QtCore.QRect(120, 10, 381, 40))
         font = QtGui.QFont()
         font.setPointSize(28)
         font.setBold(True)
@@ -213,9 +217,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "实验系统登录"))
-        self.close_button.setText(_translate("MainWindow", "×"))
-        self.minimize_button.setText(_translate("MainWindow", "−"))
-        self.login_title.setText(_translate("MainWindow", "人员身份登录"))
+        self.login_title.setText(_translate("MainWindow", "合作行为能力评估软件"))
         self.task_selection_title.setText(_translate("MainWindow", "任务代号:"))
         self.subject_a_icon.setText(_translate("MainWindow", "航天员"))
         self.subject_a_title.setText(_translate("MainWindow", "佩戴脑电帽的航天员"))

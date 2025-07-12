@@ -806,12 +806,15 @@ class Game:
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: 
-                            pygame.quit(); 
-                            sys.exit()
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                pygame.quit()
+                                sys.exit()
+                            else:
+                                key_pressed = event.key
                     
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
                     
                     pygame.display.flip()
                     self.clock.tick(60)
@@ -1123,12 +1126,15 @@ class Game:
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: 
-                            pygame.quit(); 
-                            sys.exit()
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                pygame.quit()
+                                sys.exit()
+                            else:
+                                key_pressed = event.key
                     
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
                     
                     pygame.display.flip()
                     self.clock.tick(60)
@@ -1352,6 +1358,10 @@ class Game:
         # --- 1. 标题 ---
         if subject == 'A':
             title_surf = title_font.render(f"{user1}单人绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'B':
+            title_surf = title_font.render(f"{user2}合作绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'C':
+            title_surf = title_font.render(f"{user3}合作绘图任务指导语", True, TEXT_COLOR)
         elif subject == 'AB':
             title_surf = title_font.render(f"{user1}和{user2}合作绘图任务指导语", True, TEXT_COLOR)
         else:
@@ -1376,7 +1386,10 @@ class Game:
             for item in line_def:
                 content, font, part_type = item
                 if part_type == "key":
-                    key_rect = draw_key_box(self.screen, content, font, (0, 0))
+                    temp_surf = font.render(content, True, black)
+                    # 根据draw_key_box的内边距(PADDING_X=8, PADDING_Y=4)来计算方框的真实尺寸
+                    key_rect = pygame.Rect(0, 0, temp_surf.get_width() + 16, temp_surf.get_height() + 8)
+
                     draw_key_box(self.screen, content, font,
                                  (x_pos + key_rect.width / 2, y + font.get_height() / 2 - 4))
                     x_pos += key_rect.width
@@ -1391,6 +1404,24 @@ class Game:
         if subject == 'A':
             parts1 = [
                 (f"{user1}航天员控制键盘沿", main_font, TEXT_COLOR),
+                ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                ("从", main_font, TEXT_COLOR),
+                ("绿色起点", main_font_bold, TEXT_COLOR),
+                ("移至", main_font, TEXT_COLOR),
+                ("红色终点", main_font_bold, TEXT_COLOR)
+            ]
+        elif subject == 'B':
+            parts1 = [
+                (f"{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
+                ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                ("从", main_font, TEXT_COLOR),
+                ("绿色起点", main_font_bold, TEXT_COLOR),
+                ("移至", main_font, TEXT_COLOR),
+                ("红色终点", main_font_bold, TEXT_COLOR)
+            ]
+        elif subject == 'C':
+            parts1 = [
+                (f"{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
                 ("黑色轨迹", main_font_bold, TEXT_COLOR),
                 ("从", main_font, TEXT_COLOR),
                 ("绿色起点", main_font_bold, TEXT_COLOR),
@@ -1427,10 +1458,12 @@ class Game:
                 x += surf.get_width()
 
         render_line(parts1, (screen_w - sum(f.render(t, True, c).get_width() for t, f, c in parts1)) / 2, y_pos)
+
         y_pos += line_height * 1.2
         user1 = getattr(shared_data, 'user1_mark', None)
         user2 = getattr(shared_data, 'user2_mark', None)
         user3 = getattr(shared_data, 'user3_mark', None)
+
         if subject == 'A':
             role_text = f"{user1}绘图，{user2}&{user3}休息"
             role_surf = main_font.render(role_text, True, TEXT_COLOR)
@@ -1446,6 +1479,15 @@ class Game:
             self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
             y_pos += line_height
             line_def = [(f"{user2}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
+                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
+                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
+            render_composite_line(y_pos, line_def)
+        elif subject == 'C':
+            role_text = f"{user3}绘图，{user1}&{user2}休息"
+            role_surf = main_font.render(role_text, True, TEXT_COLOR)
+            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
+            y_pos += line_height
+            line_def = [(f"{user3}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
                         ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
                         (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
             render_composite_line(y_pos, line_def)
@@ -1486,6 +1528,7 @@ class Game:
                        ("按钮来调整绘图速度", main_font, "text")]
 
         render_composite_line(y_pos, button_text)
+
         y_pos += line_height * 1.2
 
         # --- 4.【新增】速度调整按钮示意图 ---

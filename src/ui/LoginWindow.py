@@ -173,7 +173,7 @@ class EllipseUserButton(QPushButton):
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        from .login import Ui_MainWindow
+        from src.ui.login import Ui_MainWindow
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -244,7 +244,9 @@ class LoginWindow(QMainWindow):
 
     def load_users_and_create_buttons(self):
         try:
-            conn = sqlite3.connect("./user_account/Experimenter.db")
+            import os
+            db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'user_account', 'Experimenter.db')
+            conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT id, 性别, 惯用手, 标识 FROM user")
             users = cursor.fetchall()
@@ -315,7 +317,9 @@ class LoginWindow(QMainWindow):
     def auto_select_assistants(self, primary_mark):
         """根据主航天员自动选择副航天员"""
         try:
-            conn = sqlite3.connect("./user_account/Experimenter.db")
+            import os
+            db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'user_account', 'Experimenter.db')
+            conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT id, 性别, 惯用手, 标识 FROM user")
             users = cursor.fetchall()
@@ -379,7 +383,10 @@ class LoginWindow(QMainWindow):
                 subject3_id=self.selected_subject_c['id'], subject3_gender=self.selected_subject_c['gender'],
                 subject3_hand=self.selected_subject_c['hand_preference'], subject3_mark=self.selected_subject_c['mark']
             )
-            export_to_txt("./output_data/output_subInfo.db", "data", "./output_data/output_subInfo.txt")
+            import os
+            output_db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output_data', 'output_subInfo.db')
+            output_txt_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output_data', 'output_subInfo.txt')
+            export_to_txt(output_db_path, "data", output_txt_path)
 
             success_text = (f"登录成功！\n\n"
                             f"任务编号: {self.selected_task}\n"
@@ -398,7 +405,9 @@ class LoginWindow(QMainWindow):
 
     def validate_user(self, user_info):
         try:
-            conn = sqlite3.connect("./user_account/Experimenter.db")
+            import os
+            db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'user_account', 'Experimenter.db')
+            conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute('SELECT id FROM user WHERE id = ? AND 性别 = ? AND 惯用手 = ? AND 标识 = ?',
                            (user_info['id'], user_info['gender'], user_info['hand_preference'], user_info['mark']))
@@ -445,7 +454,9 @@ class LoginWindow(QMainWindow):
 
     def save_to_database(self, user_info, timestamp):
         try:
-            conn_output = sqlite3.connect("./output_data/output_subInfo.db")
+            import os
+            output_db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output_data', 'output_subInfo.db')
+            conn_output = sqlite3.connect(output_db_path)
             cursor_output = conn_output.cursor()
             cursor_output.execute('''CREATE TABLE IF NOT EXISTS data (
                 登录时间 timestamp TEXT NOT NULL, 被试编号 FLOAT NOT NULL, 性别 TEXT NOT NULL, 
@@ -476,8 +487,15 @@ class LoginWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+    import os
+    import sys
+    # 添加项目根目录到Python路径
+    project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+    sys.path.insert(0, project_root)
+    
     ti = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    with open(f"./Behavioral_data/name.txt", "w") as file:
+    behavioral_data_path = os.path.join(project_root, 'Behavioral_data', 'name.txt')
+    with open(behavioral_data_path, "w") as file:
         file.write(ti)
     app = QApplication(sys.argv)
     win = LoginWindow()

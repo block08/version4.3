@@ -405,7 +405,10 @@ class Game:
             for item in line_def:
                 content, font, part_type = item
                 if part_type == "key":
-                    key_rect = draw_key_box(self.screen, content, font, (0, 0))
+                    temp_surf = font.render(content, True, black)
+                    # 根据draw_key_box的内边距(PADDING_X=8, PADDING_Y=4)来计算方框的真实尺寸
+                    key_rect = pygame.Rect(0, 0, temp_surf.get_width() + 16, temp_surf.get_height() + 8)
+
                     draw_key_box(self.screen, content, font,
                                  (x_pos + key_rect.width / 2, y + font.get_height() / 2 - 4))
                     x_pos += key_rect.width
@@ -420,6 +423,24 @@ class Game:
         if subject == 'A':
             parts1 = [
                 (f"{user1}航天员控制键盘沿", main_font, TEXT_COLOR),
+                ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                ("从", main_font, TEXT_COLOR),
+                ("绿色起点", main_font_bold, TEXT_COLOR),
+                ("移至", main_font, TEXT_COLOR),
+                ("红色终点", main_font_bold, TEXT_COLOR)
+            ]
+        elif subject == 'B':
+            parts1 = [
+                (f"{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
+                ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                ("从", main_font, TEXT_COLOR),
+                ("绿色起点", main_font_bold, TEXT_COLOR),
+                ("移至", main_font, TEXT_COLOR),
+                ("红色终点", main_font_bold, TEXT_COLOR)
+            ]
+        elif subject == 'C':
+            parts1 = [
+                (f"{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
                 ("黑色轨迹", main_font_bold, TEXT_COLOR),
                 ("从", main_font, TEXT_COLOR),
                 ("绿色起点", main_font_bold, TEXT_COLOR),
@@ -456,10 +477,12 @@ class Game:
                 x += surf.get_width()
 
         render_line(parts1, (screen_w - sum(f.render(t, True, c).get_width() for t, f, c in parts1)) / 2, y_pos)
+
         y_pos += line_height * 1.2
         user1 = getattr(shared_data, 'user1_mark', None)
         user2 = getattr(shared_data, 'user2_mark', None)
         user3 = getattr(shared_data, 'user3_mark', None)
+
         if subject == 'A':
             role_text = f"{user1}绘图，{user2}&{user3}休息"
             role_surf = main_font.render(role_text, True, TEXT_COLOR)
@@ -524,6 +547,7 @@ class Game:
                        ("按钮来调整绘图速度", main_font, "text")]
 
         render_composite_line(y_pos, button_text)
+
         y_pos += line_height * 1.2
 
         # --- 4.【新增】速度调整按钮示意图 ---
