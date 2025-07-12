@@ -52,6 +52,4 @@ ENV/
 Thumbs.db
 desktop.ini
 
-# ----------------------------------------
-#  Git 忽略文件的文件本身
-.gitignore
+
