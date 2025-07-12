@@ -17,6 +17,7 @@ import random
 from src.ui.likert_scale import LikertScale
 import os
 from src.core.paint import GameDrawing
+from src.utils.font_utils import get_font_path
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
     try:
@@ -72,7 +73,7 @@ class Game:
         pygame.init()
         settings = Settings()
         self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
-        self.font = pygame.font.Font('font/msyh.ttc', 40)
+        self.font = pygame.font.Font(get_font_path(), 40)
         pygame.display.set_caption('人员①训练')
         self.clock = pygame.time.Clock()
         self.level = Level()
@@ -204,9 +205,9 @@ class Game:
             # --- 2. 绘制所有UI和游戏内容 ---
             # 速度调整按钮设置
 
-            speed_font = pygame.font.Font('font/msyh.ttc', 50)
-            button_font = pygame.font.Font('font/msyh.ttc', 50)
-            value_font = pygame.font.Font('font/msyh.ttc', 30)
+            speed_font = pygame.font.Font(get_font_path(), 50)
+            button_font = pygame.font.Font(get_font_path(), 50)
+            value_font = pygame.font.Font(get_font_path(), 30)
 
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
@@ -263,7 +264,7 @@ class Game:
                 action_pending = False
 
             # --- 4. 绘制提示文本和进度 ---
-            key_hint_font = pygame.font.Font('font/msyh.ttc', 60)
+            key_hint_font = pygame.font.Font(get_font_path(), 60)
             if paused:
                 step_button.text, hint_text = "已暂停", "按P键继续 | 按ESC键退出"
             else:
@@ -311,10 +312,13 @@ class Game:
                     draw_data(self, self.screen, data)
                     mouse_pos = pygame.mouse.get_pos()
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN: mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
-                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked)
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
+                            else: key_pressed = event.key
+                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked, key_pressed=key_pressed)
                     pygame.display.flip()
                     if score is not None: likert_running = False
                 if score is not None:
@@ -355,12 +359,12 @@ class Game:
 
         # --- 字体加载 ---
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 65)
-            main_font = pygame.font.Font('font/msyh.ttc', 44)
-            main_font_bold = pygame.font.Font('font/msyh.ttc', 48)
+            title_font = pygame.font.Font(get_font_path(), 65)
+            main_font = pygame.font.Font(get_font_path(), 44)
+            main_font_bold = pygame.font.Font(get_font_path(), 48)
             main_font_bold.set_bold(True)
-            key_font = pygame.font.Font('font/msyh.ttc', 42)
-            prompt_font = pygame.font.Font('font/msyh.ttc', 50)
+            key_font = pygame.font.Font(get_font_path(), 42)
+            prompt_font = pygame.font.Font(get_font_path(), 50)
         except IOError:
             title_font = pygame.font.SysFont(None, 70)
             main_font = pygame.font.SysFont(None, 45)
@@ -471,6 +475,15 @@ class Game:
             self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
             y_pos += line_height
             line_def = [(f"{user2}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
+                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
+                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
+            render_composite_line(y_pos, line_def)
+        elif subject == 'C':
+            role_text = f"{user3}绘图，{user1}&{user2}休息"
+            role_surf = main_font.render(role_text, True, TEXT_COLOR)
+            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
+            y_pos += line_height
+            line_def = [(f"{user3}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
                         ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
                         (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
             render_composite_line(y_pos, line_def)
@@ -614,9 +627,9 @@ class Game:
 
         # 字体设置
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 68)
-            subtitle_font = pygame.font.Font('font/msyh.ttc', 58)
-            note_font = pygame.font.Font('font/msyh.ttc', 58)
+            title_font = pygame.font.Font(get_font_path(), 68)
+            subtitle_font = pygame.font.Font(get_font_path(), 58)
+            note_font = pygame.font.Font(get_font_path(), 58)
         except IOError:
             title_font = pygame.font.SysFont(None, 80)
             subtitle_font = pygame.font.SysFont(None, 58)
@@ -686,7 +699,7 @@ class Game:
 
 def draw_data(self, screen, data):
     percentages, times = [], []
-    summary_font = pygame.font.Font('font/msyh.ttc', 60)
+    summary_font = pygame.font.Font(get_font_path(), 60)
     import re
     time_pattern, percentage_pattern = re.compile(r'绘图时长：([\d.]+)'), re.compile(r'百分比：([\d.]+)%')
     for line in data:

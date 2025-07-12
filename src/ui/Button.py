@@ -1,4 +1,5 @@
 import pygame.font
+from src.utils.font_utils import get_font_path
 
 white = (255, 255, 255)
 black = (0, 0, 0)
@@ -18,7 +19,7 @@ class Button:
         self.text_color = black
         self.hover_color = light_gray
         self.current_color = self.button_color
-        self.font = pygame.font.Font('./font/msyh.ttc', 40)
+        self.font = pygame.font.Font(get_font_path(), 40)
         # 创建按钮的rect的对象，并使其设置在指定位置
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.clicked = False  # 添加点击状态
@@ -64,7 +65,7 @@ class Button2:
         self.text_color = black
         self.hover_color = light_gray
         self.current_color = self.button_color
-        self.font = pygame.font.Font('./font/msyh.ttc', 40)
+        self.font = pygame.font.Font(get_font_path(), 40)
         # 创建按钮的rect的对象，并使其设置在指定位置
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.clicked = False  # 添加点击状态

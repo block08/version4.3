@@ -22,6 +22,7 @@ import csv
 import os
 from datetime import datetime
 from src.core.paint import GameDrawing
+from src.utils.font_utils import get_font_path
 
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
@@ -95,7 +96,7 @@ class Game:
 
         # 设置屏幕
         self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
-        self.font = pygame.font.Font('font/msyh.ttc', 40)
+        self.font = pygame.font.Font(get_font_path(), 40)
         pygame.display.set_caption('实验')
 
         # 设置时钟
@@ -390,9 +391,9 @@ class Game:
                             stats.game_score = 9
 
             # 绘制速度调整按钮
-            speed_font = pygame.font.Font('font/msyh.ttc', 50)
-            button_font = pygame.font.Font('font/msyh.ttc', 50)
-            value_font = pygame.font.Font('font/msyh.ttc', 30)
+            speed_font = pygame.font.Font(get_font_path(), 50)
+            button_font = pygame.font.Font(get_font_path(), 50)
+            value_font = pygame.font.Font(get_font_path(), 30)
 
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
@@ -423,7 +424,7 @@ class Game:
             self.screen.blit(plus_text, plus_text_rect)
 
             # 显示按键提示
-            key_hint_font = pygame.font.Font('font/msyh.ttc', 40)
+            key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
                 hint_text = "按P键继续  |  按Esc键返回主界面"
@@ -487,15 +488,19 @@ class Game:
 
                     # 处理事件
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            pygame.quit()
-                            sys.exit()
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                pygame.quit()
+                                sys.exit()
+                            else:
+                                key_pressed = event.key
 
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
 
                     pygame.display.flip()
                     self.clock.tick(60)
@@ -692,9 +697,9 @@ class Game:
                             stats.game_score = 20
 
             # 绘制速度调整按钮
-            speed_font = pygame.font.Font('font/msyh.ttc', 50)
-            button_font = pygame.font.Font('font/msyh.ttc', 50)
-            value_font = pygame.font.Font('font/msyh.ttc', 30)
+            speed_font = pygame.font.Font(get_font_path(), 50)
+            button_font = pygame.font.Font(get_font_path(), 50)
+            value_font = pygame.font.Font(get_font_path(), 30)
 
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
@@ -725,7 +730,7 @@ class Game:
             self.screen.blit(plus_text, plus_text_rect)
 
             # 显示按键提示
-            key_hint_font = pygame.font.Font('font/msyh.ttc', 40)
+            key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
                 hint_text = "按P键继续  |  按ESC键退出"
@@ -1005,9 +1010,9 @@ class Game:
                             stats.game_score = 32
 
             # 绘制速度调整按钮
-            speed_font = pygame.font.Font('font/msyh.ttc', 50)
-            button_font = pygame.font.Font('font/msyh.ttc', 50)
-            value_font = pygame.font.Font('font/msyh.ttc', 30)
+            speed_font = pygame.font.Font(get_font_path(), 50)
+            button_font = pygame.font.Font(get_font_path(), 50)
+            value_font = pygame.font.Font(get_font_path(), 30)
 
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
@@ -1038,7 +1043,7 @@ class Game:
             self.screen.blit(plus_text, plus_text_rect)
 
             # 显示按键提示
-            key_hint_font = pygame.font.Font('font/msyh.ttc', 40)
+            key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
                 hint_text = "按P键继续  |  按ESC键退出"
@@ -1201,12 +1206,12 @@ class Game:
         screen_height = self.screen.get_height()
 
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 68)
-            header_font = pygame.font.Font('font/msyh.ttc', 38)
-            main_font = pygame.font.Font('font/msyh.ttc', 44)
-            sub_font = pygame.font.Font('font/msyh.ttc', 30)
-            prompt_font = pygame.font.Font('font/msyh.ttc', 68)
-            key_info_font = pygame.font.Font('font/msyh.ttc', 60)
+            title_font = pygame.font.Font(get_font_path(), 68)
+            header_font = pygame.font.Font(get_font_path(), 38)
+            main_font = pygame.font.Font(get_font_path(), 44)
+            sub_font = pygame.font.Font(get_font_path(), 30)
+            prompt_font = pygame.font.Font(get_font_path(), 68)
+            key_info_font = pygame.font.Font(get_font_path(), 60)
         except IOError:
             # Fallback to default system font if 'msyh.ttc' is not found
             title_font = pygame.font.SysFont(None, 70)
@@ -1320,12 +1325,12 @@ class Game:
 
         # --- 字体加载 ---
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 65)
-            main_font = pygame.font.Font('font/msyh.ttc', 44)
-            main_font_bold = pygame.font.Font('font/msyh.ttc', 48)
+            title_font = pygame.font.Font(get_font_path(), 65)
+            main_font = pygame.font.Font(get_font_path(), 44)
+            main_font_bold = pygame.font.Font(get_font_path(), 48)
             main_font_bold.set_bold(True)
-            key_font = pygame.font.Font('font/msyh.ttc', 42)
-            prompt_font = pygame.font.Font('font/msyh.ttc', 50)
+            key_font = pygame.font.Font(get_font_path(), 42)
+            prompt_font = pygame.font.Font(get_font_path(), 50)
         except IOError:
             title_font = pygame.font.SysFont(None, 70)
             main_font = pygame.font.SysFont(None, 45)
@@ -1570,8 +1575,8 @@ class Game:
         self.screen.fill(grey)
         user1 = getattr(shared_data, 'user1_mark', None)
         try:
-            font_large = pygame.font.Font('font/msyh.ttc', 78)
-            font_medium = pygame.font.Font('font/msyh.ttc', 65)
+            font_large = pygame.font.Font(get_font_path(), 78)
+            font_medium = pygame.font.Font(get_font_path(), 65)
         except:
             font_large = pygame.font.SysFont(None, 48)
             font_medium = pygame.font.SysFont(None, 40)
@@ -1622,9 +1627,9 @@ class Game:
 
         # 字体设置
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 88)
-            subtitle_font = pygame.font.Font('font/msyh.ttc', 78)
-            note_font = pygame.font.Font('font/msyh.ttc', 78)
+            title_font = pygame.font.Font(get_font_path(), 88)
+            subtitle_font = pygame.font.Font(get_font_path(), 78)
+            note_font = pygame.font.Font(get_font_path(), 78)
         except IOError:
             title_font = pygame.font.SysFont(None, 100)
             subtitle_font = pygame.font.SysFont(None, 78)
@@ -1950,9 +1955,9 @@ def rest_instructions(self, rest_duration=120):
 
     # 加载字体
     try:
-        font_large = pygame.font.Font('font/msyh.ttc', 58)
-        font_medium = pygame.font.Font('font/msyh.ttc', 50)
-        font_countdown = pygame.font.Font('font/msyh.ttc', 72)
+        font_large = pygame.font.Font(get_font_path(), 58)
+        font_medium = pygame.font.Font(get_font_path(), 50)
+        font_countdown = pygame.font.Font(get_font_path(), 72)
     except:
         # 如果没有黑体字库，使用默认字体
         font_large = pygame.font.SysFont(None, 58)

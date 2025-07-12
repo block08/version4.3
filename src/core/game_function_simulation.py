@@ -3,7 +3,6 @@
 import sys
 import pygame
 from src.data.handle_slider_event import handle_slider_event
-
 from src.core.paint import GameDrawing
 
 
@@ -22,12 +21,25 @@ handle_y = wheel_y
 current_value = 125
 value = 0  # 滚轮数值
 
-# 响应按键
-def check_keydown_events(event):
-    if event.key == pygame.K_SPACE:
-        sys.exit()
-pygame.mixer.init()
-click_sound = pygame.mixer.Sound("./sound/click.wav")
+import os  # 导入一个专门处理文件路径的工具
+
+
+try:
+    # 获取当前这个python脚本文件所在的文件夹的完整路径
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    sound_path = os.path.join(script_dir, '..', '..', 'sound', 'click.wav')
+    if not os.path.exists(sound_path):
+        # 备用方案：如果 sound 文件夹和您的脚本在同一个文件夹里
+        sound_path = os.path.join(script_dir, 'sound', 'click.wav')
+    pygame.mixer.init()
+    click_sound = pygame.mixer.Sound(sound_path)
+
+except Exception as e:
+    print(f"加载声音文件时出错: {e}")
+    print(f"尝试加载的路径是: {sound_path}")
+    # 如果找不到文件，最好让程序停下来，这样能立刻发现问题
+    sys.exit()
+
 game_drawing = GameDrawing()
 
 # 响应按键和鼠标事件

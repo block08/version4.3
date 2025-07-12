@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# (请在此处保留您原有的import语句)
 import time
 import cv2
 import numpy as np
@@ -8,16 +7,17 @@ import pygame
 import sys
 from src.core import game_function_simulation as gf
 from src.utils import shared_data
-from src.ui.Button import Button, Button2  # 引入Button2
-from src.data.Deviation_area import deviation_area2
+from src.ui.Button import Button, Button2
+from src.data.Deviation_area import deviation_area1
 from src.utils.game_stats import GameStats
+from src.data.handle_slider_event import handle_button_event
 from src.core.level import Level
 from src.config.settings import *
 import random
 from src.ui.likert_scale import LikertScale
-from src.data.handle_slider_event import handle_button_event  # 更改为 handle_button_event
 import os
 from src.core.paint import GameDrawing
+from src.utils.font_utils import get_font_path
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
     try:
@@ -40,6 +40,7 @@ green = (50, 128, 50)
 black = (0, 0, 0)
 grey = (211, 211, 211)
 RED = (255, 0, 0)
+
 
 def draw_key_box(screen, text, font, center_pos):
     """
@@ -66,30 +67,38 @@ def draw_key_box(screen, text, font, center_pos):
     return box_rect
 
 
+
 class Game:
     def __init__(self):
         pygame.init()
         settings = Settings()
         self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
-        self.font = pygame.font.Font('font/msyh.ttc', 40)
-        pygame.display.set_caption('合作训练')
+        self.font = pygame.font.Font(get_font_path(), 40)
+        pygame.display.set_caption('人员①训练')
         self.clock = pygame.time.Clock()
         self.level = Level()
-        # 保留您对背景消失问题的修复
-        self.current_map_surface = None
         self.screen.fill(grey)
 
     def run(self):
         settings = Settings()
         stats = GameStats(settings)
-        user1_mark = getattr(shared_data, 'user1_mark', '01')
-        user2_mark = getattr(shared_data, 'user2_mark', '02')
+        user_mark = getattr(shared_data, 'user1_mark', '01')
         ROOT_DATA_FOLDER = "Training_Behavioral_data" if IS_TRAINING_MODE else "Behavioral_data"
-        PARTICIPANT_ID_FOLDER = "subA+B"  # 合作模式文件夹
+        PARTICIPANT_ID_FOLDER = "subA"
 
         if not os.path.exists(ROOT_DATA_FOLDER):
             os.makedirs(f"{ROOT_DATA_FOLDER}")
+            print(f"已创建文件夹: {ROOT_DATA_FOLDER}")
 
+        def extract_number(mark):
+            if mark and isinstance(mark, str):
+                if '-' in mark: return mark.split('-')[-1]
+                import re
+                match = re.search(r'\d+$', mark)
+                if match: return match.group()
+            return mark
+
+        user_id_display = extract_number(user_mark)
 
         game_drawing = GameDrawing()
 
@@ -98,32 +107,35 @@ class Game:
 
         with open('config.txt', 'w') as f:
             f.truncate(0)
-            f.write('3')  # 合作模式状态为'3'
-
-        # 【Atest逻辑】使用新的按钮式速度UI
+            f.write('1')
         speed_value = read_speed_value()
         speed_min, speed_max = 50, 300
         speed_step = 25
+
+        # 按钮位置设置
         button_y = 30
         button_size = 40
+        button_spacing = 40
+        # 减速按钮
         minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
+        # 加速按钮
         plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
+        # 数值显示区域
         value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
 
-        # 【Atest逻辑】修正指导语的调用
         self.display_task_instructions_formatted(subject='AB')
         waiting_for_space = True
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                    pygame.quit();
+                    pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     waiting_for_space = False
             self.clock.tick(60)
 
-        numbers2 = random.sample(range(1, 9), 3)
-        stats.game_score = 23  # 合作模式分数
+        numbers = random.sample(range(1, 9), 3)
+        stats.game_score = 0
         paused, pause_start_time, total_pause_time = False, 0, 0
         first_image_shown, running = False, True
 
@@ -134,11 +146,10 @@ class Game:
             with open(id_file_path, "r") as file:
                 id = file.read().strip()
         except Exception as e:
-            print(f"处理ID文件时出错: {e}");
-            pygame.quit();
+            print(f"处理ID文件时出错: {e}")
+            pygame.quit()
             sys.exit()
 
-        # 【Atest逻辑】标准化的文件夹创建
         output_image_folder = f"./{ROOT_DATA_FOLDER}/{id}/{PARTICIPANT_ID_FOLDER}/output_image"
         data_folder = f"./{ROOT_DATA_FOLDER}/{id}/{PARTICIPANT_ID_FOLDER}/data"
         likert_folder = f"./{ROOT_DATA_FOLDER}/{id}/{PARTICIPANT_ID_FOLDER}/likert_scale"
@@ -153,101 +164,72 @@ class Game:
 
         while running:
             dt = self.clock.tick(60) / 1000
+            self.screen.fill(grey)
 
             # --- 1. 事件处理 ---
             mouse_pos = pygame.mouse.get_pos()
-
+            user_button = Button2(settings, self.screen, f"航天员：{user_id_display}", 10, 10)
+            step_button = Button(settings, self.screen, "", 1700, 1000)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
-
-                # 【Atest逻辑】新的按钮事件处理
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                                       speed_value, speed_step)
-                    current_time = pygame.time.get_ticks()
-
-                elif event.type == pygame.MOUSEMOTION:
+                elif event.type == pygame.MOUSEMOTION:  # 处理鼠标移动
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                                       speed_value, speed_step)
-
+                elif event.type == pygame.MOUSEBUTTONDOWN:  # 处理鼠标点击
+                    current_time = pygame.time.get_ticks()
+                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                                      speed_value, speed_step)
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit(); sys.exit()
+                    if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
                     elif event.key == pygame.K_p:
                         paused = not paused
                         if paused:
                             pause_start_time = pygame.time.get_ticks()
                         else:
                             total_pause_time += pygame.time.get_ticks() - pause_start_time
-                    # 【Atest逻辑】键盘速度控制
-                    elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:
+                    elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
                         speed_value = min(speed_max, speed_value + speed_step)
-                    elif event.key == pygame.K_MINUS:
+                        with open('scroll_value.txt', 'w') as f:
+                            f.write(str(int(speed_value)))
+                    elif event.key == pygame.K_MINUS:  # -键降低速度
                         speed_value = max(speed_min, speed_value - speed_step)
+                        with open('scroll_value.txt', 'w') as f:
+                            f.write(str(int(speed_value)))
                     if event.key == pygame.K_SPACE and not paused:
                         action_pending = True
 
-            # --- 2. 状态更新 ---
-            if action_pending:
-                self.level.clear()
-                if not first_image_shown:
-                    t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11)
-                    pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot0.png")
-                    self.current_map_surface = self.screen.copy()
-                    stats.game_score = 24
-                    first_image_shown = True
-                elif stats.game_score < 26:
-                    current_image_index = stats.game_score - 23
-                    pygame.image.save(self.screen,
-                                      f"{output_image_folder}/post_screenshot{current_image_index - 1}.png")
-                    if stats.game_score == 24:
-                        t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 24)
-                        pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot1.png")
-                        self.current_map_surface = self.screen.copy()
-                    elif stats.game_score == 25:
-                        t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 25)
-                        pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot2.png")
-                        self.current_map_surface = self.screen.copy()
-                    stats.game_score += 1
-                elif stats.game_score == 26:
-                    pygame.image.save(self.screen, f"{output_image_folder}/post_screenshot2.png")
-                    t4 = (pygame.time.get_ticks() - total_pause_time) / 1000
-                    stats.game_score = 27
-                    self.current_map_surface = None
-                action_pending = False
+            # --- 2. 绘制所有UI和游戏内容 ---
+            # 速度调整按钮设置
 
-            # --- 3. 绘制所有内容 ---
-            self.screen.fill(grey)
+            speed_font = pygame.font.Font(get_font_path(), 50)
+            button_font = pygame.font.Font(get_font_path(), 50)
+            value_font = pygame.font.Font(get_font_path(), 30)
 
-            if self.current_map_surface:
-                self.screen.blit(self.current_map_surface, (0, 0))
-
-            self.level.run(dt, stats, [], self.screen)
-
-            # --- 绘制UI ---
-            user_button = Button2(settings, self.screen, f"合作模式: {user1_mark} & {user2_mark}", 10, 10)
-            step_button = Button(settings, self.screen, "", 1700, 1000)
-            for button in [user_button, step_button]: gf.update_screen(button)
-
-            # 【Atest逻辑】绘制新的速度按钮UI
-            speed_font = pygame.font.Font('font/msyh.ttc', 50)
-            button_font = pygame.font.Font('font/msyh.ttc', 50)
-            value_font = pygame.font.Font('font/msyh.ttc', 30)
+            # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
             speed_rect = speed_text.get_rect(right=minus_button_rect.left - 10, centery=minus_button_rect.centery)
             self.screen.blit(speed_text, speed_rect)
+
+            # 绘制减速按钮
             minus_color = (150, 150, 150) if speed_value <= speed_min else (255, 100, 100)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
+
+            # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             value_text = value_font.render(f"{int(speed_value)}", True, (255, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
+
+            # 绘制加速按钮
             plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 255, 100)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
@@ -255,14 +237,41 @@ class Game:
             plus_text_rect = plus_text.get_rect(center=plus_button_rect.center)
             self.screen.blit(plus_text, plus_text_rect)
 
-            key_hint_font = pygame.font.Font('font/msyh.ttc', 60)
+            self.level.run(dt, stats, [], self.screen)
+            for button in [user_button, step_button]: gf.update_screen(button)
+
+            # --- 3. 根据标志执行截图和状态更新 ---
+            if action_pending:
+                if not first_image_shown:
+                    t1, timestamp1 = game_drawing.random_painting(numbers[0], self, 0)
+                    pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot0.png")
+                    stats.game_score = 1
+                    first_image_shown = True
+                elif stats.game_score < 3:
+                    current_image_index = stats.game_score - 1
+                    pygame.image.save(self.screen, f"{output_image_folder}/post_screenshot{current_image_index}.png")
+                    if stats.game_score == 1:
+                        t2, timestamp2 = game_drawing.random_painting(numbers[1], self, 1)
+                        pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot1.png")
+                    elif stats.game_score == 2:
+                        t3, timestamp3 = game_drawing.random_painting(numbers[2], self, 2)
+                        pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot2.png")
+                    stats.game_score += 1
+                elif stats.game_score == 3:
+                    pygame.image.save(self.screen, f"{output_image_folder}/post_screenshot2.png")
+                    t4 = (pygame.time.get_ticks() - total_pause_time) / 1000
+                    stats.game_score = 4
+                action_pending = False
+
+            # --- 4. 绘制提示文本和进度 ---
+            key_hint_font = pygame.font.Font(get_font_path(), 60)
             if paused:
                 step_button.text, hint_text = "已暂停", "按P键继续 | 按ESC键退出"
             else:
-                if first_image_shown and 24 <= stats.game_score <= 26:
-                    step_button.text = f"{stats.game_score - 23} / 3"
+                if first_image_shown and 1 <= stats.game_score <= 3:
+                    step_button.text = f"{stats.game_score} / 3"
                     hint_text = "按P键暂停 | 按空格键继续"
-                elif stats.game_score > 26:
+                elif stats.game_score > 3:
                     step_button.text, hint_text = "完成", "任务已完成"
                 else:
                     step_button.text, hint_text = "等待开始", "按空格键开始"
@@ -274,37 +283,42 @@ class Game:
 
             pygame.display.update()
 
-            # --- 5. 任务结束判断 ---
-            if stats.game_score == 27:
+            # --- 5. 任务结束 ---
+            if stats.game_score == 4:
+                self.level.clear()
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
-                # 【Atest逻辑】统一数据加载函数名
                 dataloading_1(t1, t2, t3, t4, timestamp1, timestamp2, timestamp3, ROOT_DATA_FOLDER, id,
                               PARTICIPANT_ID_FOLDER)
-                data_path = f"{data_folder}/数据.txt"
+                data_path = f"./{ROOT_DATA_FOLDER}/{id}/{PARTICIPANT_ID_FOLDER}/data/数据.txt"
                 likert_path = f"{likert_folder}/量表.txt"
                 try:
                     with open(data_path, "r", encoding="utf-8") as f:
                         lines = f.readlines()
                         data = [f"图像{i + 1} {lines[i].strip()}" for i in range(min(3, len(lines)))]
-                        while len(data) < 3: data.append(f"图像{len(data) + 1} 绘图时长：0.00秒, 完成百分比：0.00%")
+                        while len(data) < 3:
+                            data.append(f"图像{len(data) + 1} 绘图时长：0.00秒, 完成百分比：0.00%")
                 except FileNotFoundError:
+                    print(f"数据文件 {data_path} 未找到，将使用默认值。")
                     data = [f"图像{i + 1} 绘图时长：0.00秒, 完成百分比：0.00%" for i in range(3)]
-
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 likert = LikertScale(screen=self.screen, question=f"请{user1}点击●评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
+
                 likert_running, score = True, None
                 while likert_running:
                     self.screen.fill(grey)
                     draw_data(self, self.screen, data)
                     mouse_pos = pygame.mouse.get_pos()
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN: mouse_clicked = True
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
-                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked)
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
+                            else: key_pressed = event.key
+                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked, key_pressed=key_pressed)
                     pygame.display.flip()
                     if score is not None: likert_running = False
                 if score is not None:
@@ -312,7 +326,21 @@ class Game:
                 running = False
 
         self.display_training_complete_instructions()
-        # ... (后续等待循环与Atest一致, 省略)
+        wait = True
+        while wait:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    pygame.quit();
+                    sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    wait = False
+            self.clock.tick(60)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    pygame.quit()
+                    sys.exit()
+            self.clock.tick(60)
 
     def display_task_instructions_formatted(self, subject='A'):
         """
@@ -331,12 +359,12 @@ class Game:
 
         # --- 字体加载 ---
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 65)
-            main_font = pygame.font.Font('font/msyh.ttc', 44)
-            main_font_bold = pygame.font.Font('font/msyh.ttc', 48)
+            title_font = pygame.font.Font(get_font_path(), 65)
+            main_font = pygame.font.Font(get_font_path(), 44)
+            main_font_bold = pygame.font.Font(get_font_path(), 48)
             main_font_bold.set_bold(True)
-            key_font = pygame.font.Font('font/msyh.ttc', 42)
-            prompt_font = pygame.font.Font('font/msyh.ttc', 50)
+            key_font = pygame.font.Font(get_font_path(), 42)
+            prompt_font = pygame.font.Font(get_font_path(), 50)
         except IOError:
             title_font = pygame.font.SysFont(None, 70)
             main_font = pygame.font.SysFont(None, 45)
@@ -349,6 +377,10 @@ class Game:
         # --- 1. 标题 ---
         if subject == 'A':
             title_surf = title_font.render(f"{user1}单人绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'B':
+            title_surf = title_font.render(f"{user2}合作绘图任务指导语", True, TEXT_COLOR)
+        elif subject == 'C':
+            title_surf = title_font.render(f"{user3}合作绘图任务指导语", True, TEXT_COLOR)
         elif subject == 'AB':
             title_surf = title_font.render(f"{user1}和{user2}合作绘图任务指导语", True, TEXT_COLOR)
         else:
@@ -443,6 +475,15 @@ class Game:
             self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
             y_pos += line_height
             line_def = [(f"{user2}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
+                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
+                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
+            render_composite_line(y_pos, line_def)
+        elif subject == 'C':
+            role_text = f"{user3}绘图，{user1}&{user2}休息"
+            role_surf = main_font.render(role_text, True, TEXT_COLOR)
+            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
+            y_pos += line_height
+            line_def = [(f"{user3}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
                         ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
                         (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
             render_composite_line(y_pos, line_def)
@@ -574,43 +615,91 @@ class Game:
         pygame.display.update()
 
     def display_training_complete_instructions(self):
-        BG_COLOR, TEXT_COLOR, ACCENT_COLOR = (128, 128, 128), (0, 0, 0), (144, 238, 144)
-        screen_width, screen_height = self.screen.get_width(), self.screen.get_height()
+        """显示实验结束画面，保持与整体风格一致"""
+        BG_COLOR = (128, 128, 128)  # 与其他界面保持一致的灰色背景
+        BOX_COLOR = (144, 197, 114)  # 与流程图相同的绿色框
+        TEXT_COLOR = (0, 0, 0)
+        ACCENT_COLOR = (144, 238, 144)  # 浅绿色强调
+        TITLE_COLOR = (0, 0, 0)
+
+        screen_width = self.screen.get_width()
+        screen_height = self.screen.get_height()
+
+        # 字体设置
         try:
-            title_font = pygame.font.Font('font/msyh.ttc', 68)
-            subtitle_font = pygame.font.Font('font/msyh.ttc', 58)
-            note_font = pygame.font.Font('font/msyh.ttc', 58)
+            title_font = pygame.font.Font(get_font_path(), 68)
+            subtitle_font = pygame.font.Font(get_font_path(), 58)
+            note_font = pygame.font.Font(get_font_path(), 58)
         except IOError:
-            title_font, subtitle_font, note_font = pygame.font.SysFont(None, 80), pygame.font.SysFont(None,
-                                                                                                      58), pygame.font.SysFont(
-                None, 35)
+            title_font = pygame.font.SysFont(None, 80)
+            subtitle_font = pygame.font.SysFont(None, 58)
+            note_font = pygame.font.SysFont(None, 35)
+
+        # 清空屏幕
         self.screen.fill(BG_COLOR)
-        title_surf = title_font.render("恭喜您完成练习", True, TEXT_COLOR)
+
+        # 主标题
+        title_surf = title_font.render("恭喜您完成练习", True, TITLE_COLOR)
         title_rect = title_surf.get_rect(center=(screen_width / 2, 220))
         self.screen.blit(title_surf, title_rect)
-        subtitle_surf = subtitle_font.render("数据已保存", True, TEXT_COLOR)
+
+        # 副标题
+        subtitle_surf = subtitle_font.render("数据已保存", True, TITLE_COLOR)
         subtitle_rect = subtitle_surf.get_rect(center=(screen_width / 2, 420))
         self.screen.blit(subtitle_surf, subtitle_rect)
-        note_parts = [("按", TEXT_COLOR), ("Esc", ACCENT_COLOR), ("返回主界面", TEXT_COLOR)]
+
+
+        # 底部提示
+
+
+        # Break the note into parts, each with its own text and color
+        note_parts = [
+            ("按", TEXT_COLOR),  # Part 1: Black
+            ("Esc", ACCENT_COLOR),  # Part 2: Green
+            ("返回主界面", TEXT_COLOR)  # Part 3: Black
+        ]
+
+        # --- Render each part into its own surface ---
         note_surfaces = [note_font.render(text, True, color) for text, color in note_parts]
+
+        # --- Calculate layout for centering ---
+        # Calculate the total width of all parts combined
         total_width = sum(surf.get_width() for surf in note_surfaces)
+        # Determine the starting x-position to center the whole message
         current_x = (screen_width - total_width) / 2
+
+        # --- Draw each part sequentially ---
         for surf in note_surfaces:
+            # Define the position for the current part
             note_rect = surf.get_rect(left=current_x, centery=screen_height - 100)
+            # Draw the current part onto the screen
             self.screen.blit(surf, note_rect)
+            # Move the x-position for the next part
             current_x += surf.get_width()
-        check_center, check_size = (screen_width / 2, 120), 40
+
+        # 添加装饰元素 - 简单的完成图标
+        # 在标题上方绘制一个简单的勾号
+        check_center = (screen_width / 2, 120)
+        check_size = 40
+
+        # 绘制勾号背景圆圈
         pygame.draw.circle(self.screen, ACCENT_COLOR, check_center, check_size)
         pygame.draw.circle(self.screen, TEXT_COLOR, check_center, check_size, 3)
-        check_points = [(check_center[0] - 15, check_center[1]), (check_center[0] - 5, check_center[1] + 10),
-                        (check_center[0] + 15, check_center[1] - 10)]
+
+        # 绘制勾号
+        check_points = [
+            (check_center[0] - 15, check_center[1]),
+            (check_center[0] - 5, check_center[1] + 10),
+            (check_center[0] + 15, check_center[1] - 10)
+        ]
         pygame.draw.lines(self.screen, TEXT_COLOR, False, check_points, 5)
+
         pygame.display.update()
-    # --- display_training_complete_instructions 函数 (省略, 与Atest相同) ---
+
 
 def draw_data(self, screen, data):
     percentages, times = [], []
-    summary_font = pygame.font.Font('font/msyh.ttc', 60)
+    summary_font = pygame.font.Font(get_font_path(), 60)
     import re
     time_pattern, percentage_pattern = re.compile(r'绘图时长：([\d.]+)'), re.compile(r'百分比：([\d.]+)%')
     for line in data:
@@ -645,7 +734,7 @@ def dataloading_1(t1, t2, t3, t4, timestamp1, timestamp2, timestamp3, root_folde
                                             timestamps[i], root_folder, id, participant_folder)
     for post_image in post_images:
         if post_image is not None:
-            deviation_area2(post_image)
+            deviation_area1(post_image)
 
 
 def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
@@ -682,6 +771,7 @@ def calculate_pixel_difference_test(image1, image2, t1, t2, timestamp, root_fold
     with open(output_path, "a", encoding="utf-8") as f:
         f.write(
             f"有效像素: {overlap_pixels}   总像素: {total_pixels}   百分比：{overlap_percentage:.2f}%   绘图时长：{time_diff:.2f} \n")
+
 
 if __name__ == '__main__':
     game = Game()
