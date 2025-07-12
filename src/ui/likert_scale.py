@@ -160,14 +160,13 @@ class LikertScale:
             self.surface.blit(feedback_surface, (0, self.HEIGHT - 80))
             self.surface.blit(feedback_text, feedback_rect)
 
-    def update(self, mouse_pos, mouse_clicked, key_pressed=None):
+    def update(self, mouse_pos, mouse_clicked):
         """
         更新量表状态
 
         Args:
             mouse_pos: 鼠标位置 (相对于整个窗口)
             mouse_clicked: 是否点击了鼠标
-            key_pressed: 按下的键盘按键
 
         Returns:
             选中的分数，如果没有选中则返回 None
@@ -177,30 +176,6 @@ class LikertScale:
             mouse_pos[0] - self.position[0],
             mouse_pos[1] - self.position[1]
         )
-
-        # 检查键盘输入
-        if key_pressed:
-            if key_pressed == pygame.K_1:
-                self.selected_score = 1
-            elif key_pressed == pygame.K_2:
-                self.selected_score = 2
-            elif key_pressed == pygame.K_3:
-                self.selected_score = 3
-            elif key_pressed == pygame.K_4:
-                self.selected_score = 4
-            elif key_pressed == pygame.K_5:
-                self.selected_score = 5
-            elif key_pressed == pygame.K_6:
-                self.selected_score = 6
-            elif key_pressed == pygame.K_7:
-                self.selected_score = 7
-            
-            # 如果有有效的键盘输入，触发动画和回调
-            if self.selected_score is not None:
-                self.animation_alpha = 0
-                self.fade_in = True
-                if self.callback:
-                    self.callback(self.selected_score)
 
         # 检查鼠标点击
         if mouse_clicked:
@@ -227,18 +202,12 @@ class LikertScale:
         self._draw_scale()
         self._draw_selected_score()
         
-        # 添加操作提示
+        # 添加确认按钮提示
         if self.selected_score is not None:
             confirm_font = pygame.font.SysFont('SimHei', 36)
             confirm_text = confirm_font.render("点击任意位置确认选择", True, self.BLUE)
             confirm_rect = confirm_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 20))
             self.surface.blit(confirm_text, confirm_rect)
-        else:
-            # 显示键盘输入提示
-            hint_font = pygame.font.SysFont('SimHei', 32)
-            hint_text = hint_font.render("请点击圆圈或按数字键1-7进行选择", True, self.GRAY)
-            hint_rect = hint_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 20))
-            self.surface.blit(hint_text, hint_rect)
 
         # 绘制到主屏幕
         self.screen.blit(self.surface, self.position)

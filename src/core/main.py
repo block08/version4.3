@@ -490,19 +490,15 @@ class Game:
                     
                     # 处理事件
                     mouse_clicked = False
-                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE: 
-                                pygame.quit()
-                                sys.exit()
-                            else:
-                                key_pressed = event.key
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: 
+                            pygame.quit()
+                            sys.exit()
                     
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
                     
                     pygame.display.flip()
                     self.clock.tick(60)
@@ -802,19 +798,15 @@ class Game:
                     
                     # 处理事件
                     mouse_clicked = False
-                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE: 
-                                pygame.quit()
-                                sys.exit()
-                            else:
-                                key_pressed = event.key
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: 
+                            pygame.quit(); 
+                            sys.exit()
                     
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
                     
                     pygame.display.flip()
                     self.clock.tick(60)
@@ -1123,19 +1115,15 @@ class Game:
                     
                     # 处理事件
                     mouse_clicked = False
-                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE: 
-                                pygame.quit()
-                                sys.exit()
-                            else:
-                                key_pressed = event.key
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: 
+                            pygame.quit(); 
+                            sys.exit()
                     
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked)
                     
                     pygame.display.flip()
                     self.clock.tick(60)
