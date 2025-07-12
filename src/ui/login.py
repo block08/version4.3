@@ -56,46 +56,8 @@ class Ui_MainWindow(object):
 "    border-bottom-right-radius: 25px;\n"
 "}")
         self.right_panel.setObjectName("right_panel")
-        self.close_button = QtWidgets.QPushButton(self.right_panel)
-        self.close_button.setGeometry(QtCore.QRect(540, 15, 30, 30))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
-        self.close_button.setFont(font)
-        self.close_button.setStyleSheet("QPushButton{\n"
-"    border:none;\n"
-"}\n"
-"QPushButton:hover{\n"
-"    padding-bottom:10px\n"
-"\n"
-"}")
-        self.close_button.setText("")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/close.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.close_button.setIcon(icon)
-        self.close_button.setObjectName("close_button")
-        self.minimize_button = QtWidgets.QPushButton(self.right_panel)
-        self.minimize_button.setGeometry(QtCore.QRect(500, 15, 30, 30))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
-        self.minimize_button.setFont(font)
-        self.minimize_button.setStyleSheet("QPushButton{\n"
-"    border:none;\n"
-"}\n"
-"QPushButton:hover{\n"
-"    padding-bottom:10px\n"
-"\n"
-"}")
-        self.minimize_button.setText("")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/minimize (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.minimize_button.setIcon(icon1)
-        self.minimize_button.setObjectName("minimize_button")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(120, 10, 381, 40))
+        self.login_title.setGeometry(QtCore.QRect(110, 50, 381, 40))
         font = QtGui.QFont()
         font.setPointSize(28)
         font.setBold(True)
@@ -108,7 +70,7 @@ class Ui_MainWindow(object):
         self.login_title.setAlignment(QtCore.Qt.AlignCenter)
         self.login_title.setObjectName("login_title")
         self.task_selection_card = QtWidgets.QWidget(self.right_panel)
-        self.task_selection_card.setGeometry(QtCore.QRect(50, 120, 500, 140))
+        self.task_selection_card.setGeometry(QtCore.QRect(50, 120, 500, 160))
         self.task_selection_card.setStyleSheet("QWidget#task_selection_card {\n"
 "    background: white;\n"
 "    border: 2px solid #e1e5e9;\n"
@@ -120,9 +82,9 @@ class Ui_MainWindow(object):
 "}")
         self.task_selection_card.setObjectName("task_selection_card")
         self.task_selection_title = QtWidgets.QLabel(self.task_selection_card)
-        self.task_selection_title.setGeometry(QtCore.QRect(20, 15, 140, 20))
+        self.task_selection_title.setGeometry(QtCore.QRect(20, 20, 350, 40))
         font = QtGui.QFont()
-        font.setPointSize(16)
+        font.setPointSize(18)
         font.setBold(True)
         font.setWeight(75)
         self.task_selection_title.setFont(font)
@@ -133,7 +95,7 @@ class Ui_MainWindow(object):
         self.task_selection_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.task_selection_title.setObjectName("task_selection_title")
         self.task_button_container = QtWidgets.QWidget(self.task_selection_card)
-        self.task_button_container.setGeometry(QtCore.QRect(30, 50, 440, 65))
+        self.task_button_container.setGeometry(QtCore.QRect(20, 65, 460, 85))
         self.task_button_container.setStyleSheet("QWidget {\n"
 "    background: transparent;\n"
 "}")
@@ -207,19 +169,52 @@ class Ui_MainWindow(object):
 "        stop:0 rgba(34, 153, 84, 255), stop:1 rgba(30, 130, 76, 255));\n"
 "}")
         self.final_login_button.setObjectName("final_login_button")
+        self.frame_5 = QtWidgets.QFrame(self.right_panel)
+        self.frame_5.setGeometry(QtCore.QRect(490, 0, 112, 78))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame_5.sizePolicy().hasHeightForWidth())
+        self.frame_5.setSizePolicy(sizePolicy)
+        self.frame_5.setStyleSheet("QPushButton{\n"
+"    border:none;\n"
+"}\n"
+"QPushButton:hover{\n"
+"    padding-bottom:10px\n"
+"\n"
+"}")
+        self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_5.setObjectName("frame_5")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_5)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.minimize_button = QtWidgets.QPushButton(self.frame_5)
+        self.minimize_button.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/minimize (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.minimize_button.setIcon(icon)
+        self.minimize_button.setIconSize(QtCore.QSize(40, 40))
+        self.minimize_button.setObjectName("minimize_button")
+        self.horizontalLayout_3.addWidget(self.minimize_button)
+        self.close_button = QtWidgets.QPushButton(self.frame_5)
+        self.close_button.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/close.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.close_button.setIcon(icon1)
+        self.close_button.setIconSize(QtCore.QSize(40, 40))
+        self.close_button.setObjectName("close_button")
+        self.horizontalLayout_3.addWidget(self.close_button)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.close_button.clicked.connect(MainWindow.close) # type: ignore
-        self.minimize_button.clicked.connect(MainWindow.showMinimized) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "实验系统登录"))
         self.login_title.setText(_translate("MainWindow", "合作行为能力评估软件"))
-        self.task_selection_title.setText(_translate("MainWindow", "任务代号:"))
+        self.task_selection_title.setText(_translate("MainWindow", "任务代号"))
         self.subject_a_icon.setText(_translate("MainWindow", "航天员"))
-        self.subject_a_title.setText(_translate("MainWindow", "佩戴脑电帽的航天员"))
+        self.subject_a_title.setText(_translate("MainWindow", "被测航天员"))
         self.final_login_button.setText(_translate("MainWindow", "登录"))
 from src.utils import resouce_rc

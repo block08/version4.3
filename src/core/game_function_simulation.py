@@ -67,8 +67,8 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
                 try:
                     with open('scroll_value.txt', 'r') as f:
                         current_speed = float(f.read().strip())
-                    # 限制速度范围在50-300之间，每次增加10
-                    new_speed = min(300, current_speed + 10)
+                    # 限制速度范围在50-150之间，每次增加10
+                    new_speed = min(150, current_speed + 10)
                     with open('scroll_value.txt', 'w') as f:
                         f.write(str(int(new_speed)))
                 except (FileNotFoundError, ValueError):
@@ -79,7 +79,7 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
                 try:
                     with open('scroll_value.txt', 'r') as f:
                         current_speed = float(f.read().strip())
-                    # 限制速度范围在50-300之间，每次减少10
+                    # 限制速度范围在50-150之间，每次减少10
                     new_speed = max(50, current_speed - 10)
                     with open('scroll_value.txt', 'w') as f:
                         f.write(str(int(new_speed)))

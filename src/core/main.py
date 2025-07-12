@@ -23,13 +23,21 @@ import os
 from datetime import datetime
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
+def speed_level_to_value(level):
+    """将1-100级别转换为50-150的实际速度值"""
+    return 50 + (level - 1) * (150 - 50) / 99
+
+def speed_value_to_level(value):
+    """将50-150的实际速度值转换为1-100级别"""
+    return int(1 + (value - 50) * 99 / (150 - 50))
+
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
     try:
         with open('scroll_value.txt', 'r') as f:
             speed_value = int(f.read().strip())
             # 确保速度值在合理范围内
-            return max(50, min(300, speed_value))
+            return max(50, min(150, speed_value))
     except (FileNotFoundError, ValueError):
         # 如果文件不存在或值无效，创建默认文件并返回默认值
         with open('scroll_value.txt', 'w') as f:
@@ -88,6 +96,9 @@ class Game:
     def __init__(self):
         # 初始化
         pygame.init()
+        # 初始化速度为1级别（对应速度值50）
+        with open('scroll_value.txt', 'w') as f:
+            f.write('50')
         settings = Settings()
         stats = GameStats(settings)
 
@@ -147,7 +158,7 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 300
+        speed_min, speed_max = 50, 150
         speed_step = 25
         
         # 按钮位置设置
@@ -404,7 +415,7 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (150, 150, 150) if speed_value <= speed_min else (255, 100, 100)
+            minus_color = (150, 150, 150) if speed_value <= speed_min else (100, 149, 237)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
@@ -414,12 +425,13 @@ class Game:
             # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
-            value_text = value_font.render(f"{int(speed_value)}", True, (255, 0, 0))
+            speed_level = speed_value_to_level(speed_value)
+            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
             # 绘制加速按钮
-            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 255, 100)
+            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 149, 237)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
             plus_text = button_font.render("+", True, (0, 0, 0))
@@ -477,7 +489,7 @@ class Game:
                 serial_marker(bytes([0x05]))
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}点击●评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -553,7 +565,7 @@ class Game:
         
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 300
+        speed_min, speed_max = 50, 150
         speed_step = 25
         
         # 按钮位置设置
@@ -724,7 +736,8 @@ class Game:
             # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
-            value_text = value_font.render(f"{int(speed_value)}", True, (255, 0, 0))
+            speed_level = speed_value_to_level(speed_value)
+            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
             
@@ -789,7 +802,7 @@ class Game:
                 serial_marker(bytes([0x05]))
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}点击●评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -803,6 +816,7 @@ class Game:
                     
                     # 处理事件
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
@@ -866,7 +880,7 @@ class Game:
         
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 300
+        speed_min, speed_max = 50, 150
         speed_step = 25
         
         # 按钮位置设置
@@ -1043,7 +1057,8 @@ class Game:
             # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
-            value_text = value_font.render(f"{int(speed_value)}", True, (255, 0, 0))
+            speed_level = speed_value_to_level(speed_value)
+            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
             
@@ -1109,7 +1124,7 @@ class Game:
                 serial_marker(bytes([0x05]))
                 
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}点击●评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -1123,6 +1138,7 @@ class Game:
                     
                     # 处理事件
                     mouse_clicked = False
+                    key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
@@ -1323,297 +1339,273 @@ class Game:
             current_x += surf.get_width()
 
         pygame.display.update()
+
     def display_task_instructions_formatted(self, subject='A'):
         """
         以简化风格动态绘制绘图任务的指导语。
-        【已新增速度调整按钮指导语和示意图】
+        【已按照用户最终指定的顺序重排布局，代码完整无省略】
         """
         # --- 参数定义 ---
-        BG_COLOR = grey
-        TEXT_COLOR = black
-        GREEN_COLOR = green
-        RED = (255, 0, 0)  # 确保红色已定义
-        PROMPT_GREEN_COLOR = green
+        BG_COLOR = (211, 211, 211)
+        TEXT_COLOR = (0, 0, 0)
+        GREEN_COLOR = (0, 255, 0)
+        RED = (255, 0, 0)
+        PROMPT_GREEN_COLOR = (0, 180, 0)
 
         screen_w, screen_h = self.screen.get_size()
         self.screen.fill(BG_COLOR)
 
         # --- 字体加载 ---
         try:
-            title_font = pygame.font.Font(get_font_path(), 65)
-            main_font = pygame.font.Font(get_font_path(), 44)
-            main_font_bold = pygame.font.Font(get_font_path(), 48)
+            font_name = get_font_path()
+            title_font = pygame.font.Font(font_name, 65)
+            main_font = pygame.font.Font(font_name, 44)
+            main_font_bold = pygame.font.Font(font_name, 48)
             main_font_bold.set_bold(True)
-            key_font = pygame.font.Font(get_font_path(), 42)
-            prompt_font = pygame.font.Font(get_font_path(), 50)
-        except IOError:
-            title_font = pygame.font.SysFont(None, 70)
-            main_font = pygame.font.SysFont(None, 45)
-            main_font_bold = pygame.font.SysFont(None, 45, bold=True)
-            key_font = pygame.font.SysFont(None, 40)
-            prompt_font = pygame.font.SysFont(None, 55)
-        user1 = getattr(shared_data, 'user1_mark', None)
-        user2 = getattr(shared_data, 'user2_mark', None)
-        user3 = getattr(shared_data, 'user3_mark', None)
-        # --- 1. 标题 ---
-        if subject == 'A':
-            title_surf = title_font.render(f"{user1}单人绘图任务指导语", True, TEXT_COLOR)
-        elif subject == 'B':
-            title_surf = title_font.render(f"{user2}合作绘图任务指导语", True, TEXT_COLOR)
-        elif subject == 'C':
-            title_surf = title_font.render(f"{user3}合作绘图任务指导语", True, TEXT_COLOR)
-        elif subject == 'AB':
-            title_surf = title_font.render(f"{user1}和{user2}合作绘图任务指导语", True, TEXT_COLOR)
-        else:
-            title_surf = title_font.render(f"{user1}和{user3}合作绘图任务指导语", True, TEXT_COLOR)
-        title_rect = title_surf.get_rect(center=(screen_w / 2, 100))  # 稍微上移标题
-        self.screen.blit(title_surf, title_rect)
+            key_font = pygame.font.Font(font_name, 42)
+            prompt_font = pygame.font.Font(font_name, 50)
+        except (IOError, TypeError):
+            # 如果自定义字体加载失败，则使用系统后备字体
+            title_font = pygame.font.SysFont('sans-serif', 70)
+            main_font = pygame.font.SysFont('sans-serif', 45)
+            main_font_bold = pygame.font.SysFont('sans-serif', 45, bold=True)
+            key_font = pygame.font.SysFont('sans-serif', 40)
+            prompt_font = pygame.font.SysFont('sans-serif', 55)
 
-        # --- 2. 任务描述与操作说明 ---
-        y_pos = 250
-        line_height = 70
+        user1 = getattr(shared_data, 'user1_mark', '用户1')
+        user2 = getattr(shared_data, 'user2_mark', '用户2')
+        user3 = getattr(shared_data, 'user3_mark', '用户3')
 
+        # --- 辅助函数 (完整定义) ---
         def render_composite_line(y, line_def):
+            """渲染由普通文本和按键方框组成的复合行"""
             total_width = 0
+            surfaces = []
             for item in line_def:
                 content, font, part_type = item
                 if part_type == "key":
-                    text_surf = font.render(content, True, black)
-                    total_width += text_surf.get_width() + 16
+                    text_surf = font.render(content, True, (0, 0, 0))
+                    total_width += text_surf.get_width() + 16  # 加上左右内边距
+                    surfaces.append({'type': 'key', 'content': content, 'font': font})
                 else:
-                    total_width += font.size(content)[0]
+                    text_surf = font.render(content, True, TEXT_COLOR)
+                    total_width += text_surf.get_width()
+                    surfaces.append({'type': 'text', 'surf': text_surf})
+
             x_pos = (screen_w - total_width) / 2
-            for item in line_def:
-                content, font, part_type = item
-                if part_type == "key":
-                    temp_surf = font.render(content, True, black)
-                    # 根据draw_key_box的内边距(PADDING_X=8, PADDING_Y=4)来计算方框的真实尺寸
-                    key_rect = pygame.Rect(0, 0, temp_surf.get_width() + 16, temp_surf.get_height() + 8)
-
-                    draw_key_box(self.screen, content, font,
-                                 (x_pos + key_rect.width / 2, y + font.get_height() / 2 - 4))
-                    x_pos += key_rect.width
+            for item in surfaces:
+                if item['type'] == "key":
+                    temp_surf = item['font'].render(item['content'], True, (0, 0, 0))
+                    key_rect_width = temp_surf.get_width() + 16
+                    draw_key_box(self.screen, item['content'], item['font'],
+                                 (x_pos + key_rect_width / 2, y + item['font'].get_height() / 2 - 4))
+                    x_pos += key_rect_width
                 else:
-                    surf = font.render(content, True, TEXT_COLOR)
-                    self.screen.blit(surf, (x_pos, y))
-                    x_pos += surf.get_width()
-
-        user1 = getattr(shared_data, 'user1_mark', None)
-        user2 = getattr(shared_data, 'user2_mark', None)
-        user3 = getattr(shared_data, 'user3_mark', None)
-        if subject == 'A':
-            parts1 = [
-                (f"{user1}航天员控制键盘沿", main_font, TEXT_COLOR),
-                ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                ("从", main_font, TEXT_COLOR),
-                ("绿色起点", main_font_bold, TEXT_COLOR),
-                ("移至", main_font, TEXT_COLOR),
-                ("红色终点", main_font_bold, TEXT_COLOR)
-            ]
-        elif subject == 'B':
-            parts1 = [
-                (f"{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
-                ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                ("从", main_font, TEXT_COLOR),
-                ("绿色起点", main_font_bold, TEXT_COLOR),
-                ("移至", main_font, TEXT_COLOR),
-                ("红色终点", main_font_bold, TEXT_COLOR)
-            ]
-        elif subject == 'C':
-            parts1 = [
-                (f"{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
-                ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                ("从", main_font, TEXT_COLOR),
-                ("绿色起点", main_font_bold, TEXT_COLOR),
-                ("移至", main_font, TEXT_COLOR),
-                ("红色终点", main_font_bold, TEXT_COLOR)
-            ]
-        elif subject == 'AB':
-            parts1 = [
-                (f"{user1}和{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
-                ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                ("从", main_font, TEXT_COLOR),
-                ("绿色起点", main_font_bold, TEXT_COLOR),
-                ("移至", main_font, TEXT_COLOR),
-                ("红色终点", main_font_bold, TEXT_COLOR)
-            ]
-        else:
-            parts1 = [
-                (f"{user1}和{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
-                ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                ("从", main_font, TEXT_COLOR),
-                ("绿色起点", main_font_bold, TEXT_COLOR),
-                ("移至", main_font, TEXT_COLOR),
-                ("红色终点", main_font_bold, TEXT_COLOR)
-            ]
+                    self.screen.blit(item['surf'], (x_pos, y))
+                    x_pos += item['surf'].get_width()
 
         def render_line(parts, x, y):
+            """渲染带有粗体和下划线的文本行"""
             for text, font, color in parts:
                 surf = font.render(text, True, color)
                 self.screen.blit(surf, (x, y))
-                # 为粗体文字添加下划线
                 if font == main_font_bold:
                     pygame.draw.line(self.screen, color, (x, y + surf.get_height() - 2),
                                      (x + surf.get_width(), y + surf.get_height() - 2), 2)
                 x += surf.get_width()
 
-        render_line(parts1, (screen_w - sum(f.render(t, True, c).get_width() for t, f, c in parts1)) / 2, y_pos)
+        # --- 布局绘制开始 ---
+        y_pos = 160
+        line_height = 65
 
-        y_pos += line_height * 1.2
-        user1 = getattr(shared_data, 'user1_mark', None)
-        user2 = getattr(shared_data, 'user2_mark', None)
-        user3 = getattr(shared_data, 'user3_mark', None)
-
+        # =================================================================
+        # 步骤 1: 标题
+        # =================================================================
         if subject == 'A':
-            role_text = f"{user1}绘图，{user2}&{user3}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_def = [(f"{user1}:使用 ", main_font, "text"), ("W", key_font, "key"), (" 控制上, ", main_font, "text"),
-                        ("A", key_font, "key"), (" 控制左, ", main_font, "text"), ("S", key_font, "key"),
-                        (" 控制下, ", main_font, "text"), ("D", key_font, "key"), (" 控制右。", main_font, "text")]
-            render_composite_line(y_pos, line_def)
+            title_text = f"{user1}单人绘图任务指导语"
         elif subject == 'B':
-            role_text = f"{user2}绘图，{user1}&{user3}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_def = [(f"{user2}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
-                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
-                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
-            render_composite_line(y_pos, line_def)
+            title_text = f"{user2}单人绘图任务指导语"
         elif subject == 'C':
-            role_text = f"{user3}绘图，{user1}&{user2}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_def = [(f"{user3}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
-                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
-                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
-            render_composite_line(y_pos, line_def)
-        elif subject == 'AB':  # 人员①+②协作
-            role_text = f"{user1}&{user2}绘图，{user3}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line3_text = "本轮为合作任务："
-            line3_surf = main_font.render(line3_text, True, TEXT_COLOR)
-            self.screen.blit(line3_surf, ((screen_w - line3_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_A = [(f"{user1}: ", main_font, "text"), ("A", key_font, "key"), ("(左) ", main_font, "text"),
-                      ("D", key_font, "key"), ("(右)", main_font, "text"), (f"{user2}: ", main_font, "text"),
-                      ("↑", key_font, "key"), ("(上) ", main_font, "text"),
-                      ("↓", key_font, "key"), ("(下) ", main_font, "text")]
-            render_composite_line(y_pos, line_A)
-
+            title_text = f"{user3}单人绘图任务指导语"
+        elif subject == 'AB':
+            title_text = f"{user1}和{user2}合作绘图任务指导语"
         else:  # AC
-            role_text = f"{user1}&{user3}绘图，{user2}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line3_text = "本轮为合作任务："
-            line3_surf = main_font.render(line3_text, True, TEXT_COLOR)
-            self.screen.blit(line3_surf, ((screen_w - line3_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_A = [(f"{user1}: ", main_font, "text"), ("A", key_font, "key"), ("(左) ", main_font, "text"),
-                      ("D", key_font, "key"), ("(右)", main_font, "text"), (f"{user3}: ", main_font, "text"),
-                      ("↑", key_font, "key"), ("(上) ", main_font, "text"),
-                      ("↓", key_font, "key"), ("(下) ", main_font, "text")]
-            render_composite_line(y_pos, line_A)
+            title_text = f"{user1}和{user3}合作绘图任务指导语"
 
-        y_pos += line_height * 1.5
+        title_surf = title_font.render(title_text, True, TEXT_COLOR)
+        title_rect = title_surf.get_rect(center=(screen_w / 2, 80))
+        self.screen.blit(title_surf, title_rect)
 
-        # --- 3.【新增】速度调整按钮指导语 ---
-        button_text = [("您还可以通过键盘上的: ", main_font, "text"), ("+", key_font, "key"), (" -", key_font, "key"),
-                       ("按钮来调整绘图速度", main_font, "text")]
+        # =================================================================
+        # 步骤 2: 指明操作者
+        # =================================================================
+        if subject == 'A':
+            role_text = f"请{user1}绘图，{user2}和{user3}休息"
+        elif subject == 'B':
+            role_text = f"请{user2}绘图，{user1}和{user3}休息"
+        elif subject == 'C':
+            role_text = f"请{user3}绘图，{user1}和{user2}休息"
+        elif subject == 'AB':
+            role_text = f"请{user1}和{user2}绘图，{user3}休息"
+        else:  # AC
+            role_text = f"请{user1}和{user3}绘图，{user2}休息"
 
-        render_composite_line(y_pos, button_text)
+        role_surf = main_font.render(role_text, True, TEXT_COLOR)
+        role_rect = role_surf.get_rect(center=(screen_w / 2, y_pos))
+        self.screen.blit(role_surf, role_rect)
+        y_pos += line_height
 
-        y_pos += line_height * 1.2
+        # =================================================================
+        # 步骤 3: 任务描述
+        # =================================================================
+        if subject == 'A':
+            parts1 = [(f"{user1}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
+                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
+        elif subject == 'B':
+            parts1 = [(f"{user2}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
+                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
+        elif subject == 'C':
+            parts1 = [(f"{user3}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
+                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
+                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
+        elif subject == 'AB':
+            parts1 = [(f"{user1}和{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
+                      ("黑色轨迹", main_font_bold, TEXT_COLOR), ("从", main_font, TEXT_COLOR),
+                      ("绿色起点", main_font_bold, TEXT_COLOR), ("移至", main_font, TEXT_COLOR),
+                      ("红色终点", main_font_bold, TEXT_COLOR)]
+        else:  # AC
+            parts1 = [(f"{user1}和{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
+                      ("黑色轨迹", main_font_bold, TEXT_COLOR), ("从", main_font, TEXT_COLOR),
+                      ("绿色起点", main_font_bold, TEXT_COLOR), ("移至", main_font, TEXT_COLOR),
+                      ("红色终点", main_font_bold, TEXT_COLOR)]
 
-        # --- 4.【新增】速度调整按钮示意图 ---
-        diagram_bg_rect = pygame.Rect(0, 0, 400, 100)
-        diagram_bg_rect.center = (screen_w / 2, y_pos)
+        total_width_parts1 = sum(f.render(t, True, c).get_width() for t, f, c in parts1)
+        render_line(parts1, (screen_w - total_width_parts1) / 2, y_pos)
+        y_pos += line_height + 20
 
-        # 绘制速度标签
-        speed_label_surf = main_font.render("速度:", True, TEXT_COLOR)
-        label_rect = speed_label_surf.get_rect(right=diagram_bg_rect.centerx - 80, centery=diagram_bg_rect.centery)
-        self.screen.blit(speed_label_surf, label_rect)
-
-        # 绘制减速按钮示意图
-        minus_demo_rect = pygame.Rect(0, 0, 50, 50)
-        minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (255, 100, 100), minus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (100, 100, 100), minus_demo_rect, 2, border_radius=5)
-        minus_text = main_font.render("-", True, TEXT_COLOR)
-        minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
-        self.screen.blit(minus_text, minus_text_rect)
-
-        # 绘制数值显示示意图
-        value_demo_rect = pygame.Rect(0, 0, 50, 50)
-        value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
-        pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
-        value_text = main_font.render("50", True, RED)
-        value_text_rect = value_text.get_rect(center=value_demo_rect.center)
-        self.screen.blit(value_text, value_text_rect)
-
-        # 绘制加速按钮示意图
-        plus_demo_rect = pygame.Rect(0, 0, 50, 50)
-        plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (100, 255, 100), plus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (100, 100, 100), plus_demo_rect, 2, border_radius=5)
-        plus_text = main_font.render("+", True, TEXT_COLOR)
-        plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
-        self.screen.blit(plus_text, plus_text_rect)
-
-        y_pos += line_height * 1.2
-
-        # --- 5. 任务流程图 ---
-        diagram_y = y_pos  # 使流程图位置动态适应上方内容
+        # =================================================================
+        # 步骤 4: 任务流程图
+        # =================================================================
+        diagram_y = y_pos
         steps = ["任务开始", "沿轨迹绘图", "到达终点"]
-        num_steps = len(steps)
-        box_w, box_h = 220, 100  # 调整了框体高度
+        box_w, box_h = 220, 100
         gap = 80
-        total_width = num_steps * box_w + (num_steps - 1) * gap
-        start_x = (screen_w - total_width) / 2
-
+        total_width_diagram = len(steps) * box_w + (len(steps) - 1) * gap
+        start_x = (screen_w - total_width_diagram) / 2
         for i, step_text in enumerate(steps):
             box_x = start_x + i * (box_w + gap)
             box_rect = pygame.Rect(box_x, diagram_y, box_w, box_h)
             pygame.draw.rect(self.screen, (200, 200, 200), box_rect, border_radius=10)
-            pygame.draw.rect(self.screen, black, box_rect, 2, border_radius=10)
-
+            pygame.draw.rect(self.screen, TEXT_COLOR, box_rect, 2, border_radius=10)
             if i == 0:
                 pygame.draw.rect(self.screen, GREEN_COLOR, (box_rect.centerx - 15, box_rect.centery - 15, 30, 30))
             elif i == 1:
                 path_points = [(box_rect.left + 30, box_rect.centery + 15), (box_rect.centerx, box_rect.centery - 15),
                                (box_rect.right - 30, box_rect.centery + 15)]
-                pygame.draw.lines(self.screen, black, False, path_points, 4)
+                pygame.draw.lines(self.screen, TEXT_COLOR, False, path_points, 4)
             else:
                 pygame.draw.rect(self.screen, RED, (box_rect.centerx - 15, box_rect.centery - 15, 30, 30))
-
             label_surf = main_font.render(step_text, True, TEXT_COLOR)
-            label_rect = label_surf.get_rect(center=(box_rect.centerx, box_rect.bottom + 30))  # 调整了标签位置
+            label_rect = label_surf.get_rect(center=(box_rect.centerx, box_rect.bottom + 30))
             self.screen.blit(label_surf, label_rect)
-
-            if i < num_steps - 1:
+            if i < len(steps) - 1:
                 arrow_start = (box_rect.right + 10, box_rect.centery)
                 arrow_end = (box_rect.right + gap - 10, box_rect.centery)
                 pygame.draw.line(self.screen, TEXT_COLOR, arrow_start, arrow_end, 4)
                 pygame.draw.polygon(self.screen, TEXT_COLOR,
                                     [(arrow_end[0], arrow_end[1]), (arrow_end[0] - 15, arrow_end[1] - 8),
                                      (arrow_end[0] - 15, arrow_end[1] + 8)])
+        y_pos += box_h + 80
 
-        # --- 6. 底部提示 ---
+        # =================================================================
+        # 步骤 5: 每个人的分工
+        # =================================================================
+        if subject in ['AB', 'AC']:
+            line3_surf = main_font.render("本轮为合作任务：", True, TEXT_COLOR)
+            line3_rect = line3_surf.get_rect(center=(screen_w / 2, y_pos))
+            self.screen.blit(line3_surf, line3_rect)
+            y_pos += line_height
+
+        if subject == 'A':
+            line_def = [(f"请{user1}:使用 ", main_font, "text"), ("W", key_font, "key"),
+                        (" 控制上, ", main_font, "text"), ("A", key_font, "key"), (" 控制左, ", main_font, "text"),
+                        ("S", key_font, "key"), (" 控制下, ", main_font, "text"), ("D", key_font, "key"),
+                        (" 控制右。", main_font, "text")]
+        elif subject == 'B':
+            line_def = [(f"请{user2}:使用 ", main_font, "text"), ("↑", key_font, "key"),
+                        (" 控制上, ", main_font, "text"), ("←", key_font, "key"), (" 控制左, ", main_font, "text"),
+                        ("↓", key_font, "key"), (" 控制下, ", main_font, "text"), ("→", key_font, "key"),
+                        (" 控制右。", main_font, "text")]
+        elif subject == 'C':
+            line_def = [(f"请{user3}:使用 ", main_font, "text"), ("↑", key_font, "key"),
+                        (" 控制上, ", main_font, "text"), ("←", key_font, "key"), (" 控制左, ", main_font, "text"),
+                        ("↓", key_font, "key"), (" 控制下, ", main_font, "text"), ("→", key_font, "key"),
+                        (" 控制右。", main_font, "text")]
+        elif subject == 'AB':
+            line_def = [(f"请{user1}: 使用", main_font, "text"), ("A", key_font, "key"), ("控制左 ", main_font, "text"),
+                        ("D", key_font, "key"), ("控制右", main_font, "text"), (f"，请{user2}:使用 ", main_font, "text"),
+                        ("↑", key_font, "key"), ("控制上 ", main_font, "text"), ("↓", key_font, "key"),
+                        ("控制下。", main_font, "text")]
+        else:  # AC
+            line_def = [(f"请{user1}: 使用", main_font, "text"), ("A", key_font, "key"), ("控制左 ", main_font, "text"),
+                        ("D", key_font, "key"), ("控制右", main_font, "text"), (f"，请{user3}:使用 ", main_font, "text"),
+                        ("↑", key_font, "key"), ("控制上 ", main_font, "text"), ("↓", key_font, "key"),
+                        ("控制下。", main_font, "text")]
+
+        render_composite_line(y_pos, line_def)
+        y_pos += line_height + 20
+
+        # =================================================================
+        # 步骤 6: 速度调整
+        # =================================================================
+        button_text = [("您还可以通过键盘上的: ", main_font, "text"), (" -", key_font, "key"), ("+", key_font, "key"),
+                       ("按钮来调整绘图速度", main_font, "text")]
+        render_composite_line(y_pos, button_text)
+        y_pos += line_height + 50
+        # 速度调整示意图
+        diagram_bg_rect = pygame.Rect(0, 0, 500, 100)
+        diagram_bg_rect.center = (screen_w / 2, y_pos)
+        speed_label_surf = main_font.render("速度:", True, TEXT_COLOR)
+        label_rect = speed_label_surf.get_rect(center=(diagram_bg_rect.centerx - 160, diagram_bg_rect.centery))
+        self.screen.blit(speed_label_surf, label_rect)
+
+        minus_demo_rect = pygame.Rect(0, 0, 50, 50)
+        minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
+        pygame.draw.rect(self.screen, (100, 149, 237), minus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (100, 100, 100), minus_demo_rect, 2, border_radius=5)
+        minus_text = main_font.render("-", True, TEXT_COLOR)
+        minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
+        self.screen.blit(minus_text, minus_text_rect)
+
+        value_demo_rect = pygame.Rect(0, 0, 50, 50)
+        value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
+        pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
+        pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
+        value_text = main_font.render("1", True, RED)
+        value_text_rect = value_text.get_rect(center=value_demo_rect.center)
+        self.screen.blit(value_text, value_text_rect)
+
+        plus_demo_rect = pygame.Rect(0, 0, 50, 50)
+        plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
+        pygame.draw.rect(self.screen, (100, 149, 237), plus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (100, 100, 100), plus_demo_rect, 2, border_radius=5)
+        plus_text = main_font.render("+", True, TEXT_COLOR)
+        plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
+        self.screen.blit(plus_text, plus_text_rect)
+
+        # =================================================================
+        # 步骤 7: 底部提示
+        # =================================================================
         prompt_parts = [("准备好后，请按 ", prompt_font, TEXT_COLOR), ("空格键", prompt_font, PROMPT_GREEN_COLOR),
                         (" 开始实验", prompt_font, TEXT_COLOR)]
         total_prompt_width = sum(f.render(t, True, c).get_width() for t, f, c in prompt_parts)
         current_x = (screen_w - total_prompt_width) / 2
-
+        prompt_y_pos = screen_h - 100
         for text, font, color in prompt_parts:
             surf = font.render(text, True, color)
-            prompt_rect = surf.get_rect(left=current_x, centery=screen_h - 100)
+            prompt_rect = surf.get_rect(left=current_x, centery=prompt_y_pos)
             self.screen.blit(surf, prompt_rect)
             current_x += surf.get_width()
 
