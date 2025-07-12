@@ -477,15 +477,6 @@ class Game:
                         ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
                         (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
             render_composite_line(y_pos, line_def)
-        elif subject == 'C':
-            role_text = f"{user3}绘图，{user1}&{user2}休息"
-            role_surf = main_font.render(role_text, True, TEXT_COLOR)
-            self.screen.blit(role_surf, ((screen_w - role_surf.get_width()) / 2, y_pos))
-            y_pos += line_height
-            line_def = [(f"{user3}使用 ", main_font, "text"), ("↑", key_font, "key"), (" 控制上, ", main_font, "text"),
-                        ("←", key_font, "key"), (" 控制左, ", main_font, "text"), ("↓", key_font, "key"),
-                        (" 控制下, ", main_font, "text"), ("→", key_font, "key"), (" 控制右, ", main_font, "text")]
-            render_composite_line(y_pos, line_def)
         elif subject == 'AB':  # 人员①+②协作
             role_text = f"{user1}&{user2}绘图，{user3}休息"
             role_surf = main_font.render(role_text, True, TEXT_COLOR)
