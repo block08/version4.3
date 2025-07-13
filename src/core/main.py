@@ -1238,18 +1238,20 @@ class Game:
         screen_height = self.screen.get_height()
 
         try:
-            title_font = pygame.font.Font(get_font_path(), 68)
-            header_font = pygame.font.Font(get_font_path(), 38)
-            main_font = pygame.font.Font(get_font_path(), 44)
-            sub_font = pygame.font.Font(get_font_path(), 30)
+            title_font = pygame.font.Font(get_font_path(), 72)  # 增大标题字体
+            header_font = pygame.font.Font(get_font_path(), 42)  # 增大头部字体
+            main_font = pygame.font.Font(get_font_path(), 48)    # 增大主字体
+            sub_font = pygame.font.Font(get_font_path(), 34)     # 增大子字体
+            desc_font = pygame.font.Font(get_font_path(), 48)    # 新增描述字体
             prompt_font = pygame.font.Font(get_font_path(), 68)
             key_info_font = pygame.font.Font(get_font_path(), 60)
         except IOError:
             # Fallback to default system font if 'msyh.ttc' is not found
-            title_font = pygame.font.SysFont(None, 70)
-            header_font = pygame.font.SysFont(None, 40)
-            main_font = pygame.font.SysFont(None, 50)
-            sub_font = pygame.font.SysFont(None, 35)
+            title_font = pygame.font.SysFont(None, 75)
+            header_font = pygame.font.SysFont(None, 45)
+            main_font = pygame.font.SysFont(None, 55)
+            sub_font = pygame.font.SysFont(None, 40)
+            desc_font = pygame.font.SysFont(None, 40)
             prompt_font = pygame.font.SysFont(None, 50)
             key_info_font = pygame.font.SysFont(None, 30)
 
@@ -1257,8 +1259,15 @@ class Game:
 
         # --- Title ---
         title_surf = title_font.render("实验流程", True, TEXT_COLOR)
-        title_rect = title_surf.get_rect(center=(screen_width / 2, 120))
+        title_rect = title_surf.get_rect(center=(screen_width / 2, 80))
         self.screen.blit(title_surf, title_rect)
+        
+        # --- 添加流程图描述 ---
+        desc_text = "本实验包含5个阶段，按顺序依次进行，每个阶段都有明确的时间限制和任务要求"
+        desc_surf = desc_font.render(desc_text, True, TEXT_COLOR)
+        desc_rect = desc_surf.get_rect(center=(screen_width / 2, 140))
+        self.screen.blit(desc_surf, desc_rect)
+        
         user1 = getattr(shared_data, 'user1_mark', None)
         user2 = getattr(shared_data, 'user2_mark', None)
         user3 = getattr(shared_data, 'user3_mark', None)
@@ -1273,11 +1282,11 @@ class Game:
         ]
 
         # --- Layout Calculations for Centering the Flowchart ---
-        box_width, box_height = 300, 180  # Slightly reduced width to fit 5 boxes
-        box_gap = 50  # Reduced gap
+        box_width, box_height = 340, 220  # 增大流程图方框尺寸
+        box_gap = 60  # 增大间距
         total_width = len(flow_steps) * box_width + (len(flow_steps) - 1) * box_gap
         start_x = (screen_width - total_width) / 2
-        y_pos = screen_height / 2 - box_height / 2 + 10
+        y_pos = screen_height / 2 - box_height / 2 + 30  # 向下调整位置
 
         # --- Drawing Flowchart Boxes and Arrows ---
         box_rects = []
@@ -1291,7 +1300,7 @@ class Game:
 
             # Render and position the text inside the box
             header_surf = header_font.render(step["header"], True, TEXT_COLOR)
-            header_rect = header_surf.get_rect(center=(rect.centerx, rect.top + 45))
+            header_rect = header_surf.get_rect(center=(rect.centerx, rect.top + 50))
             self.screen.blit(header_surf, header_rect)
 
             main_surf = main_font.render(step["main"], True, TEXT_COLOR)
@@ -1299,21 +1308,31 @@ class Game:
             self.screen.blit(main_surf, main_rect)
 
             sub_surf = sub_font.render(step["sub"], True, TEXT_COLOR)
-            sub_rect = sub_surf.get_rect(center=(rect.centerx, rect.bottom - 40))
+            sub_rect = sub_surf.get_rect(center=(rect.centerx, rect.bottom - 45))
             self.screen.blit(sub_surf, sub_rect)
 
-        # Draw connecting arrows
+        # Draw connecting arrows (修复箭头白色小正方体问题 - 确保线条和箭头头部完美对齐)
         for i in range(len(box_rects) - 1):
             start_point = box_rects[i].midright
             end_point = box_rects[i + 1].midleft
-            line_start = (start_point[0] + 10, start_point[1])  # Adjusted for new gap
-            line_end = (end_point[0] - 10, end_point[1])  # Adjusted for new gap
-            pygame.draw.line(self.screen, ARROW_COLOR, line_start, line_end, 5)
-            # Arrowhead
-            pygame.draw.polygon(self.screen, ARROW_COLOR,
-                                [(line_end[0], line_end[1]),
-                                 (line_end[0] - 20, line_end[1] - 10),
-                                 (line_end[0] - 20, line_end[1] + 10)])
+            
+            # 计算箭头参数
+            arrow_size = 20
+            line_start = (start_point[0] + 15, start_point[1])
+            # 箭头线条的终点要与箭头头部的后端对齐
+            line_end = (end_point[0] - 15 - arrow_size, end_point[1])
+            arrow_tip = (end_point[0] - 15, end_point[1])  # 箭头尖端
+            
+            # 绘制箭头线条 (从起点到箭头后端)
+            pygame.draw.line(self.screen, ARROW_COLOR, line_start, line_end, 6)
+            
+            # 绘制箭头头部三角形 (确保与线条无缝连接)
+            arrow_points = [
+                arrow_tip,                                             # 箭头尖端
+                (line_end[0], line_end[1] - arrow_size//2),           # 左上角 (与线条终点对齐)
+                (line_end[0], line_end[1] + arrow_size//2)            # 左下角 (与线条终点对齐)
+            ]
+            pygame.draw.polygon(self.screen, ARROW_COLOR, arrow_points)
 
         # --- Bottom Prompt and Key Information ---
         # This part remains the same but is positioned lower.

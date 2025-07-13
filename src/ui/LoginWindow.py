@@ -237,7 +237,7 @@ class EllipseUserButton(QPushButton):
         self.subject_type = subject_type
         self.selected = False
         self.setFixedSize(130, 60)
-        self.setFont(QFont("Arial", 20, QFont.Bold))
+        self.setFont(QFont("Microsoft YaHei", 20, QFont.Bold))
         self.update_style()
         self.clicked.connect(self.toggle_selection)
 
@@ -310,43 +310,51 @@ class LoginWindow(QMainWindow):
         # 连接关闭和缩小按钮
         self.ui.close_button.clicked.connect(self.close_application)
         self.ui.minimize_button.clicked.connect(self.minimize_window)
-    
+
     def create_task_buttons(self):
         """创建任务编号选择按钮"""
         layout = QHBoxLayout(self.ui.task_button_container)
-        layout.setSpacing(20)
+        layout.setSpacing(8)
+        # 将边距设为0，让布局完全控制空间
         layout.setContentsMargins(0, 0, 0, 0)
-        
+
         tasks = ["SZ-21", "SZ-22", "SZ-23"]
+
+        # 在最开始添加一个弹性空间
+        layout.addStretch()
+
         for task in tasks:
             button = QPushButton(task)
-            button.setFixedSize(130, 40)
-            button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            button.setFixedSize(130, 60)
+            button.setFont(QFont("Microsoft YaHei", 20, QFont.Bold))
+            # 3. & 4. 修改样式表，包括圆角和选中时的颜色
             button.setStyleSheet("""
-                QPushButton {
-                    background-color: #f8f9fa;
-                    color: #333;
-                    border: 3px solid #e1e5e9;
-                    border-radius: 20px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    border: 3px solid #2ecc71;
-                    background-color: #e8f5e8;
-                }
-                QPushButton:checked {
-                    background-color: #2ecc71;
-                    color: white;
-                    border: 3px solid #27ae60;
-                }
-            """)
+                            QPushButton {
+                                background-color: #f8f9fa;
+                                color: #333;
+                                border: 2px solid #e1e5e9; /* 边框改为2px以匹配用户按钮 */
+                                border-radius: 30px;     /* 圆角改为30px以形成药丸形状 */
+                                font-weight: bold;
+                            }
+                            QPushButton:hover {
+                                border: 2px solid #4c63d2; /* 悬停颜色可以统一为A类型的蓝色 */
+                            }
+                            QPushButton:checked {
+                                /* 使用A类型用户按钮的蓝紫色渐变背景 */
+                                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(102, 126, 234, 255), stop:1 rgba(118, 75, 162, 255));
+                                color: white;
+                                border: 2px solid #4c63d2; /* 边框颜色也与A类型匹配 */
+                            }
+                        """)
             button.setCheckable(True)
             button.clicked.connect(lambda checked, task_name=task: self.on_task_selected(task_name))
             self.task_buttons.append(button)
+
+            # 添加按钮
             layout.addWidget(button)
-        
-        layout.addStretch()
-    
+            # 每添加一个按钮后，都添加一个弹性空间
+            layout.addStretch()
+
     def on_task_selected(self, task_name):
         """处理任务选择"""
         for button in self.task_buttons:
@@ -378,22 +386,27 @@ class LoginWindow(QMainWindow):
             container = self.ui.subject_a_ellipse_container
             button_list = self.subject_a_buttons
 
-        layout = QGridLayout(container)
+        layout = QHBoxLayout(container)
         layout.setSpacing(8)
-        layout.setContentsMargins(5, 5, 5, 5)
-        buttons_per_row = 4
-        
-        # 只显示航天员编号：01, 02, 03
+        # 将边距设为0，让布局完全控制空间
+        layout.setContentsMargins(0, 0, 0, 0)
+
         astronaut_users = [user for user in users if user[3] in ['SZ21-01', 'SZ21-02', 'SZ21-03']]
-        
-        for i, (user_id, gender, hand_preference, mark) in enumerate(astronaut_users):
-            # 只显示编号部分，去掉SZ21-前缀
+
+        # 在最开始添加一个弹性空间
+        layout.addStretch()
+
+        for user_id, gender, hand_preference, mark in astronaut_users:
             display_mark = mark.replace('SZ21-', '')
             button = EllipseUserButton(user_id, gender, hand_preference, display_mark, subject_type, container)
-            button.original_mark = mark  # 保存原始标识
+            button.original_mark = mark
             button_list.append(button)
-            row, col = i // buttons_per_row, i % buttons_per_row
-            layout.addWidget(button, row, col)
+
+            # 添加按钮
+            layout.addWidget(button)
+            # 每添加一个按钮后，都添加一个弹性空间
+            layout.addStretch()
+
             button.clicked.connect(lambda checked, btn=button, st=subject_type: self.on_user_selected(btn, st))
 
     def on_user_selected(self, selected_button, subject_type):

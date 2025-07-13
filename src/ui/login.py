@@ -57,11 +57,12 @@ class Ui_MainWindow(object):
 "}")
         self.right_panel.setObjectName("right_panel")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(110, 50, 381, 40))
+        self.login_title.setGeometry(QtCore.QRect(110, 30, 381, 51))
         font = QtGui.QFont()
+        font.setFamily("Microsoft YaHei UI")
         font.setPointSize(28)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setWeight(50)
         self.login_title.setFont(font)
         self.login_title.setStyleSheet("QLabel {\n"
 "    color: #333;\n"
@@ -70,7 +71,7 @@ class Ui_MainWindow(object):
         self.login_title.setAlignment(QtCore.Qt.AlignCenter)
         self.login_title.setObjectName("login_title")
         self.task_selection_card = QtWidgets.QWidget(self.right_panel)
-        self.task_selection_card.setGeometry(QtCore.QRect(50, 120, 500, 160))
+        self.task_selection_card.setGeometry(QtCore.QRect(50, 120, 481, 160))
         self.task_selection_card.setStyleSheet("QWidget#task_selection_card {\n"
 "    background: white;\n"
 "    border: 2px solid #e1e5e9;\n"
@@ -84,6 +85,7 @@ class Ui_MainWindow(object):
         self.task_selection_title = QtWidgets.QLabel(self.task_selection_card)
         self.task_selection_title.setGeometry(QtCore.QRect(20, 20, 350, 40))
         font = QtGui.QFont()
+        font.setFamily("Microsoft YaHei UI")
         font.setPointSize(18)
         font.setBold(True)
         font.setWeight(75)
@@ -95,13 +97,13 @@ class Ui_MainWindow(object):
         self.task_selection_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.task_selection_title.setObjectName("task_selection_title")
         self.task_button_container = QtWidgets.QWidget(self.task_selection_card)
-        self.task_button_container.setGeometry(QtCore.QRect(20, 65, 460, 85))
+        self.task_button_container.setGeometry(QtCore.QRect(20, 65, 441, 85))
         self.task_button_container.setStyleSheet("QWidget {\n"
 "    background: transparent;\n"
 "}")
         self.task_button_container.setObjectName("task_button_container")
         self.subject_a_card = QtWidgets.QWidget(self.right_panel)
-        self.subject_a_card.setGeometry(QtCore.QRect(50, 300, 500, 160))
+        self.subject_a_card.setGeometry(QtCore.QRect(50, 300, 481, 160))
         self.subject_a_card.setStyleSheet("QWidget#subject_a_card {\n"
 "    background: white;\n"
 "    border: 2px solid #e1e5e9;\n"
@@ -130,6 +132,7 @@ class Ui_MainWindow(object):
         self.subject_a_title = QtWidgets.QLabel(self.subject_a_card)
         self.subject_a_title.setGeometry(QtCore.QRect(20, 20, 350, 40))
         font = QtGui.QFont()
+        font.setFamily("Microsoft YaHei UI")
         font.setPointSize(18)
         font.setBold(True)
         font.setWeight(75)
@@ -141,7 +144,7 @@ class Ui_MainWindow(object):
         self.subject_a_title.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.subject_a_title.setObjectName("subject_a_title")
         self.subject_a_ellipse_container = QtWidgets.QWidget(self.subject_a_card)
-        self.subject_a_ellipse_container.setGeometry(QtCore.QRect(20, 65, 460, 85))
+        self.subject_a_ellipse_container.setGeometry(QtCore.QRect(20, 65, 441, 85))
         self.subject_a_ellipse_container.setStyleSheet("QWidget {\n"
 "    background: transparent;\n"
 "}")
@@ -212,7 +215,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "实验系统登录"))
-        self.login_title.setText(_translate("MainWindow", "合作行为能力评估软件"))
+        self.login_title.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">合作行为能力评估软件</span></p></body></html>"))
         self.task_selection_title.setText(_translate("MainWindow", "任务代号"))
         self.subject_a_icon.setText(_translate("MainWindow", "航天员"))
         self.subject_a_title.setText(_translate("MainWindow", "被测航天员"))
