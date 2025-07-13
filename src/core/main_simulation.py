@@ -59,7 +59,7 @@ def handle_image_navigation(game_drawing, numbers, current_index, self, action="
 dots_time = []
 green = (50, 128, 50)
 black = (0, 0, 0)
-grey = (211, 211, 211)
+grey = (230, 230, 230)
 RED = (255, 0, 0)
 
 # 存储三组被试数据的全局变量
@@ -1219,14 +1219,11 @@ class Game:
     def display_flowchart_instructions(self):
         """以流程图的形式显示实验指导语"""
         # --- Colors and Fonts Initialization ---
-        BG_COLOR = (128, 128, 128)
+        BG_COLOR = (230, 230, 230)
         BOX_COLOR = (160, 160, 160)
         TEXT_COLOR = (0, 0, 0)
-        ARROW_COLOR = (255, 255, 255)
-        PROMPT_COLOR = (255, 255, 255)
-        TITLE_COLOR = (255, 255, 255)
+        ARROW_COLOR = (160, 160, 160)
         GREEN_COLOR = green
-        DESC_COLOR = (220, 220, 220)  # 描述文字颜色
 
         screen_width = self.screen.get_width()
         screen_height = self.screen.get_height()
@@ -1234,9 +1231,9 @@ class Game:
         try:
             title_font = pygame.font.Font(get_font_path(), 72)  # 增大标题字体
             header_font = pygame.font.Font(get_font_path(), 42)  # 增大头部字体
-            main_font = pygame.font.Font(get_font_path(), 48)    # 增大主字体
-            sub_font = pygame.font.Font(get_font_path(), 34)     # 增大子字体
-            desc_font = pygame.font.Font(get_font_path(), 36)    # 新增描述字体
+            main_font = pygame.font.Font(get_font_path(), 48)  # 增大主字体
+            sub_font = pygame.font.Font(get_font_path(), 34)  # 增大子字体
+            desc_font = pygame.font.Font(get_font_path(), 48)  # 新增描述字体
             prompt_font = pygame.font.Font(get_font_path(), 68)
             key_info_font = pygame.font.Font(get_font_path(), 60)
         except IOError:
@@ -1255,13 +1252,13 @@ class Game:
         title_surf = title_font.render("实验流程", True, TEXT_COLOR)
         title_rect = title_surf.get_rect(center=(screen_width / 2, 80))
         self.screen.blit(title_surf, title_rect)
-        
+
         # --- 添加流程图描述 ---
         desc_text = "本实验包含5个阶段，按顺序依次进行，每个阶段都有明确的时间限制和任务要求"
-        desc_surf = desc_font.render(desc_text, True, DESC_COLOR)
+        desc_surf = desc_font.render(desc_text, True, TEXT_COLOR)
         desc_rect = desc_surf.get_rect(center=(screen_width / 2, 140))
         self.screen.blit(desc_surf, desc_rect)
-        
+
         user1 = getattr(shared_data, 'user1_mark', None)
         user2 = getattr(shared_data, 'user2_mark', None)
         user3 = getattr(shared_data, 'user3_mark', None)
@@ -1276,7 +1273,7 @@ class Game:
         ]
 
         # --- Layout Calculations for Centering the Flowchart ---
-        box_width, box_height = 360, 220  # 增大流程图方框尺寸
+        box_width, box_height = 340, 220  # 增大流程图方框尺寸
         box_gap = 60  # 增大间距
         total_width = len(flow_steps) * box_width + (len(flow_steps) - 1) * box_gap
         start_x = (screen_width - total_width) / 2
@@ -1309,22 +1306,22 @@ class Game:
         for i in range(len(box_rects) - 1):
             start_point = box_rects[i].midright
             end_point = box_rects[i + 1].midleft
-            
+
             # 计算箭头参数
             arrow_size = 20
             line_start = (start_point[0] + 15, start_point[1])
             # 箭头线条的终点要与箭头头部的后端对齐
             line_end = (end_point[0] - 15 - arrow_size, end_point[1])
             arrow_tip = (end_point[0] - 15, end_point[1])  # 箭头尖端
-            
+
             # 绘制箭头线条 (从起点到箭头后端)
             pygame.draw.line(self.screen, ARROW_COLOR, line_start, line_end, 6)
-            
+
             # 绘制箭头头部三角形 (确保与线条无缝连接)
             arrow_points = [
-                arrow_tip,                                             # 箭头尖端
-                (line_end[0], line_end[1] - arrow_size//2),           # 左上角 (与线条终点对齐)
-                (line_end[0], line_end[1] + arrow_size//2)            # 左下角 (与线条终点对齐)
+                arrow_tip,  # 箭头尖端
+                (line_end[0], line_end[1] - arrow_size // 2),  # 左上角 (与线条终点对齐)
+                (line_end[0], line_end[1] + arrow_size // 2)  # 左下角 (与线条终点对齐)
             ]
             pygame.draw.polygon(self.screen, ARROW_COLOR, arrow_points)
 
@@ -1359,7 +1356,7 @@ class Game:
         【已按照用户最终指定的顺序重排布局，代码完整无省略】
         """
         # --- 参数定义 ---
-        BG_COLOR = (211, 211, 211)
+        BG_COLOR = (230, 230, 230)
         TEXT_COLOR = (0, 0, 0)
         GREEN_COLOR = (0, 255, 0)
         RED = (255, 0, 0)

@@ -55,7 +55,7 @@ def handle_image_navigation(game_drawing, numbers, current_index, self, action="
 dots_time = []
 green = (50, 128, 50)
 black = (0, 0, 0)
-grey = (211, 211, 211)
+grey = (230, 230, 230)
 RED = (255, 0, 0)
 
 # 存储三组被试数据的全局变量
@@ -1226,12 +1226,10 @@ class Game:
     def display_flowchart_instructions(self):
         """以流程图的形式显示实验指导语"""
         # --- Colors and Fonts Initialization ---
-        BG_COLOR = (128, 128, 128)
+        BG_COLOR = (230, 230, 230)
         BOX_COLOR = (160, 160, 160)
         TEXT_COLOR = (0, 0, 0)
-        ARROW_COLOR = (255, 255, 255)
-        PROMPT_COLOR = (255, 255, 255)
-        TITLE_COLOR = (255, 255, 255)
+        ARROW_COLOR = (160, 160, 160)
         GREEN_COLOR = green
 
         screen_width = self.screen.get_width()
@@ -1365,7 +1363,7 @@ class Game:
         【已按照用户最终指定的顺序重排布局，代码完整无省略】
         """
         # --- 参数定义 ---
-        BG_COLOR = (211, 211, 211)
+        BG_COLOR = (230, 230, 230)
         TEXT_COLOR = (0, 0, 0)
         GREEN_COLOR = (0, 255, 0)
         RED = (255, 0, 0)

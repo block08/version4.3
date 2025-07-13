@@ -8,7 +8,7 @@ class LikertScale:
             screen: pygame.Surface,  # 传入现有的屏幕对象
             question: str,
             position: tuple = (0, 0),  # 量表在屏幕上的位置
-            size: tuple = (800, 400),  # 量表的大小
+            size: tuple = (1200, 600),  # 量表的大小
             callback: Optional[Callable[[int], None]] = None,
             highlight_user: str = None  # 需要高亮显示的用户名
     ):
@@ -16,10 +16,10 @@ class LikertScale:
         self.position = position
         self.WIDTH, self.HEIGHT = size
 
-        # 颜色定义
-        self.WHITE = (144, 144, 144)
+        # 颜色定义likert
+        self.WHITE = (211, 211, 211)
         self.BLACK = (0, 0, 0)
-        self.GRAY = (144, 144, 144)
+        self.GRAY = (211, 211, 211)
         self.BLUE = (0, 123, 255)
 
         # 创建量表的surface
@@ -27,15 +27,15 @@ class LikertScale:
         self.surface.fill(self.WHITE)
 
         # 设置字体
-        self.font = pygame.font.SysFont('SimHei', 48)
-        self.small_font = pygame.font.SysFont('SimHei', 55)
+        self.font = pygame.font.SysFont('SimHei', 60)
+        self.small_font = pygame.font.SysFont('SimHei', 48)
 
         # 量表设置
         self.SCALE_LENGTH = int(self.WIDTH * 0.75)
         self.SCALE_Y = self.HEIGHT // 2
         self.SCALE_START_X = (self.WIDTH - self.SCALE_LENGTH) // 2
-        self.CIRCLE_RADIUS = 15
-        self.SELECTED_CIRCLE_RADIUS = 20
+        self.CIRCLE_RADIUS = 25
+        self.SELECTED_CIRCLE_RADIUS = 35
 
         # 问题文本和回调
         self.question = question
@@ -66,9 +66,15 @@ class LikertScale:
     def _init_points(self):
         """初始化点的位置"""
         self.points = []
+        # 增加间距，留出更多空间分隔各级别
         spacing = self.SCALE_LENGTH // (len(self.LEVELS) - 1)
+        # 为了更好的分隔，可以增加一些额外的间距
+        extra_spacing = 20
+        total_extra = extra_spacing * (len(self.LEVELS) - 1)
+        adjusted_spacing = (self.SCALE_LENGTH - total_extra) // (len(self.LEVELS) - 1)
+        
         for i in range(len(self.LEVELS)):
-            x = self.SCALE_START_X + (i * spacing)
+            x = self.SCALE_START_X + (i * (adjusted_spacing + extra_spacing))
             self.points.append({
                 "x": x,
                 "y": self.SCALE_Y,
@@ -96,12 +102,12 @@ class LikertScale:
 
             # 绘制分数
             score_text = self.font.render(str(point["level"]["score"]), True, self.BLACK)
-            score_rect = score_text.get_rect(center=(point["x"], point["y"] - 30))
+            score_rect = score_text.get_rect(center=(point["x"], point["y"] - 50))
             self.surface.blit(score_text, score_rect)
 
             # 绘制标签
             label_text = self.small_font.render(point["level"]["label"], True, self.BLACK)
-            label_rect = label_text.get_rect(center=(point["x"], point["y"] + 30))
+            label_rect = label_text.get_rect(center=(point["x"], point["y"] + 50))
             self.surface.blit(label_text, label_rect)
 
     def _draw_question(self):
@@ -111,11 +117,11 @@ class LikertScale:
             parts = self.question.split(self.highlight_user)
             if len(parts) >= 2:
                 # 创建粗体字体用于用户名
-                bold_font = pygame.font.SysFont('SimHei', 48, bold=True)
+                bold_font = pygame.font.SysFont('SimHei', 60, bold=True)
 
                 # 渲染各部分
                 part1_text = self.font.render(parts[0], True, self.BLACK)
-                user_text = bold_font.render(self.highlight_user, True, (255, 0, 0))  # 红色粗体
+                user_text = bold_font.render(self.highlight_user, True, (0, 0, 0))
                 part2_text = self.font.render(parts[1], True, self.BLACK)
 
                 # 计算总宽度以居中显示
@@ -207,7 +213,7 @@ class LikertScale:
             for point in self.points:
                 distance = ((point["x"] - local_mouse_pos[0]) ** 2 +
                             (point["y"] - local_mouse_pos[1]) ** 2) ** 0.5
-                if distance < self.CIRCLE_RADIUS:
+                if distance < self.SELECTED_CIRCLE_RADIUS:
                     self.selected_score = point["level"]["score"]
                     self.animation_alpha = 0
                     self.fade_in = True
@@ -236,7 +242,7 @@ class LikertScale:
         else:
             # 显示键盘输入提示
             hint_font = pygame.font.SysFont('SimHei', 32)
-            hint_text = hint_font.render("请点击圆圈或按数字键1-7进行选择", True, self.GRAY)
+            hint_text = hint_font.render("请按下键盘数字键1-7进行选择", True, self.GRAY)
             hint_rect = hint_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 20))
             self.surface.blit(hint_text, hint_rect)
 

@@ -46,7 +46,7 @@ IS_TRAINING_MODE = True
 dots_time = []
 green = (50, 128, 50)
 black = (0, 0, 0)
-grey = (211, 211, 211)
+grey = (230, 230, 230)
 RED = (255, 0, 0)
 
 

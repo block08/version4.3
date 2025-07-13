@@ -243,19 +243,11 @@ class EllipseUserButton(QPushButton):
 
     def update_style(self):
         if self.selected:
-            if self.subject_type == "A":
-                bg_color = "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(102, 126, 234, 255), stop:1 rgba(118, 75, 162, 255))"
-                border_color = "#4c63d2"
-                hover_color = "#4c63d2"
-            elif self.subject_type == "B":
-                bg_color = "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(240, 147, 251, 255), stop:1 rgba(245, 87, 108, 255))"
-                border_color = "#f093fb"
-                hover_color = "#f093fb"
-            else:  # subject_type == "C"
-                bg_color = "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(230, 126, 34, 255), stop:1 rgba(211, 84, 0, 255))"
-                border_color = "#e67e22"
-                hover_color = "#e67e22"
-            text_color = "white"
+            bg_color = "#D3D3D3"      # <-- 选中时的背景色 (浅灰色)
+            border_color = "#b0b0b0" # <-- 选中时的边框色 (稍深一点的灰色)
+            hover_color = "#C0C0C0"  # <-- 选中时悬停的颜色 (更亮的灰色)
+            text_color = "black"        # <-- 选中时的文字颜色 (黑色)
+
         else:
             bg_color = "#f8f9fa"
             text_color = "#333"
@@ -340,10 +332,10 @@ class LoginWindow(QMainWindow):
                                 border: 2px solid #4c63d2; /* 悬停颜色可以统一为A类型的蓝色 */
                             }
                             QPushButton:checked {
-                                /* 使用A类型用户按钮的蓝紫色渐变背景 */
-                                background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(102, 126, 234, 255), stop:1 rgba(118, 75, 162, 255));
-                                color: white;
-                                border: 2px solid #4c63d2; /* 边框颜色也与A类型匹配 */
+                                /* --- 在这里修改选中颜色为浅灰色 --- */
+                                background-color: #D3D3D3; /* <-- 选中时的背景色 (浅灰色) */
+                                color: black;             /* <-- 选中时的文字颜色 (黑色) */
+                                border: 2px solid #b0b0b0; /* <-- 选中时的边框色 (稍深一点的灰色) */
                             }
                         """)
             button.setCheckable(True)
