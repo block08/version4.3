@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DataWidget</class>
+ <widget class="QWidget" name="DataWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>470</width>
+    <height>308</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DataWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget{
+background-color: #f8f8f8;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="styleSheet">
+        <string notr="true"> QLineEdit {
+                border: 1px solid #dcdfe6;
+                border-radius: 4px;
+                padding: 8px 12px;
+                font-size: 14px;
+                min-width: 200px;
+                selection-background-color: #42b983;
+            }
+            QLineEdit:focus {
+                border: 1px solid #42b983;
+                box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+            }
+            QLineEdit:hover {
+                border-color: #c0c4cc;
+            }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+				image: url(:/image/search.png);
+				background-color:#00aaff;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                font-size: 14px;
+                min-width: 30px;
+				max-width:30px;
+				min-height:18px;
+		
+            }
+            QPushButton:hover {
+                background-color: #35a371;
+            }
+            QPushButton:pressed {
+                background-color: #2d8f62;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+            }</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableView" name="tableView">
+     <property name="styleSheet">
+      <string notr="true">QTableView {
+                background-color: white;
+                border: 1px solid #dcdfe6;
+                border-radius: 4px;
+                gridline-color: #ebeef5;
+                font-size: 14px;
+            }
+            
+            /* 表头样式 */
+            QHeaderView::section {
+                background-color: #f5f7fa;
+                color: #606266;
+                height: 40px;
+                border: none;
+                border-bottom: 1px solid #dcdfe6;
+                font-weight: bold;
+            }
+            
+            /* 行样式 */
+            QTableView::item {
+                padding: 8px 12px;
+                border-bottom: 1px solid #ebeef5;
+            }
+            
+            /* 选中行样式 */
+            QTableView::item:selected {
+                background-color: #ecf5ff;
+                color: #409eff;
+            }
+            
+            /* 悬停行样式 */
+            QTableView::item:hover {
+                background-color: #f5f7fa;
+            }
+            
+            /* 交替行颜色 */
+            QTableView::item:nth-child(even) {
+                background-color: #fafafa;
+            }
+        &quot;&quot;&quot;)
+</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

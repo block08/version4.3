@@ -270,7 +270,7 @@ class EllipseUserButton(QPushButton):
         if hasattr(self.parent(), 'on_user_selected'):
             self.parent().on_user_selected(self)
 
-
+from .mainwindow import MainWindow
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -279,7 +279,8 @@ class LoginWindow(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.interface_win = Interfacewindow()
+        # self.interface_win = Interfacewindow()
+        self.interface_win = MainWindow()
         self.login_handler = LoginInfoHandler()
         self.selected_subject_a = None
         self.selected_subject_b = None
