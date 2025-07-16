@@ -19,12 +19,12 @@ import os
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
 def speed_level_to_value(level):
-    """将1-100级别转换为50-150的实际速度值"""
-    return 50 + (level - 1) * (150 - 50) / 99
+    """将1-100级别转换为1-100的实际速度值"""
+    return level
 
 def speed_value_to_level(value):
-    """将50-150的实际速度值转换为1-100级别"""
-    return int(1 + (value - 50) * 99 / (150 - 50))
+    """将1-100的实际速度值转换为1-100级别"""
+    return int(value)
 
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
@@ -32,7 +32,7 @@ def read_speed_value():
         with open('scroll_value.txt', 'r') as f:
             speed_value = int(f.read().strip())
             # 确保速度值在合理范围内
-            return max(50, min(150, speed_value))
+            return max(1, min(100, speed_value))
     except (FileNotFoundError, ValueError):
         # 如果文件不存在或值无效，创建默认文件并返回默认值
         with open('scroll_value.txt', 'w') as f:
@@ -121,8 +121,11 @@ class Game:
             f.truncate(0)
             f.write('3')
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 150
-        speed_step = 25
+        speed_min, speed_max = 0, 100
+        speed_step = 10
+        
+        # 按钮状态用于长按功能
+        button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
         button_y = 30
@@ -141,7 +144,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
-                    sys.exit()
+                    return
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     waiting_for_space = False
             self.clock.tick(60)
@@ -185,16 +188,9 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
-                elif event.type == pygame.MOUSEMOTION:  # 处理鼠标移动
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
-                elif event.type == pygame.MOUSEBUTTONDOWN:  # 处理鼠标点击
-                    current_time = pygame.time.get_ticks()
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
+                                                      speed_value, speed_step, button_states)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
                     elif event.key == pygame.K_p:
@@ -214,6 +210,10 @@ class Game:
                     if event.key == pygame.K_SPACE and not paused:
                         action_pending = True
 
+            # 处理长按（即使没有事件也要检查）
+            speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                              speed_value, speed_step, button_states)
+
             # --- 2. 绘制所有UI和游戏内容 ---
             # 速度调整按钮设置
 
@@ -227,7 +227,7 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (150, 150, 150) if speed_value <= speed_min else (100, 149, 237)
+            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
@@ -243,7 +243,7 @@ class Game:
             self.screen.blit(value_text, value_text_rect)
 
             # 绘制加速按钮
-            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 149, 237)
+            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
             plus_text = button_font.render("+", True, (0, 0, 0))
@@ -344,16 +344,12 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
-                    sys.exit()
+                    return
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     wait = False
             self.clock.tick(60)
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                    pygame.quit()
-                    sys.exit()
-            self.clock.tick(60)
+        pygame.quit()
+        return
 
     def display_task_instructions_formatted(self, subject='A'):
         """
@@ -361,7 +357,7 @@ class Game:
         【已按照用户最终指定的顺序重排布局，代码完整无省略】
         """
         # --- 参数定义 ---
-        BG_COLOR = (211, 211, 211)
+        BG_COLOR = (230, 230, 230)
         TEXT_COLOR = (0, 0, 0)
         GREEN_COLOR = (0, 255, 0)
         RED = (255, 0, 0)
@@ -588,7 +584,7 @@ class Game:
 
         minus_demo_rect = pygame.Rect(0, 0, 50, 50)
         minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (100, 149, 237), minus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (150, 150, 150), minus_demo_rect, border_radius=5)
         pygame.draw.rect(self.screen, (100, 100, 100), minus_demo_rect, 2, border_radius=5)
         minus_text = main_font.render("-", True, TEXT_COLOR)
         minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
@@ -598,13 +594,13 @@ class Game:
         value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
         pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
         pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
-        value_text = main_font.render("1", True, RED)
+        value_text = main_font.render("50", True, RED)
         value_text_rect = value_text.get_rect(center=value_demo_rect.center)
         self.screen.blit(value_text, value_text_rect)
 
         plus_demo_rect = pygame.Rect(0, 0, 50, 50)
         plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (100, 149, 237), plus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (150, 150, 150), plus_demo_rect, border_radius=5)
         pygame.draw.rect(self.screen, (100, 100, 100), plus_demo_rect, 2, border_radius=5)
         plus_text = main_font.render("+", True, TEXT_COLOR)
         plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
@@ -628,7 +624,7 @@ class Game:
 
     def display_training_complete_instructions(self):
         """显示实验结束画面，保持与整体风格一致"""
-        BG_COLOR = (128, 128, 128)  # 与其他界面保持一致的灰色背景
+        BG_COLOR = (230, 230, 230)  # 与其他界面保持一致的灰色背景
         BOX_COLOR = (144, 197, 114)  # 与流程图相同的绿色框
         TEXT_COLOR = (0, 0, 0)
         ACCENT_COLOR = (144, 238, 144)  # 浅绿色强调

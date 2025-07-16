@@ -16,6 +16,7 @@ from src.ui.InterfaceWindow import Interfacewindow
 from src.data.login_info_handler import LoginInfoHandler, create_experiment_structure
 from src.ui import InterfaceUI  # 确保导入了主窗口UI
 
+
 class CustomDialog(QDialog):
     """
     完全自定义的对话框，用于替代QMessageBox，以实现更好的布局控制和样式。
@@ -116,7 +117,7 @@ class CustomDialog(QDialog):
             parent_rect = self.parent().geometry()
             parent_center = parent_rect.center()
             x = parent_center.x() - self.width() // 2
-            y = parent_center.y() - self.height() // 2   # 向上偏移50像素
+            y = parent_center.y() - self.height() // 2  # 向上偏移50像素
             self.move(x, y)
 
     @staticmethod
@@ -128,9 +129,7 @@ class CustomDialog(QDialog):
     def ask_question(parent, icon_type, title, text, font_size=22):
         dialog = CustomDialog(parent, icon_type, title, text, font_size, button_type='yes_no')
         return dialog.exec_()
-    
 
-    
     @staticmethod
     def show_login_success(parent, icon_type, title, text, font_size=28, callback=None):
         """显示登录成功确认对话框"""
@@ -139,7 +138,7 @@ class CustomDialog(QDialog):
         dialog.setFixedSize(700, 350)
         dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
-        
+
         # 创建主容器框架
         main_frame = QFrame(dialog)
         main_frame.setGeometry(0, 0, 700, 350)
@@ -150,17 +149,17 @@ class CustomDialog(QDialog):
                 border: 2px solid #555;
             }
         """)
-        
+
         # 在主框架内创建布局
         main_layout = QVBoxLayout(main_frame)
         main_layout.setContentsMargins(25, 25, 25, 25)
         main_layout.setSpacing(20)
         main_layout.addStretch(1)
-        
+
         # 内容区域（图标 + 文字）
         content_layout = QHBoxLayout()
         content_layout.setSpacing(20)
-        
+
         # 图标
         icon_label = QLabel()
         icon_label.setFixedSize(64, 64)
@@ -168,7 +167,7 @@ class CustomDialog(QDialog):
         icon_label.setPixmap(icon_pixmap)
         icon_label.setStyleSheet("border: none;")
         content_layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
-        
+
         # 文字
         text_label = QLabel(text)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
@@ -176,14 +175,14 @@ class CustomDialog(QDialog):
         text_label.setAlignment(Qt.AlignVCenter)
         text_label.setStyleSheet("border: none; color: black;")
         content_layout.addWidget(text_label, 1)
-        
+
         main_layout.addLayout(content_layout)
         main_layout.addStretch(1)
-        
+
         # 按钮区域
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        
+
         # 进入主界面按钮
         enter_button = QPushButton("进入主界面")
         enter_button.setFixedSize(140, 50)
@@ -195,7 +194,7 @@ class CustomDialog(QDialog):
         """)
         enter_button.clicked.connect(dialog.accept)
         button_layout.addWidget(enter_button)
-        
+
         # 取消按钮
         cancel_button = QPushButton("取消")
         cancel_button.setFixedSize(140, 50)
@@ -207,11 +206,11 @@ class CustomDialog(QDialog):
         """)
         cancel_button.clicked.connect(dialog.reject)
         button_layout.addWidget(cancel_button)
-        
+
         button_layout.addStretch()
         main_layout.addLayout(button_layout)
         main_layout.addStretch(1)
-        
+
         # 居中显示
         if parent:
             parent_rect = parent.geometry()
@@ -219,15 +218,17 @@ class CustomDialog(QDialog):
             x = parent_center.x() - dialog.width() // 2
             y = parent_center.y() - dialog.height() // 2
             dialog.move(x, y)
-        
+
         result = dialog.exec_()
-        
+
         # 只有在用户点击"进入主界面"时才执行回调
         if result == QDialog.Accepted and callback:
             callback()
 
+
 class EllipseUserButton(QPushButton):
     """自定义椭圆形用户按钮"""
+
     def __init__(self, user_id, gender, hand_preference, mark, subject_type="A", parent=None):
         super().__init__(parent)
         self.user_id = user_id
@@ -243,16 +244,17 @@ class EllipseUserButton(QPushButton):
 
     def update_style(self):
         if self.selected:
-            bg_color = "#D3D3D3"      # <-- 选中时的背景色 (浅灰色)
-            border_color = "#b0b0b0" # <-- 选中时的边框色 (稍深一点的灰色)
+            bg_color = "#D3D3D3"  # <-- 选中时的背景色 (浅灰色)
+            border_color = "#b0b0b0"  # <-- 选中时的边框色 (稍深一点的灰色)
             hover_color = "#C0C0C0"  # <-- 选中时悬停的颜色 (更亮的灰色)
-            text_color = "black"        # <-- 选中时的文字颜色 (黑色)
+            text_color = "black"  # <-- 选中时的文字颜色 (黑色)
 
         else:
             bg_color = "#f8f9fa"
             text_color = "#333"
             border_color = "#e1e5e9"
-            hover_color = "#e67e22" if self.subject_type == "C" else ("#4c63d2" if self.subject_type == "A" else "#f093fb")
+            hover_color = "#e67e22" if self.subject_type == "C" else (
+                "#4c63d2" if self.subject_type == "A" else "#f093fb")
         self.setStyleSheet(f"""
             QPushButton {{
                 background: {bg_color}; color: {text_color}; border: 2px solid {border_color};
@@ -270,7 +272,7 @@ class EllipseUserButton(QPushButton):
         if hasattr(self.parent(), 'on_user_selected'):
             self.parent().on_user_selected(self)
 
-from .mainwindow import MainWindow
+
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -279,8 +281,7 @@ class LoginWindow(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        # self.interface_win = Interfacewindow()
-        self.interface_win = MainWindow()
+        self.interface_win = Interfacewindow()
         self.login_handler = LoginInfoHandler()
         self.selected_subject_a = None
         self.selected_subject_b = None
@@ -433,7 +434,7 @@ class LoginWindow(QMainWindow):
                 self.selected_subject_b = None
             else:  # subject_type == "C"
                 self.selected_subject_c = None
-    
+
     def auto_select_assistants(self, primary_mark):
         """根据主航天员自动选择副航天员"""
         try:
@@ -443,13 +444,13 @@ class LoginWindow(QMainWindow):
             cursor = conn.cursor()
             cursor.execute("SELECT id, 性别, 惯用手, 标识 FROM user")
             users = cursor.fetchall()
-            
+
             # 获取所有航天员
             astronauts = [user for user in users if user[3] in ['SZ21-01', 'SZ21-02', 'SZ21-03']]
-            
+
             # 找到副航天员（除了主航天员之外的两个）
             assistants = [user for user in astronauts if user[3] != primary_mark]
-            
+
             if len(assistants) >= 2:
                 # 选择第一个作为副航天员②
                 self.selected_subject_b = {
@@ -485,12 +486,14 @@ class LoginWindow(QMainWindow):
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "系统错误：副航天员未自动选择")
             return
         # 检查三个人员不能是同一人
-        selected_marks = [self.selected_subject_a['mark'], self.selected_subject_b['mark'], self.selected_subject_c['mark']]
+        selected_marks = [self.selected_subject_a['mark'], self.selected_subject_b['mark'],
+                          self.selected_subject_c['mark']]
         if len(set(selected_marks)) != 3:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "三个人员不能是同一人")
             return
 
-        if self.validate_user(self.selected_subject_a) and self.validate_user(self.selected_subject_b) and self.validate_user(self.selected_subject_c):
+        if self.validate_user(self.selected_subject_a) and self.validate_user(
+                self.selected_subject_b) and self.validate_user(self.selected_subject_c):
             self.save_subjects_info()
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
             create_experiment_structure(
@@ -512,7 +515,7 @@ class LoginWindow(QMainWindow):
                             f"任务编号: {self.selected_task}\n"
                             f"被测航天员: {self.selected_subject_a['mark'].replace('SZ21-', '')} \n"
                             f"辅助航天员: {self.selected_subject_b['mark'].replace('SZ21-', '')} 和 {self.selected_subject_c['mark'].replace('SZ21-', '')}\n"
-                       )
+                            )
 
             # 显示登录成功确认对话框
             CustomDialog.show_login_success(self, QStyle.SP_MessageBoxInformation, "登录成功", success_text,
@@ -523,37 +526,37 @@ class LoginWindow(QMainWindow):
         self._transitioning = True  # 标记为正常切换
         self.close()
         self.interface_win.show()
-    
+
     def close_application(self):
         """处理关闭按钮点击事件"""
         if self._closing:
             return
         self._closing = True
-        
+
         reply = CustomDialog.ask_question(
             self,
             QStyle.SP_MessageBoxQuestion,
             "确认退出",
             "您确定要退出登录界面吗？"
         )
-        
+
         if reply == QDialog.Accepted:
             print("登录界面已退出。")
             QApplication.quit()  # 直接退出应用程序
         else:
             self._closing = False
-    
+
     def minimize_window(self):
         """处理缩小按钮点击事件"""
         self.showMinimized()
-    
+
     def closeEvent(self, event):
         """重写关闭事件，添加二次确认"""
         # 如果是正常切换或已经在关闭过程中，直接接受
         if self._transitioning or self._closing:
             event.accept()
             return
-            
+
         self._closing = True
         reply = CustomDialog.ask_question(
             self,
@@ -561,7 +564,7 @@ class LoginWindow(QMainWindow):
             "确认退出",
             "您确定要退出登录界面吗？"
         )
-        
+
         if reply == QDialog.Accepted:
             print("登录界面已退出。")
             event.accept()
@@ -603,13 +606,16 @@ class LoginWindow(QMainWindow):
                 self.login_handler.set_subject3_info(self.selected_subject_c['id'], self.selected_subject_c['gender'],
                                                      self.selected_subject_c['hand_preference'],
                                                      self.selected_subject_c['mark'])
-            shared_data.user1_id, shared_data.user1_gender, shared_data.user1_hand = self.selected_subject_a['id'], self.selected_subject_a['gender'], self.selected_subject_a['hand_preference']
+            shared_data.user1_id, shared_data.user1_gender, shared_data.user1_hand = self.selected_subject_a['id'], \
+            self.selected_subject_a['gender'], self.selected_subject_a['hand_preference']
             shared_data.user1_mark = self.selected_subject_a['mark'].replace('SZ21-', '')
-            shared_data.user2_id, shared_data.user2_gender, shared_data.user2_hand = self.selected_subject_b['id'], self.selected_subject_b['gender'], self.selected_subject_b['hand_preference']
+            shared_data.user2_id, shared_data.user2_gender, shared_data.user2_hand = self.selected_subject_b['id'], \
+            self.selected_subject_b['gender'], self.selected_subject_b['hand_preference']
             shared_data.user2_mark = self.selected_subject_b['mark'].replace('SZ21-', '')
             # 增加人员③的共享数据
             if hasattr(shared_data, 'user3_id'):
-                shared_data.user3_id, shared_data.user3_gender, shared_data.user3_hand = self.selected_subject_c['id'], self.selected_subject_c['gender'], self.selected_subject_c['hand_preference']
+                shared_data.user3_id, shared_data.user3_gender, shared_data.user3_hand = self.selected_subject_c['id'], \
+                self.selected_subject_c['gender'], self.selected_subject_c['hand_preference']
                 shared_data.user3_mark = self.selected_subject_c['mark'].replace('SZ21-', '')
             timestamp = time.strftime('%m-%d %H:%M')
             self.save_to_database(self.selected_subject_a, timestamp)
@@ -655,10 +661,11 @@ class LoginWindow(QMainWindow):
 if __name__ == '__main__':
     import os
     import sys
+
     # 添加项目根目录到Python路径
     project_root = os.path.join(os.path.dirname(__file__), '..', '..')
     sys.path.insert(0, project_root)
-    
+
     ti = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     behavioral_data_path = os.path.join(project_root, 'Behavioral_data', 'name.txt')
     with open(behavioral_data_path, "w") as file:

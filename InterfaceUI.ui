@@ -126,7 +126,7 @@ font: 20pt &quot;微软雅黑&quot;;</string>
               <string>user</string>
              </property>
              <property name="icon">
-              <iconset resource="resouce.qrc">
+              <iconset>
                <normaloff>:/icons/icons/地球.png</normaloff>:/icons/icons/地球.png</iconset>
              </property>
              <property name="iconSize">
@@ -165,7 +165,7 @@ font: 20pt &quot;微软雅黑&quot;;</string>
              <property name="font">
               <font>
                <family>微软雅黑</family>
-               <pointsize>35</pointsize>
+               <pointsize>28</pointsize>
                <weight>50</weight>
                <italic>false</italic>
                <bold>false</bold>
@@ -538,10 +538,63 @@ QPushButton:pressed{
 }</string>
              </property>
              <property name="currentIndex">
-              <number>5</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="page_home">
-              <layout class="QVBoxLayout" name="verticalLayout_4"/>
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <item>
+                <widget class="QFrame" name="frame_12">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <widget class="QFrame" name="frame_13">
+                  <property name="geometry">
+                   <rect>
+                    <x>140</x>
+                    <y>640</y>
+                    <width>851</width>
+                    <height>80</height>
+                   </rect>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <widget class="QLabel" name="label_input_method_reminder">
+                   <property name="geometry">
+                    <rect>
+                     <x>20</x>
+                     <y>10</y>
+                     <width>800</width>
+                     <height>60</height>
+                    </rect>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">QLabel{
+    border: 2px solid rgb(255, 165, 0);
+    border-radius: 10px;
+    background-color: rgb(255, 248, 220);
+    color: rgb(255, 140, 0);
+    font: bold 25pt &quot;微软雅黑&quot;;
+    padding: 10px;
+}</string>
+                   </property>
+                   <property name="text">
+                    <string>⚠️提醒：请确保切换到英文输入法</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </widget>
+                </widget>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="page_exercise">
               <widget class="QLabel" name="label_2">
@@ -1222,32 +1275,6 @@ QPushButton:hover{
               </widget>
              </widget>
              <widget class="QWidget" name="page_serial">
-              <widget class="QLabel" name="label_input_method_reminder">
-               <property name="geometry">
-                <rect>
-                 <x>200</x>
-                 <y>10</y>
-                 <width>800</width>
-                 <height>60</height>
-                </rect>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QLabel{
-    border: 2px solid rgb(255, 165, 0);
-    border-radius: 10px;
-    background-color: rgb(255, 248, 220);
-    color: rgb(255, 140, 0);
-    font: bold 25pt &quot;微软雅黑&quot;;
-    padding: 10px;
-}</string>
-               </property>
-               <property name="text">
-                <string>⚠️提醒：请确保切换到英文输入法</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
               <widget class="QFrame" name="frame_8">
                <property name="geometry">
                 <rect>

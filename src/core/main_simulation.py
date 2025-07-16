@@ -26,12 +26,15 @@ from src.utils.font_utils import get_font_path
 
 
 def speed_level_to_value(level):
-    """将1-100级别转换为50-150的实际速度值"""
-    return 50 + (level - 1) * (150 - 50) / 99
+    """将1-100级别转换为1-100的实际速度值"""
+    return level
+
 
 def speed_value_to_level(value):
-    """将50-150的实际速度值转换为1-100级别"""
-    return int(1 + (value - 50) * 99 / (150 - 50))
+    """将1-100的实际速度值转换为1-100级别"""
+    return int(value)
+
+
 
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
@@ -39,7 +42,7 @@ def read_speed_value():
         with open('scroll_value.txt', 'r') as f:
             speed_value = int(f.read().strip())
             # 确保速度值在合理范围内
-            return max(50, min(150, speed_value))
+            return max(1, min(100, speed_value))
     except (FileNotFoundError, ValueError):
         # 如果文件不存在或值无效，创建默认文件并返回默认值
         with open('scroll_value.txt', 'w') as f:
@@ -97,9 +100,11 @@ def draw_key_box(screen, text, font, center_pos):
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, stop_event=None):
+        print("=== Game类初始化中 ===")
         # 初始化
         pygame.init()
+        self.stop_event = stop_event
         # 初始化速度为1级别（对应速度值50）
         with open('scroll_value.txt', 'w') as f:
             f.write('50')
@@ -147,6 +152,7 @@ class Game:
         game_drawing = GameDrawing()
 
 
+
         t1, t2, t3, t4, t5, t6, t7, t8, t9 = [None] * 9
         timestamp1, timestamp2, timestamp3, timestamp4, timestamp5, timestamp6, timestamp7, timestamp8 = [None] * 8
         with open('config.txt', 'w') as f:
@@ -155,8 +161,11 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 150
-        speed_step = 25
+        speed_min, speed_max = 0, 100
+        speed_step = 10
+        
+        # 按钮状态用于长按功能
+        button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
         button_y = 30
@@ -215,6 +224,11 @@ class Game:
         pause_start_time = 0
         total_pause_time = 0
         while running:
+            # 检查停止信号
+            if self.stop_event and self.stop_event.is_set():
+                running = False
+                break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -276,17 +290,9 @@ class Game:
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     self.screen.fill(grey)
-                elif event.type == pygame.MOUSEBUTTONUP:  # 处理鼠标释放
+                elif event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
-                elif event.type == pygame.MOUSEMOTION:  # 处理鼠标移动
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
-                elif event.type == pygame.MOUSEBUTTONDOWN:  # 处理鼠标点击
-                    current_time = pygame.time.get_ticks()
-                    # 处理按钮事件
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step)
+                                                      speed_value, speed_step, button_states)
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -325,7 +331,6 @@ class Game:
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-
 
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1)
@@ -412,7 +417,7 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (150, 150, 150) if speed_value <= speed_min else (100, 149, 237)
+            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
@@ -428,7 +433,7 @@ class Game:
             self.screen.blit(value_text, value_text_rect)
 
             # 绘制加速按钮
-            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 149, 237)
+            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
             plus_text = button_font.render("+", True, (0, 0, 0))
@@ -439,12 +444,12 @@ class Game:
             key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
-                hint_text = "按P键继续  |  按Esc键返回主界面"
+                hint_text = "按P键继续  ;  按Esc键返回主界面"
                 hint_color = (0, 0, 0)
             else:
                 if first_image_shown and 1 <= stats.game_score <= 8:
                     step_button2.text = f"{stats.game_score} / 8"
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
                 elif stats.game_score > 8:
                     step_button2.text = "完成"
@@ -456,7 +461,7 @@ class Game:
                     hint_color = (0, 0, 0)
                 else:
                     step_button2.text = ""
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
 
             # 绘制按键提示文本在屏幕上方，避免被绘图界面覆盖
@@ -470,6 +475,11 @@ class Game:
             if 0 <= stats.game_score < 9:
                 for button in [user_button2, step_button2]:
                     gf.update_screen(button)
+            
+            # 处理长按（即使没有事件也要检查）
+            speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                              speed_value, speed_step, button_states)
+            
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
             if stats.game_score == 9:
@@ -563,8 +573,11 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 150
-        speed_step = 25
+        speed_min, speed_max = 1, 100
+        speed_step = 10
+        
+        # 按钮状态用于长按功能
+        button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
         button_y = 30
@@ -627,6 +640,9 @@ class Game:
                         elif stats.game_score < 19 and self.level.is_endpoint_reached():
                             # 在进入下一张图前先截图保存当前用户绘制的内容
                             current_image_index = stats.game_score - 11
+                            print(f"=== 被试B空格键按下 ===")
+                            print(f"stats.game_score: {stats.game_score}")
+                            print(f"current_image_index: {current_image_index}")
                             if current_image_index < 8:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
@@ -635,7 +651,6 @@ class Game:
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-
 
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12)
@@ -720,7 +735,7 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (150, 150, 150) if speed_value <= speed_min else (255, 100, 100)
+            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
@@ -736,7 +751,7 @@ class Game:
             self.screen.blit(value_text, value_text_rect)
 
             # 绘制加速按钮
-            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 255, 100)
+            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
             plus_text = button_font.render("+", True, (0, 0, 0))
@@ -747,12 +762,12 @@ class Game:
             key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
-                hint_text = "按P键继续  |  按ESC键退出"
+                hint_text = "按P键继续  ;  按ESC键退出"
                 hint_color = (0, 0, 0)
             else:
                 if first_image_shown and 12 <= stats.game_score <= 19:
                     step_button2.text = f"{stats.game_score - 11} / 8"
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
                 elif stats.game_score > 19:
                     step_button2.text = "完成"
@@ -764,7 +779,7 @@ class Game:
                     hint_color = (0, 0, 0)
                 else:
                     step_button2.text = ""
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
 
             # 绘制按键提示文本在屏幕上方，避免被绘图界面覆盖
@@ -778,6 +793,11 @@ class Game:
             if 10 < stats.game_score < 20:
                 for button in [user_button2, step_button2]:
                     gf.update_screen(button)
+            
+            # 处理长按（即使没有事件也要检查）
+            speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                              speed_value, speed_step, button_states)
+            
             # 更新游戏等级
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
@@ -875,8 +895,11 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 50, 150
-        speed_step = 25
+        speed_min, speed_max = 1, 100
+        speed_step = 10
+        
+        # 按钮状态用于长按功能
+        button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
         button_y = 30
@@ -1039,7 +1062,7 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (150, 150, 150) if speed_value <= speed_min else (255, 100, 100)
+            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
             minus_text = button_font.render("-", True, (0, 0, 0))
@@ -1055,7 +1078,7 @@ class Game:
             self.screen.blit(value_text, value_text_rect)
 
             # 绘制加速按钮
-            plus_color = (150, 150, 150) if speed_value >= speed_max else (100, 255, 100)
+            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
             pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
             plus_text = button_font.render("+", True, (0, 0, 0))
@@ -1066,12 +1089,12 @@ class Game:
             key_hint_font = pygame.font.Font(get_font_path(), 40)
             if paused:
                 step_button2.text = "已暂停"
-                hint_text = "按P键继续  |  按ESC键退出"
+                hint_text = "按P键继续  ;  按ESC键退出"
                 hint_color = (0, 0, 0)
             else:
                 if first_image_shown and 24 <= stats.game_score <= 31:
                     step_button2.text = f"{stats.game_score - 23} / 8"
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
                 elif stats.game_score > 31:
                     step_button2.text = "完成"
@@ -1083,7 +1106,7 @@ class Game:
                     hint_color = (0, 0, 0)
                 else:
                     step_button2.text = ""
-                    hint_text = "按P键暂停  |  按空格键下一张"
+                    hint_text = "按P键暂停  ;  按空格键下一张"
                     hint_color = (0, 0, 0)
 
             # 绘制按键提示文本在屏幕上方，避免被绘图界面覆盖
@@ -1098,6 +1121,11 @@ class Game:
                 for button in [user_button2, step_button2]:
                     gf.update_screen(button)
                 # 更新滑块显示位置
+            
+            # 处理长按（即使没有事件也要检查）
+            speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                              speed_value, speed_step, button_states)
+            
             # 更新游戏等级
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
@@ -1188,6 +1216,11 @@ class Game:
         pause_start_time = 0
         total_pause_time = 0
         while running:
+            # 检查停止信号
+            if self.stop_event and self.stop_event.is_set():
+                running = False
+                break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -1211,8 +1244,11 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
-                        sys.exit()
+                        return
+                    wait = False
             self.clock.tick(60)  # 限制帧率，减少CPU使用
+        pygame.quit()
+        return
 
     import pygame
 
@@ -1256,7 +1292,7 @@ class Game:
         # --- 添加流程图描述 ---
         desc_text = "本实验包含5个阶段，按顺序依次进行，每个阶段都有明确的时间限制和任务要求"
         desc_surf = desc_font.render(desc_text, True, TEXT_COLOR)
-        desc_rect = desc_surf.get_rect(center=(screen_width / 2, 140))
+        desc_rect = desc_surf.get_rect(center=(screen_width / 2, 340))
         self.screen.blit(desc_surf, desc_rect)
 
         user1 = getattr(shared_data, 'user1_mark', None)
@@ -1338,7 +1374,7 @@ class Game:
             current_x += surf.get_width()
 
         key_info_y_bottom = screen_height - 40
-        key_info_parts = [("实验中可按 ", TEXT_COLOR), ("P", GREEN_COLOR), (" 键暂停  |  按 ", TEXT_COLOR),
+        key_info_parts = [("实验中可按 ", TEXT_COLOR), ("P", GREEN_COLOR), (" 键暂停  ;  按 ", TEXT_COLOR),
                           ("ESC", GREEN_COLOR), (" 键退出", TEXT_COLOR)]
         key_info_surfaces = [key_info_font.render(text, True, color) for text, color in key_info_parts]
         total_key_info_width = sum(s.get_width() for s in key_info_surfaces)
@@ -1583,7 +1619,7 @@ class Game:
 
         minus_demo_rect = pygame.Rect(0, 0, 50, 50)
         minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (100, 149, 237), minus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (150, 150, 150), minus_demo_rect, border_radius=5)
         pygame.draw.rect(self.screen, (100, 100, 100), minus_demo_rect, 2, border_radius=5)
         minus_text = main_font.render("-", True, TEXT_COLOR)
         minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
@@ -1593,13 +1629,13 @@ class Game:
         value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
         pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
         pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
-        value_text = main_font.render("1", True, RED)
+        value_text = main_font.render("50", True, RED)
         value_text_rect = value_text.get_rect(center=value_demo_rect.center)
         self.screen.blit(value_text, value_text_rect)
 
         plus_demo_rect = pygame.Rect(0, 0, 50, 50)
         plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (100, 149, 237), plus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (150, 150, 150), plus_demo_rect, border_radius=5)
         pygame.draw.rect(self.screen, (100, 100, 100), plus_demo_rect, 2, border_radius=5)
         plus_text = main_font.render("+", True, TEXT_COLOR)
         plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
@@ -1670,7 +1706,7 @@ class Game:
 
     def display_end_screen(self):
         """显示实验结束画面，保持与整体风格一致"""
-        BG_COLOR = (128, 128, 128)  # 与其他界面保持一致的灰色背景
+        BG_COLOR = (230, 230, 230)  # 与其他界面保持一致的灰色背景
         BOX_COLOR = (144, 197, 114)  # 与流程图相同的绿色框
         TEXT_COLOR = (0, 0, 0)
         ACCENT_COLOR = (144, 238, 144)  # 浅绿色强调
@@ -2031,6 +2067,10 @@ def rest_instructions(self, rest_duration=120):
     clock = pygame.time.Clock()
 
     while True:
+        # 检查停止信号
+        if hasattr(self, 'stop_event') and self.stop_event and self.stop_event.is_set():
+            break
+
         elapsed = time.time() - start_time
         remaining = max(0, rest_duration - elapsed)
 

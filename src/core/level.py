@@ -256,7 +256,13 @@ class Level:
         exec(f"""def setup_endpoint{i}(self, x, y): self._setup_endpoint({i}, x, y)""")
 
     def draw(self, screen, stats=None):
-        temp_surface = screen.copy()
+        try:
+            temp_surface = screen.copy()
+        except pygame.error as e:
+            print(f"屏幕复制错误: {e}")
+            # 创建一个新的surface作为备选
+            temp_surface = pygame.Surface(screen.get_size())
+            temp_surface.fill((255, 255, 255))  # 白色背景
         try:
             with open('config.txt', 'r') as f:
                 current_state = f.read().strip()

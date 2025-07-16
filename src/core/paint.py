@@ -48,6 +48,11 @@ class GameDrawing:
 
     def handle_case(self, self_obj, gamescore, case_num, output_dir="output_image"):
         """统一处理所有case的通用函数"""
+        print(f"=== DEBUG: handle_case called ===")
+        print(f"gamescore: {gamescore}")
+        print(f"case_num: {case_num}")
+        print(f"output_dir: {output_dir}")
+        
         self.timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         self.t = pygame.time.get_ticks() / 1000
 
@@ -113,10 +118,16 @@ class GameDrawing:
             if points:
                 start_point = points[0]
                 end_point = points[-1]
-                setup_func = getattr(self_obj.level, f"setup{case_num - 1}")
-                setup_endpoint_func = getattr(self_obj.level, f"setup_endpoint{case_num - 1}")
+                setup_method_name = f"setup{case_num - 1}"
+                setup_endpoint_method_name = f"setup_endpoint{case_num - 1}"
+                print(f"调用方法: {setup_method_name}, 起点: {start_point}")
+                print(f"调用方法: {setup_endpoint_method_name}, 终点: {end_point}")
+                
+                setup_func = getattr(self_obj.level, setup_method_name)
+                setup_endpoint_func = getattr(self_obj.level, setup_endpoint_method_name)
                 setup_func(start_point[0], start_point[1])
                 setup_endpoint_func(end_point[0], end_point[1])
+                print(f"setup函数调用完成")
         except Exception as e:
             print(f"Error in handle_case for score {gamescore}, case {case_num}: {str(e)}")
 
@@ -124,18 +135,27 @@ class GameDrawing:
 
     def random_painting(self, number, self_obj, gamescore):
         try:
+            print(f"=== DEBUG: random_painting called ===")
+            print(f"number (case_num): {number}")
+            print(f"gamescore: {gamescore}")
+            
             if gamescore == 22:  # 被试B和被试A+B开始时
                 self.reset_generator()
             with open(f"Behavioral_data/id.txt", "r") as file:
                 id = file.read()
             if 0 <= gamescore <= 8:
+                print(f"执行被试A分支, 调用handle_case(gamescore={gamescore}, case_num={number})")
                 return self.handle_case(self_obj, gamescore, number,
                                         f"./Behavioral_data/{id}/subA/output_image")
             elif 11 <= gamescore <= 18:
-                return self.handle_case(self_obj, gamescore - 11, number,
+                adjusted_score = gamescore - 11
+                print(f"执行被试B分支, 调用handle_case(gamescore={adjusted_score}, case_num={number})")
+                return self.handle_case(self_obj, adjusted_score, number,
                                         f"./Behavioral_data/{id}/subAB/output_image")
             elif 23 <= gamescore <= 30:
-                return self.handle_case(self_obj, gamescore - 23, number,
+                adjusted_score = gamescore - 23
+                print(f"执行被试AC分支, 调用handle_case(gamescore={adjusted_score}, case_num={number})")
+                return self.handle_case(self_obj, adjusted_score, number,
                                         f"./Behavioral_data/{id}/subAC/output_image")
         except Exception as e:
             print(f"Error in random_painting for score {gamescore}, number {number}: {str(e)}")

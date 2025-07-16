@@ -1,28 +1,67 @@
 import pygame
 
 
-def handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max, speed_value, speed_step):
-    """处理+/-按钮事件"""
+def handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max, speed_value, speed_step, button_states=None):
+    """处理+/-按钮事件，支持长按连续调整"""
     mouse_pos = pygame.mouse.get_pos()
+    
+    # 如果没有传入按钮状态字典，创建一个默认的
+    if button_states is None:
+        button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
+    current_time = pygame.time.get_ticks()
+    original_speed_value = speed_value
+    
     # 检测鼠标按下
-    if event.type == pygame.MOUSEBUTTONDOWN:
+    if event and event.type == pygame.MOUSEBUTTONDOWN:
         if event.button == 1:  # 左键点击
             if minus_button_rect.collidepoint(mouse_pos):
-                # 点击减速按钮
+                button_states['minus_pressed'] = True
+                button_states['last_change_time'] = current_time
+                print(f"[按钮] 减速按钮按下，状态设置为True")
+                # 立即执行一次调整
                 if speed_value > speed_min:
                     speed_value -= speed_step
-                    speed_value = max(speed_min, speed_value)  # 确保不低于最小值
+                    speed_value = max(speed_min, speed_value)
+                    print(f"[按钮] 立即减速到: {speed_value}")
             elif plus_button_rect.collidepoint(mouse_pos):
-                # 点击加速按钮
+                button_states['plus_pressed'] = True
+                button_states['last_change_time'] = current_time
+                print(f"[按钮] 加速按钮按下，状态设置为True")
+                # 立即执行一次调整
                 if speed_value < speed_max:
                     speed_value += speed_step
-                    speed_value = min(speed_max, speed_value)  # 确保不超过最大值
+                    speed_value = min(speed_max, speed_value)
+                    print(f"[按钮] 立即加速到: {speed_value}")
+
+    # 检测鼠标释放
+    elif event and event.type == pygame.MOUSEBUTTONUP:
+        if event.button == 1:
+            if button_states['minus_pressed'] or button_states['plus_pressed']:
+                print(f"[按钮] 鼠标释放，停止长按")
+            button_states['minus_pressed'] = False
+            button_states['plus_pressed'] = False
     
-    # 保存速度值到文件
-    with open('scroll_value.txt', 'w') as f:
-        f.truncate(0)
-        f.write(f'{speed_value}')
+    # 长按连续调整（如果没有事件也会被调用）
+    if button_states['minus_pressed'] or button_states['plus_pressed']:
+        # 每150毫秒调整一次
+        if current_time - button_states['last_change_time'] >= 150:
+            if button_states['minus_pressed'] and speed_value > speed_min:
+                speed_value -= speed_step
+                speed_value = max(speed_min, speed_value)
+                button_states['last_change_time'] = current_time
+                print(f"[长按] 减速到: {speed_value}")
+            elif button_states['plus_pressed'] and speed_value < speed_max:
+                speed_value += speed_step
+                speed_value = min(speed_max, speed_value)
+                button_states['last_change_time'] = current_time
+                print(f"[长按] 加速到: {speed_value}")
+    
+    # 只在速度值改变时才保存到文件
+    if speed_value != original_speed_value:
+        with open('scroll_value.txt', 'w') as f:
+            f.truncate(0)
+            f.write(f'{speed_value}')
     
     return speed_value
 

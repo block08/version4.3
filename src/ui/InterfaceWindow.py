@@ -5,6 +5,7 @@ import os
 import subprocess
 import threading
 import time
+from src.utils.thread_manager import thread_manager
 import pandas as pd
 import serial
 import serial.tools.list_ports
@@ -28,6 +29,7 @@ from src.core import main_simulation
 from src.utils import shared_data
 from src.hardware.check_serial_connection import check_serial_connection
 from src.hardware.serial_marker import serial_marker, initialize_serial, close_serial
+from src.config.serial_config_manager import serial_config
 
 
 # 为了让此文件独立运行，我们在此处进行前向声明。
@@ -159,6 +161,10 @@ class Interfacewindow(QMainWindow):
         super().__init__()
         self.ui = InterfaceUI.Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # 初始化线程管理
+        self.current_game_thread = None
+        self.current_stop_event = None
 
         # 初始化导航按钮状态管理
         self.init_navigation_system()
@@ -172,32 +178,21 @@ class Interfacewindow(QMainWindow):
 
         # 用于在重新登录时创建新的登录窗口实例
         self.login_window_instance = None
-        
+
         # 重新登录标志，用于区分重新登录和正常退出
         self.is_relogin = False
 
-        # 串口监控相关变量
-        self.current_connected_port = None
-        self.available_ports = []
-        self.last_port_check_time = 0
-        self.port_check_interval = 1.0  # 检查间隔（秒）
+        # 串口检测相关变量
+        self.current_detected_port = None
 
-        # 设置定时器进行实时串口监控
-        self.serial_monitor_timer = QTimer()
-        self.serial_monitor_timer.timeout.connect(self.check_serial_status)
-        self.serial_monitor_timer.start(1000)  # 每秒检查一次
-
-        # 初始化串口状态
-        self.initialize_serial_status()
-        
-        # 延迟创建测试按钮，确保UI完全加载
-        QTimer.singleShot(100, self.add_test_send_button)
+        # 初始化串口状态显示
+        self.initialize_serial_ui()
 
     def init_navigation_system(self):
         """初始化导航按钮状态管理系统"""
         # 定义页面索引到按钮的映射关系
         self.nav_buttons = {
-            0: self.ui.pushButton_exercise,  # page_home 对应 练习按钮
+            0: self.ui.pushButton_macro_guidance,  # page_home 对应 宏观指导语按钮
             1: self.ui.pushButton_exercise,  # page_exercise 对应 练习按钮
             2: self.ui.pushButton_main,  # page_main 对应 正式实验按钮
             3: self.ui.pushButton_highestscore,  # page_highestscore 对应 最高纪录按钮
@@ -208,36 +203,46 @@ class Interfacewindow(QMainWindow):
         # 定义按钮的正常状态样式
         self.normal_button_style = """
             QPushButton{
-                border:none;
-                color: rgb(255, 255, 255);
+                background-color: rgb(255, 255, 255);
+                border: 2px solid rgb(51, 51, 51);
+                color: rgb(51, 51, 51);
                 font: 50pt "微软雅黑";
+                border-radius: 8px;
+                padding: 10px;
+                margin: 5px;
             }
             QPushButton:hover{
-                color: rgb(17, 48, 53);
+                background-color: rgb(230, 240, 255);
+                border: 2px solid rgb(34, 34, 34);
+                color: rgb(34, 34, 34);
             }
             QPushButton:pressed{
-                padding-left:5px;
-                padding-top:5px;
+                background-color: rgb(210, 225, 255);
+                padding-left:3px;
+                padding-top:3px;
             }
         """
 
-        # 定义按钮的激活状态样式
+        # 定义按钮的激活状态样式 - 类似微信的深灰色
         self.active_button_style = """
             QPushButton{
-                border:none;
-                color: rgb(17, 48, 53);
+                background-color: rgb(79, 79, 79);
+                border: 2px solid rgb(79, 79, 79);
+                color: rgb(255, 255, 255);
                 font: 50pt "微软雅黑";
-                background-color: rgba(255, 255, 255, 0.2);
-                border-radius: 10px;
+                border-radius: 8px;
+                padding: 10px;
+                margin: 5px;
             }
             QPushButton:hover{
-                color: rgb(17, 48, 53);
-                background-color: rgba(255, 255, 255, 0.3);
+                background-color: rgb(95, 95, 95);
+                border: 2px solid rgb(95, 95, 95);
+                color: rgb(255, 255, 255);
             }
             QPushButton:pressed{
-                padding-left:5px;
-                padding-top:5px;
-                background-color: rgba(255, 255, 255, 0.1);
+                background-color: rgb(65, 65, 65);
+                padding-left:3px;
+                padding-top:3px;
             }
         """
 
@@ -268,74 +273,27 @@ class Interfacewindow(QMainWindow):
 
         except Exception as e:
             print(f"更新导航按钮状态时出错: {e}")
+    
+    def update_button_state_manual(self, page_index):
+        """手动更新按钮状态，用于直接执行功能的按钮"""
+        self.update_navigation_buttons(page_index)
+    
+    def go_main_with_state(self):
+        """执行正式实验"""
+        # 直接执行功能，不更新按钮状态（因为不切换页面）
+        self.go_main()
+    
+    def open_data_folder_with_state(self):
+        """打开数据文件夹"""
+        # 直接执行功能，不更新按钮状态（因为不切换页面）
+        self.open_data_folder()
 
-    def add_test_send_button(self):
-        """动态添加测试发送指令按钮"""
-        try:
-            from PyQt5.QtWidgets import QPushButton
-            from PyQt5.QtGui import QFont
-            from PyQt5.QtCore import Qt
-            
-
-            # 检查是否已经创建过按钮 - 如果已存在则删除重建
-            if hasattr(self, 'test_send_button') and self.test_send_button is not None:
-                print("删除已存在的按钮，重新创建")
-                self.test_send_button.deleteLater()
-                self.test_send_button = None
-            
-            # 创建测试发送指令按钮 - 确认按钮在(930, 640, 161, 71)，测试按钮放在左边
-            self.test_send_button = QPushButton(self.ui.page_serial)
-            self.test_send_button.setGeometry(480, 640, 440, 71)  # 向左延长，增加宽度以完全显示文字
-            
-            # 设置字体 - 与确认按钮保持一致
-            font = QFont()
-            font.setFamily("微软雅黑")
-            font.setPointSize(50)  # 与确认按钮字体大小一致
-            font.setBold(False)
-            font.setItalic(False)
-            font.setWeight(50)
-            self.test_send_button.setFont(font)
-            
-            # 设置样式 - 与确认按钮保持一致的颜色
-            self.test_send_button.setStyleSheet("""
-                QPushButton{
-                    background-color: rgb(34, 92, 102);
-                    border:none;
-                    color: rgb(255, 255, 255);
-                    font: 50pt "微软雅黑";
-                }
-                QPushButton:hover{
-                    color: rgb(17, 48, 53);
-                }
-                QPushButton:pressed{
-                    padding-left:5px;
-                    padding-top:5px;
-                }
-            """)
-            
-            # 设置按钮文本
-            self.test_send_button.setText("测试发送指令")
-            
-            # 连接信号
-            self.test_send_button.clicked.connect(self.test_send_command)
-            
-            # 设置按钮可见并提升到前台
-            self.test_send_button.setVisible(True)
-            self.test_send_button.raise_()
-            self.test_send_button.show()
-            
-
-            
-        except Exception as e:
-            print(f"创建测试按钮时出错: {e}")
-            import traceback
-            traceback.print_exc()
-
-    def initialize_serial_status(self):
-        """初始化串口状态显示"""
-        # 首次检查串口状态
-        self.update_available_ports()
-        self.check_serial_status()
+    def initialize_serial_ui(self):
+        """初始化串口UI状态"""
+        # 设置初始状态
+        self.ui.label_current_port.setText("未检测")
+        self.ui.label_status_text.setText("端口未连接")
+        self.ui.pushButton_send_marker.setEnabled(False)
 
     def find_ch340_port(self):
         """查找USB-SERIAL CH340设备"""
@@ -375,147 +333,10 @@ class Interfacewindow(QMainWindow):
             print(f"获取COM口时出错: {e}")
             return []
 
-    def update_available_ports(self):
-        """更新可用串口列表，显示所有COM口但排除蓝牙"""
-        current_time = time.time()
-        # 每隔一定时间才重新扫描端口，避免频繁扫描
-        if current_time - self.last_port_check_time > self.port_check_interval:
-            try:
-                # 获取所有非蓝牙COM口
-                all_com_ports = self.get_all_com_ports()
-
-                # 如果端口列表有变化，更新下拉框
-                if all_com_ports != self.available_ports:
-                    self.available_ports = all_com_ports
-                    self.update_port_combobox()
-
-                self.last_port_check_time = current_time
-            except Exception as e:
-                print(f"扫描端口时出错: {e}")
-
-    def update_port_combobox(self):
-        """更新端口下拉框选项，显示所有COM口"""
-        try:
-            current_selection = self.ui.comboBox_com.currentText()
-            self.ui.comboBox_com.clear()
-
-            if self.available_ports:
-                # 按端口号排序显示
-                sorted_ports = sorted(self.available_ports, key=lambda x: int(''.join(filter(str.isdigit, x))) if any(
-                    c.isdigit() for c in x) else 999)
-
-                for port in sorted_ports:
-                    self.ui.comboBox_com.addItem(port)
-
-                # 尝试保持之前的选择
-                if current_selection in self.available_ports:
-                    index = self.ui.comboBox_com.findText(current_selection)
-                    if index >= 0:
-                        self.ui.comboBox_com.setCurrentIndex(index)
-            else:
-                # 如果没有可用端口，添加默认选项
-                for i in range(1, 7):
-                    self.ui.comboBox_com.addItem(f"COM{i}")
-
-        except Exception as e:
-            print(f"更新端口下拉框时出错: {e}")
-
-    def check_serial_status(self):
-        """只监控CH340设备连接状态，但不影响用户的端口选择"""
-        try:
-            # 更新可用端口列表（显示所有非蓝牙COM口）
-            self.update_available_ports()
-
-            # 专门查找并检查CH340设备状态
-            ch340_port = self.find_ch340_port()
-            ch340_connected = False
-
-            if ch340_port:
-                # 检查CH340设备是否可以连接
-                if check_serial_connection(ch340_port):
-                    ch340_connected = True
-                    print(f"CH340设备连接正常: {ch340_port}")
-                else:
-                    print(f"CH340设备连接失败: {ch340_port}")
-            else:
-                print("未找到CH340设备")
-
-            # 更新CH340连接状态显示（不影响用户当前选择的端口）
-            if ch340_connected != (self.current_connected_port is not None):
-                self.current_connected_port = ch340_port if ch340_connected else None
-                self.update_connection_ui(ch340_connected, ch340_port)
-
-        except Exception as e:
-            print(f"检查端口状态时出错: {e}")
-            self.update_connection_ui(False, None)
-
-    def update_connection_ui(self, ch340_connected, ch340_port):
-        """更新CH340连接状态的UI显示"""
-        try:
-            if ch340_connected and ch340_port:
-                # CH340设备连接成功 - 绿灯
-                self.ui.label_connection_status.setStyleSheet("""
-                    QLabel {
-                        border: 3px solid rgb(46, 204, 113);
-                        border-radius: 100px;
-                        background-color: rgb(46, 204, 113);
-                    }
-                """)
-                self.ui.label_status_text.setText(f"端口已连接")
-                self.ui.label_status_text.setStyleSheet("""
-                    QLabel {
-                        border: none;
-                        color: rgb(46, 204, 113);
-                        font: 30pt "微软雅黑";
-                    }
-                """)
-
-            elif ch340_port and not ch340_connected:
-                # 找到CH340设备但连接失败 - 黄灯
-                self.ui.label_connection_status.setStyleSheet("""
-                    QLabel {
-                        border: 3px solid rgb(255, 193, 7);
-                        border-radius: 100px;
-                        background-color: rgb(255, 193, 7);
-                    }
-                """)
-                self.ui.label_status_text.setText("端口检测到")
-                self.ui.label_status_text.setStyleSheet("""
-                    QLabel {
-                        border: none;
-                        color: rgb(255, 193, 7);
-                        font: 30pt "微软雅黑";
-                    }
-                """)
-
-            else:
-                # 未找到CH340设备 - 红灯
-                self.ui.label_connection_status.setStyleSheet("""
-                    QLabel {
-                        border: 3px solid rgb(231, 76, 60);
-                        border-radius: 100px;
-                        background-color: rgb(231, 76, 60);
-                    }
-                """)
-                self.ui.label_status_text.setText("未找到端口")
-                self.ui.label_status_text.setStyleSheet("""
-                    QLabel {
-                        border: none;
-                        color: rgb(231, 76, 60);
-                        font: 30pt "微软雅黑";
-                    }
-                """)
-
-        except Exception as e:
-            print(f"更新连接UI时出错: {e}")
-
     def showEvent(self, event):
         """重写 showEvent，在窗口显示时更新用户信息。"""
         super().showEvent(event)
         self.update_user_button_text()
-        # 确保测试按钮被创建
-        if not hasattr(self, 'test_send_button'):
-            self.add_test_send_button()
 
     def update_user_button_text(self):
         """获取登录用户标识并更新按钮文本。"""
@@ -523,45 +344,45 @@ class Interfacewindow(QMainWindow):
             user1 = getattr(shared_data, 'user1_mark', None)
             user2 = getattr(shared_data, 'user2_mark', None)
             user3 = getattr(shared_data, 'user3_mark', None)
-            
+
             # 更新顶部用户信息按钮
             if user1 and user2 and user3:
                 user_text = f"| 被测航天员:{user1} | 辅助航天员:{user2} 和 {user3} "
                 self.ui.pushButton.setText(user_text)
             else:
                 self.ui.pushButton.setText("用户")
-                
+
             # 更新练习按钮文本
             self.update_practice_button_texts(user1, user2, user3)
         except Exception as e:
             print(f"更新用户按钮时出错: {e}")
             self.ui.pushButton.setText("用户")
-            
+
     def update_practice_button_texts(self, user1, user2, user3):
         """更新练习按钮的文本。"""
         try:
             if user1:
-                self.ui.pushButton_4.setText(f"{user1}绘图练习模块")
+                self.ui.pushButton_4.setText(f"{user1}单独绘图")
             else:
                 self.ui.pushButton_4.setText("人员①绘图练习模块")
-                
+
             if user2:
-                self.ui.pushButton_5.setText(f"{user2}绘图练习模块")
+                self.ui.pushButton_5.setText(f"{user2}单独绘图")
             else:
                 self.ui.pushButton_5.setText("人员绘图练习模块")
-                
+
             if user3:
-                self.ui.pushButton_6.setText(f"{user3}绘图练习模块")
+                self.ui.pushButton_6.setText(f"{user3}单独绘图")
             else:
                 self.ui.pushButton_6.setText("人员③绘图练习模块")
-                
+
             if user1 and user2:
-                self.ui.pushButton_9.setText(f"{user1}和{user2}绘图练习模块")
+                self.ui.pushButton_9.setText(f"{user1}和{user2}合作绘图")
             else:
                 self.ui.pushButton_9.setText("人员①&人员②绘图练习模块")
-                
+
             if user1 and user3:
-                self.ui.pushButton_10.setText(f"{user1}和{user3}绘图练习模块")
+                self.ui.pushButton_10.setText(f"{user1}和{user3}合作绘图")
             else:
                 self.ui.pushButton_10.setText("人员①&人员③绘图练习模块")
         except Exception as e:
@@ -570,12 +391,13 @@ class Interfacewindow(QMainWindow):
     def setup_connections(self):
         """设置所有UI控件的信号和槽连接。"""
         self.ui.pushButton_exercise.clicked.connect(self.go_exercise)
-        self.ui.pushButton_main.clicked.connect(self.go_main_test)
+        self.ui.pushButton_main.clicked.connect(self.go_main_with_state)
         self.ui.pushButton_highestscore.clicked.connect(self.go_highestscore)
-        self.ui.pushButton_data.clicked.connect(self.go_data)
+        self.ui.pushButton_data.clicked.connect(self.open_data_folder_with_state)
         self.ui.pushButton_setting.clicked.connect(self.go_setting)
         self.ui.run_main_test.clicked.connect(self.go_main)
-        self.ui.pushButton_quereng.clicked.connect(self.confirm_settings)
+        self.ui.pushButton_detect_port.clicked.connect(self.detect_ch340_port)
+        self.ui.pushButton_send_marker.clicked.connect(self.send_marker8)
         self.ui.pushButton_relogin.clicked.connect(self.relogin)
         self.ui.data_check.clicked.connect(self.open_data_folder)
         self.ui.pushButton_4.clicked.connect(self.start_practice_1)
@@ -583,12 +405,17 @@ class Interfacewindow(QMainWindow):
         self.ui.pushButton_6.clicked.connect(self.start_practice_3)
         self.ui.pushButton_9.clicked.connect(self.start_practice_4)
         self.ui.pushButton_10.clicked.connect(self.start_practice_5)
+        
+        # 连接宏观指导语按钮
+        self.ui.pushButton_macro_guidance.clicked.connect(self.go_home)
 
     def start_practice_1(self):
         """启动1的练习模块。"""
+        print(f"[练习启动] 开始启动练习模块1")
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
-            
+            print(f"[练习启动] 获取用户1标记: {user1_mark}")
+
             def extract_number(mark):
                 if mark and isinstance(mark, str):
                     if '-' in mark:
@@ -598,21 +425,26 @@ class Interfacewindow(QMainWindow):
                     if match:
                         return match.group()
                 return mark
-            
+
             user1 = extract_number(user1_mark)
-            
-            print(f"正在启动{user1}绘图练习模块...")
+
+            print(f"[练习启动] 正在启动{user1}绘图练习模块...")
             game_function = Atest.Game
+            print(f"[练习启动] 获取的游戏函数: {game_function}")
             if game_function:
-                threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+                self.start_game_thread(game_function)
+            else:
+                print(f"[练习启动] 错误：游戏函数为空")
         except Exception as e:
             print(f"启动练习模块时出错: {e}")
 
     def start_practice_2(self):
         """启动人员2的练习模块。"""
+        print(f"[练习启动] 开始启动练习模块2")
         try:
             user2_mark = getattr(shared_data, 'user2_mark', '02')
-            
+            print(f"[练习启动] 获取用户2标记: {user2_mark}")
+
             def extract_number(mark):
                 if mark and isinstance(mark, str):
                     if '-' in mark:
@@ -622,13 +454,16 @@ class Interfacewindow(QMainWindow):
                     if match:
                         return match.group()
                 return mark
-            
+
             user2 = extract_number(user2_mark)
-            
-            print(f"正在启动{user2}绘图练习模块...")
+
+            print(f"[练习启动] 正在启动{user2}绘图练习模块...")
             game_function = Btest.Game
+            print(f"[练习启动] 获取的游戏函数: {game_function}")
             if game_function:
-                threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+                self.start_game_thread(game_function)
+            else:
+                print(f"[练习启动] 错误：游戏函数为空")
         except Exception as e:
             print(f"启动练习模块时出错: {e}")
 
@@ -636,7 +471,7 @@ class Interfacewindow(QMainWindow):
         """启动合作的练习模块。"""
         try:
             user3_mark = getattr(shared_data, 'user3_mark', '03')
-            
+
             def extract_number(mark):
                 if mark and isinstance(mark, str):
                     if '-' in mark:
@@ -646,13 +481,13 @@ class Interfacewindow(QMainWindow):
                     if match:
                         return match.group()
                 return mark
-            
+
             user3 = extract_number(user3_mark)
 
             print(f"正在启动{user3}绘图练习模块...")
             game_function = Ctest.Game
             if game_function:
-                threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+                self.start_game_thread(game_function)
         except Exception as e:
             print(f"启动练习模块时出错: {e}")
 
@@ -661,7 +496,7 @@ class Interfacewindow(QMainWindow):
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
             user2_mark = getattr(shared_data, 'user2_mark', '02')
-            
+
             def extract_number(mark):
                 if mark and isinstance(mark, str):
                     if '-' in mark:
@@ -671,14 +506,14 @@ class Interfacewindow(QMainWindow):
                     if match:
                         return match.group()
                 return mark
-            
+
             user1 = extract_number(user1_mark)
             user2 = extract_number(user2_mark)
-            
+
             print(f"正在启动{user1}&{user2}绘图练习模块...")
             game_function = ABtest.Game
             if game_function:
-                threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+                self.start_game_thread(game_function)
         except Exception as e:
             print(f"启动练习模块时出错: {e}")
 
@@ -687,7 +522,7 @@ class Interfacewindow(QMainWindow):
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
             user3_mark = getattr(shared_data, 'user3_mark', '03')
-            
+
             def extract_number(mark):
                 if mark and isinstance(mark, str):
                     if '-' in mark:
@@ -697,21 +532,24 @@ class Interfacewindow(QMainWindow):
                     if match:
                         return match.group()
                 return mark
-            
+
             user1 = extract_number(user1_mark)
             user3 = extract_number(user3_mark)
-            
+
             print(f"正在启动{user1}&{user3}绘图练习模块...")
             game_function = ACtest.Game
             if game_function:
-                threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+                self.start_game_thread(game_function)
         except Exception as e:
             print(f"启动练习模块时出错: {e}")
 
     def go_main(self):
         """开始主实验/游戏。"""
         game_function = None
+        
+        # 检查端口连接状态
         if shared_data.global_flag is None:
+            # 没有设置端口，询问是否仿真模式
             reply = CustomDialog.ask_question(self, QStyle.SP_MessageBoxQuestion, "运行模式",
                                               "未检测到端口连接。\n\n您想在仿真模式下运行（仅记录行为数据）吗？")
             if reply == QDialog.Accepted:
@@ -719,67 +557,172 @@ class Interfacewindow(QMainWindow):
             else:
                 return
         else:
-            game_function = main.Game
+            # 已设置端口，但需要验证端口是否仍然连接
+            current_port = shared_data.global_port
+            
+            # 1. 检查设备是否仍在端口列表中
+            ch340_port = self.find_ch340_port()
+            if ch340_port != current_port:
+                # 设备端口发生变化或设备被拔出
+                reply = CustomDialog.ask_question(self, QStyle.SP_MessageBoxQuestion, "设备连接异常",
+                                                  f"检测到端口状态异常！\n\n"
+                                                  f"原端口: {current_port}\n"
+                                                  f"当前检测: {'未检测到设备' if ch340_port is None else ch340_port}\n\n"
+                                                  f"设备可能已被拔出或端口发生变化。\n"
+                                                  f"是否在仿真模式下继续运行？")
+                if reply == QDialog.Accepted:
+                    game_function = main_simulation.Game
+                else:
+                    return
+            else:
+                # 2. 设备仍在相同端口，检查连接状态
+                from src.hardware.check_serial_connection import check_serial_connection
+                if not check_serial_connection(current_port):
+                    # 端口无法连接
+                    reply = CustomDialog.ask_question(self, QStyle.SP_MessageBoxQuestion, "端口连接失败",
+                                                      f"无法连接到端口 {current_port}！\n\n"
+                                                      f"设备可能被拔出或被其他程序占用。\n"
+                                                      f"是否在仿真模式下继续运行？")
+                    if reply == QDialog.Accepted:
+                        game_function = main_simulation.Game
+                    else:
+                        return
+                else:
+                    # 端口连接正常，使用正常模式
+                    game_function = main.Game
 
         if game_function:
             threading.Thread(target=lambda: game_function().run(), daemon=True).start()
 
-    def confirm_settings(self):
-        """手动确认端口设置，共享数据使用用户选择的端口"""
-        port = self.ui.comboBox_com.currentText()
-
-        # 检查用户选择的端口是否可连接
-        if check_serial_connection(port):
-            baudrate = self.ui.comboBox_bote.currentText()
-            # 共享数据使用用户选择的端口，不一定是CH340
-            shared_data.global_flag = 1
-            shared_data.global_port = port
-            shared_data.global_baudrate = int(baudrate)
-
-            # 检查是否为CH340设备
+    def detect_ch340_port(self):
+        """检测CH340端口并显示"""
+        try:
             ch340_port = self.find_ch340_port()
-            is_ch340_device = (port == ch340_port)
-            device_type = "CH340设备" if is_ch340_device else "端口设备"
 
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "成功",
-                                      f"{device_type} {port} 已成功连接并设置！\n注意：状态灯仅显示CH340设备状态")
-        else:
-            # 清除共享数据
-            shared_data.global_flag = None
-            shared_data.global_port = None
-            shared_data.global_baudrate = None
+            if ch340_port:
+                # 检查端口是否可连接
+                if check_serial_connection(ch340_port):
+                    # 更新UI显示
+                    self.ui.label_current_port.setText(ch340_port)
+                    self.ui.label_current_port.setStyleSheet("""
+                        QLabel {
+                            font: bold 28pt "微软雅黑";
+                            color: rgb(46, 204, 113);
+                            border: 2px solid rgb(46, 204, 113);
+                            border-radius: 10px;
+                            background-color: rgb(248, 248, 248);
+                            padding: 10px;
+                        }
+                    """)
 
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "连接失败",
-                                      f"无法连接到端口 {port}。\n请检查设备是否正确连接或端口是否被占用。")
+                    # 更新状态灯为绿色
+                    self.ui.label_connection_status.setStyleSheet("""
+                        QLabel {
+                            border: 3px solid rgb(46, 204, 113);
+                            border-radius: 70px;
+                            background-color: rgb(46, 204, 113);
+                        }
+                    """)
+                    self.ui.label_status_text.setText("端口已连接")
+                    self.ui.label_status_text.setStyleSheet("""
+                        QLabel {
+                            border: none;
+                            color: rgb(46, 204, 113);
+                            font: 24pt "微软雅黑";
+                        }
+                    """)
 
-    def test_send_command(self):
-        """测试发送指令按钮的处理函数，发送数字8"""
+                    # 启用确认按钮
+                    self.ui.pushButton_send_marker.setEnabled(True)
+
+                    # 设置共享数据
+                    shared_data.global_flag = 1
+                    shared_data.global_port = ch340_port
+                    shared_data.global_baudrate = serial_config.get_baudrate()
+
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "检测成功",
+                                              f"已成功检测到CH340设备: {ch340_port}")
+                else:
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "连接失败",
+                                              f"检测到CH340设备 {ch340_port}，但无法连接。请检查设备状态。")
+            else:
+                # 未找到CH340设备
+                self.ui.label_current_port.setText("未检测")
+                self.ui.label_current_port.setStyleSheet("""
+                    QLabel {
+                        font: bold 28pt "微软雅黑";
+                        color: rgb(255, 0, 0);
+                        border: 2px solid rgb(200, 200, 200);
+                        border-radius: 10px;
+                        background-color: rgb(248, 248, 248);
+                        padding: 10px;
+                    }
+                """)
+
+                # 更新状态灯为红色
+                self.ui.label_connection_status.setStyleSheet("""
+                    QLabel {
+                        border: 3px solid rgb(100, 100, 100);
+                        border-radius: 70px;
+                        background-color: rgb(144, 144, 144);
+                    }
+                """)
+                self.ui.label_status_text.setText("端口未连接")
+                self.ui.label_status_text.setStyleSheet("""
+                    QLabel {
+                        border: none;
+                        color: rgb(144, 144, 144);
+                        font: 24pt "微软雅黑";
+                    }
+                """)
+
+                # 禁用确认按钮
+                self.ui.pushButton_send_marker.setEnabled(False)
+
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "未检测到设备",
+                                          "未检测到CH340脑电设备，请检查设备连接。")
+
+        except Exception as e:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "检测失败",
+                                      f"检测端口时出错：{str(e)}")
+
+    def send_marker8(self):
+        """发送marker8确认连接"""
         try:
             # 检查是否有端口设置
             if shared_data.global_flag is None or shared_data.global_port is None:
                 CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "未设置端口",
-                                          "请先确认端口设置后再进行测试！")
+                                          "请先检测端口后再确认连接！")
                 return
-            
+
             # 初始化端口
             if initialize_serial():
                 try:
-                    # 发送数字8的指令
-                    test_data = bytes([8])
-                    serial_marker(test_data)
-                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "测试成功",
-                                              f"已成功向端口 {shared_data.global_port} 发送测试指令：8")
+                    # 发送marker8
+                    marker_data = bytes([8])
+                    serial_marker(marker_data)
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "连接确认",
+                                              f"已成功向端口 {shared_data.global_port} 发送确认信号(marker8)")
                 finally:
-                    # 测试完成后关闭串口，释放资源
+                    # 发送完成后关闭串口，释放资源
                     close_serial()
             else:
-                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "端口初始化失败",
-                                          f"无法初始化端口 {shared_data.global_port}，请检查端口设置。")
+                # 显示详细的错误信息和解决建议
+                error_msg = f"无法初始化端口 {shared_data.global_port}。\n\n可能原因：\n"
+                error_msg += "• 端口被其他程序占用\n"
+                error_msg += "• 设备管理器正在使用端口\n"
+                error_msg += "• Arduino IDE 或其他开发工具占用\n\n"
+                error_msg += "解决方法：\n"
+                error_msg += "1. 关闭设备管理器和串口监控工具\n"
+                error_msg += "2. 拔掉USB线，等待5秒后重新插入\n"
+                error_msg += "3. 重新检测端口"
+                
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "连接失败", error_msg)
         except Exception as e:
             # 出现异常时也要确保关闭串口
             close_serial()
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "测试失败",
-                                      f"发送测试指令时出错：{str(e)}")
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "发送失败",
+                                      f"发送确认信号时出错：{str(e)}")
 
     def relogin(self):
         """关闭主界面并返回到登录窗口。"""
@@ -790,12 +733,9 @@ class Interfacewindow(QMainWindow):
             "确认重新登录",
             "您确定要重新登录吗？"
         )
-        
+
         # 如果用户确认重新登录
         if reply == QDialog.Accepted:
-            # 停止端口监控定时器
-            if hasattr(self, 'serial_monitor_timer'):
-                self.serial_monitor_timer.stop()
 
             try:
                 from src.ui.LoginWindow import LoginWindow
@@ -812,12 +752,10 @@ class Interfacewindow(QMainWindow):
         # 检查是否是重新登录操作
         if hasattr(self, 'is_relogin') and self.is_relogin:
             # 如果是重新登录，直接关闭窗口，不显示退出确认
-            if hasattr(self, 'serial_monitor_timer'):
-                self.serial_monitor_timer.stop()
             print("重新登录，关闭当前界面。")
             event.accept()
             return
-        
+
         # 正常退出时显示确认对话框
         reply = CustomDialog.ask_question(
             self,
@@ -828,9 +766,7 @@ class Interfacewindow(QMainWindow):
 
         # 根据用户的选择决定是否关闭
         if reply == QDialog.Accepted:
-            # 如果用户点击“是”，则停止定时器并接受关闭事件，关闭窗口
-            if hasattr(self, 'serial_monitor_timer'):
-                self.serial_monitor_timer.stop()
+            # 如果用户点击"是"，则接受关闭事件，关闭窗口
             print("程序已退出。")
             event.accept()
         else:
@@ -857,9 +793,10 @@ class Interfacewindow(QMainWindow):
     def go_setting(self):
         """切换到端口设置页面。"""
         self.ui.stackedWidget.setCurrentIndex(5)
-        # 确保测试按钮在端口设置页面被创建
-        if not hasattr(self, 'test_send_button'):
-            QTimer.singleShot(50, self.add_test_send_button)
+    
+    def go_home(self):
+        """切换到首页。"""
+        self.ui.stackedWidget.setCurrentIndex(0)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.isMaximized():
@@ -937,15 +874,15 @@ class Interfacewindow(QMainWindow):
             # 获取所有用户的数据
             leaderboard_data = self.calculate_leaderboard_data()
             print(f"找到 {len(leaderboard_data)} 条数据")
-            
+
             # 按准确度排序，取前三名
             sorted_data = sorted(leaderboard_data, key=lambda x: x['accuracy'], reverse=True)[:3]
             print(f"排序后取前 {len(sorted_data)} 名")
-            
+
             # 更新UI显示
             self.update_leaderboard_ui(sorted_data)
             print("UI更新完成")
-            
+
         except Exception as e:
             print(f"加载排行榜数据时出错: {e}")
             import traceback
@@ -956,36 +893,42 @@ class Interfacewindow(QMainWindow):
     def calculate_leaderboard_data(self):
         """计算排行榜数据"""
         leaderboard_data = []
-        
+
         # 遍历所有实验数据文件夹
         data_folders = glob.glob("Behavioral_data/*/")
-        
+
         for folder in data_folders:
             try:
                 # 读取用户信息
                 subject_info_file = os.path.join(folder, "subject_info.txt")
                 if not os.path.exists(subject_info_file):
                     continue
-                
+
                 # 解析用户信息
                 user_info = self.parse_subject_info(subject_info_file)
-                
+
                 # 计算个人阶段(subA)的数据
                 suba_data_file = os.path.join(folder, "subA", "data", "数据.txt")
                 if os.path.exists(suba_data_file):
                     stats = self.parse_experiment_data(suba_data_file)
                     if stats:
+                        # 获取文件修改时间作为实验日期
+                        import time
+                        timestamp = os.path.getmtime(suba_data_file)
+                        date_str = time.strftime("%m-%d", time.localtime(timestamp))
+
                         leaderboard_data.append({
                             'user_id': user_info['main_user_id'],
                             'accuracy': stats['avg_accuracy'],
                             'total_time': stats['total_time'],
-                            'avg_deviation': stats['avg_deviation']
+                            'avg_deviation': stats['avg_deviation'],
+                            'date': date_str
                         })
-                
+
             except Exception as e:
                 print(f"处理文件夹 {folder} 时出错: {e}")
                 continue
-        
+
         return leaderboard_data
 
     def parse_subject_info(self, file_path):
@@ -994,18 +937,18 @@ class Interfacewindow(QMainWindow):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-                
+
             # 提取主受试者标识
             main_user_match = re.search(r'标识:\s*(\S+)', content)
             if main_user_match:
                 user_info['main_user_id'] = main_user_match.group(1)
             else:
                 user_info['main_user_id'] = "未知用户"
-                
+
         except Exception as e:
             print(f"解析用户信息文件时出错: {e}")
             user_info['main_user_id'] = "未知用户"
-            
+
         return user_info
 
     def parse_experiment_data(self, file_path):
@@ -1013,26 +956,26 @@ class Interfacewindow(QMainWindow):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
-            
+
             if len(lines) < 16:
                 return None
-                
+
             # 解析前8行的准确度数据
             accuracies = []
             times = []
-            
+
             for i in range(8):
                 line = lines[i].strip()
                 # 解析百分比
                 accuracy_match = re.search(r'百分比：([\d.]+)%', line)
                 if accuracy_match:
                     accuracies.append(float(accuracy_match.group(1)))
-                
+
                 # 解析绘图时长
                 time_match = re.search(r'绘图时长：([\d.]+)', line)
                 if time_match:
                     times.append(float(time_match.group(1)))
-            
+
             # 解析后8行的偏差数据
             deviations = []
             for i in range(8, 16):
@@ -1040,18 +983,18 @@ class Interfacewindow(QMainWindow):
                 deviation_match = re.search(r'偏差像素个数\s*:\s*(\d+)', line)
                 if deviation_match:
                     deviations.append(int(deviation_match.group(1)))
-            
+
             # 计算平均值
             avg_accuracy = sum(accuracies) / len(accuracies) if accuracies else 0
             total_time = sum(times) if times else 0
             avg_deviation = sum(deviations) / len(deviations) if deviations else 0
-            
+
             return {
                 'avg_accuracy': avg_accuracy,
                 'total_time': total_time,
                 'avg_deviation': avg_deviation
             }
-            
+
         except Exception as e:
             print(f"解析实验数据文件时出错: {e}")
             return None
@@ -1061,48 +1004,54 @@ class Interfacewindow(QMainWindow):
         print(f"开始更新UI，数据: {sorted_data}")
         # 清空所有排行榜显示
         self.clear_leaderboard_display()
-        
+
         # 更新前三名数据
         for i, data in enumerate(sorted_data):
-            print(f"更新第{i+1}名: {data}")
+            print(f"更新第{i + 1}名: {data}")
             if i == 0:  # 第一名
-                self.ui.first_user_label.setText(f"用户: {data['user_id']}")
-                self.ui.first_accuracy_label.setText(f"准确度: {data['accuracy']:.2f}%")
-                self.ui.first_time_label.setText(f"用时: {data['total_time']:.2f}s")
-                self.ui.first_deviation_label.setText(f"偏差: {data['avg_deviation']:.0f}")
+                self.ui.first_user_label.setText(f"{data['user_id']}")
+                self.ui.first_accuracy_label.setText(f"{data['accuracy']:.2f}%")
+                self.ui.first_time_label.setText(f"{data['total_time']:.1f}s")
+                self.ui.first_deviation_label.setText(f"{data['avg_deviation']:.0f}")
+                self.ui.first_date_label.setText(f"{data.get('date', '-')}")
                 print(f"第一名UI更新完成")
             elif i == 1:  # 第二名
-                self.ui.second_user_label.setText(f"用户: {data['user_id']}")
-                self.ui.second_accuracy_label.setText(f"准确度: {data['accuracy']:.2f}%")
-                self.ui.second_time_label.setText(f"用时: {data['total_time']:.2f}s")
-                self.ui.second_deviation_label.setText(f"偏差: {data['avg_deviation']:.0f}")
+                self.ui.second_user_label.setText(f"{data['user_id']}")
+                self.ui.second_accuracy_label.setText(f"{data['accuracy']:.2f}%")
+                self.ui.second_time_label.setText(f"{data['total_time']:.1f}s")
+                self.ui.second_deviation_label.setText(f"{data['avg_deviation']:.0f}")
+                self.ui.second_date_label.setText(f"{data.get('date', '-')}")
                 print(f"第二名UI更新完成")
             elif i == 2:  # 第三名
-                self.ui.third_user_label.setText(f"用户: {data['user_id']}")
-                self.ui.third_accuracy_label.setText(f"准确度: {data['accuracy']:.2f}%")
-                self.ui.third_time_label.setText(f"用时: {data['total_time']:.2f}s")
-                self.ui.third_deviation_label.setText(f"偏差: {data['avg_deviation']:.0f}")
+                self.ui.third_user_label.setText(f"{data['user_id']}")
+                self.ui.third_accuracy_label.setText(f"{data['accuracy']:.2f}%")
+                self.ui.third_time_label.setText(f"{data['total_time']:.1f}s")
+                self.ui.third_deviation_label.setText(f"{data['avg_deviation']:.0f}")
+                self.ui.third_date_label.setText(f"{data.get('date', '-')}")
                 print(f"第三名UI更新完成")
 
     def clear_leaderboard_display(self):
         """清空排行榜显示"""
         # 第一名
-        self.ui.first_user_label.setText("用户: -")
-        self.ui.first_accuracy_label.setText("准确度: -")
-        self.ui.first_time_label.setText("用时: -")
-        self.ui.first_deviation_label.setText("偏差: -")
-        
+        self.ui.first_user_label.setText("-")
+        self.ui.first_accuracy_label.setText("-")
+        self.ui.first_time_label.setText("-")
+        self.ui.first_deviation_label.setText("-")
+        self.ui.first_date_label.setText("-")
+
         # 第二名
-        self.ui.second_user_label.setText("用户: -")
-        self.ui.second_accuracy_label.setText("准确度: -")
-        self.ui.second_time_label.setText("用时: -")
-        self.ui.second_deviation_label.setText("偏差: -")
-        
+        self.ui.second_user_label.setText("-")
+        self.ui.second_accuracy_label.setText("-")
+        self.ui.second_time_label.setText("-")
+        self.ui.second_deviation_label.setText("-")
+        self.ui.second_date_label.setText("-")
+
         # 第三名
-        self.ui.third_user_label.setText("用户: -")
-        self.ui.third_accuracy_label.setText("准确度: -")
-        self.ui.third_time_label.setText("用时: -")
-        self.ui.third_deviation_label.setText("偏差: -")
+        self.ui.third_user_label.setText("-")
+        self.ui.third_accuracy_label.setText("-")
+        self.ui.third_time_label.setText("-")
+        self.ui.third_deviation_label.setText("-")
+        self.ui.third_date_label.setText("-")
 
     def show_default_leaderboard(self):
         """显示默认排行榜信息"""
@@ -1110,6 +1059,58 @@ class Interfacewindow(QMainWindow):
         self.ui.first_user_label.setText("暂无数据")
         self.ui.second_user_label.setText("暂无数据")
         self.ui.third_user_label.setText("暂无数据")
+    
+    def stop_current_game(self):
+        """停止当前运行的游戏线程"""
+        if self.current_stop_event:
+            self.current_stop_event.set()
+        if self.current_game_thread and self.current_game_thread.is_alive():
+            self.current_game_thread.join(timeout=3)
+            if self.current_game_thread.is_alive():
+                print("警告：游戏线程未能在3秒内停止")
+    
+    def start_game_thread(self, game_class):
+        """安全启动游戏线程"""
+        print(f"[游戏启动] 开始启动游戏线程，游戏类: {game_class}")
+        
+        # 先停止当前游戏
+        print(f"[游戏启动] 停止当前游戏")
+        self.stop_current_game()
+        
+        # 检查游戏类的构造函数是否支持stop_event参数
+        import inspect
+        sig = inspect.signature(game_class.__init__)
+        print(f"[游戏启动] 游戏类构造函数签名: {sig}")
+        
+        if 'stop_event' in sig.parameters:
+            # 支持stop_event参数的游戏类（如main.py中的Game类）
+            print(f"[游戏启动] 游戏类支持stop_event参数")
+            target_func = lambda: game_class(stop_event=None).run()
+        else:
+            # 不支持stop_event参数的游戏类（如测试文件中的Game类）
+            print(f"[游戏启动] 游戏类不支持stop_event参数")
+            target_func = lambda: game_class().run()
+        
+        print(f"[游戏启动] 目标函数准备完成: {target_func}")
+        
+        # 启动新游戏
+        print(f"[游戏启动] 调用线程管理器启动线程")
+        thread, stop_event = thread_manager.start_thread(
+            target=target_func,
+            timeout=60
+        )
+        
+        self.current_game_thread = thread
+        self.current_stop_event = stop_event
+        
+        print(f"[游戏启动] 游戏线程启动完成: {thread.name}")
+        return thread, stop_event
+    
+    def closeEvent(self, event):
+        """窗口关闭时的清理操作"""
+        self.stop_current_game()
+        thread_manager.stop_all_threads()
+        super().closeEvent(event)
 
 
 if __name__ == '__main__':
