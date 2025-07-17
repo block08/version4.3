@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
 "    border-radius: 16px;\n"
 "}\n"
 "QWidget#task_selection_card:hover {\n"
-"    border: 2px solid #2ecc71;\n"
+"    border: 2px solid #667eea;\n"
 "    background: #f0fff4;\n"
 "}")
         self.task_selection_card.setObjectName("task_selection_card")

@@ -16,7 +16,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QFont, QCursor
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox, QDialog, QStyle, QFrame,
-                             QVBoxLayout, QHBoxLayout, QLabel, QPushButton)
+                             QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton)
 
 from src.tests import ABtest
 from src.tests import ACtest
@@ -43,7 +43,7 @@ class CustomDialog(QDialog):
     完全自定义的对话框，用于替代QMessageBox，以实现更好的布局控制和样式。
     """
 
-    def __init__(self, parent, icon_type, title, text, font_size=22, width=600, height=300, button_type='ok'):
+    def __init__(self, parent, icon_type, title, text, font_size=22, width=700, height=350, button_type='ok'):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setFixedSize(width, height)
@@ -67,22 +67,29 @@ class CustomDialog(QDialog):
         main_layout.setSpacing(20)
         main_layout.addStretch(1)
 
-        content_layout = QHBoxLayout()
+        # --- 修改为 QGridLayout 来实现特殊对齐 ---
+        content_layout = QGridLayout() # <-- 修改：使用网格布局
         content_layout.setSpacing(20)
 
+        # 文字标签
+        text_label = QLabel(text, self)
+        text_label.setFont(QFont("Microsoft YaHei", font_size))
+        text_label.setWordWrap(True)
+        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setMinimumWidth(500)  # 设置最小宽度确保文字有足够空间
+        text_label.setStyleSheet("border: none; color: black; padding: 10px;")
+        # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
+        content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
+
+        # 图标标签
         icon_label = QLabel(self)
         icon_pixmap = self.style().standardIcon(icon_type).pixmap(64, 64)
         icon_label.setPixmap(icon_pixmap)
         icon_label.setFixedSize(64, 64)
         icon_label.setStyleSheet("border: none;")
-        content_layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
-
-        text_label = QLabel(text, self)
-        text_label.setFont(QFont("Microsoft YaHei", font_size))
-        text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignVCenter)
-        text_label.setStyleSheet("border: none; color: black;")
-        content_layout.addWidget(text_label, 1)
+        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
+        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        # --- 修改区域结束 ---
 
         main_layout.addLayout(content_layout)
         main_layout.addStretch(1)
@@ -93,8 +100,8 @@ class CustomDialog(QDialog):
         if button_type == 'yes_no':
             yes_button = QPushButton("是", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
-            yes_button.setFixedSize(140, 50)
-            yes_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            yes_button.setFixedSize(220, 65)
+            yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
                 QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 25px; }
                 QPushButton:hover { background-color: #27ae60; }
@@ -105,8 +112,8 @@ class CustomDialog(QDialog):
 
             no_button = QPushButton("否", self)
             no_button.setCursor(QCursor(Qt.PointingHandCursor))
-            no_button.setFixedSize(140, 50)
-            no_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            no_button.setFixedSize(220, 65)
+            no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
                 QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 25px; }
                 QPushButton:hover { background-color: #c0392b; }
@@ -117,8 +124,8 @@ class CustomDialog(QDialog):
         else:  # 默认为 'ok'
             ok_button = QPushButton("确定", self)
             ok_button.setCursor(QCursor(Qt.PointingHandCursor))
-            ok_button.setFixedSize(140, 50)
-            ok_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            ok_button.setFixedSize(220, 65)
+            ok_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             ok_button.setStyleSheet("""
                 QPushButton { background-color: #3498db; color: white; border: none; border-radius: 25px; }
                 QPushButton:hover { background-color: #2980b9; }
@@ -132,23 +139,39 @@ class CustomDialog(QDialog):
         main_layout.addStretch(1)
 
     def showEvent(self, event):
-        """重写 showEvent 以在显示时调整窗口位置到父窗口正中心偏上。"""
+        """重写 showEvent 以在显示时调整窗口位置到父窗口正中心。"""
         super().showEvent(event)
         if self.parent():
             parent_rect = self.parent().geometry()
             parent_center = parent_rect.center()
-            x = parent_center.x() - self.width() // 2 + 180
-            y = parent_center.y() - self.height() // 2 - 100  # 向上偏移50像素
+            x = parent_center.x() - self.width() // 2 +200
+            y = parent_center.y() - self.height() // 2 -100
             self.move(x, y)
 
     @staticmethod
     def show_message(parent, icon_type, title, text, font_size=22):
-        dialog = CustomDialog(parent, icon_type, title, text, font_size, button_type='ok')
+        # 根据文字长度自动调整对话框尺寸
+        text_length = len(text)
+        if text_length > 12:  # 对于较长文字使用更大尺寸
+            width, height = 750, 380
+        elif text_length > 8:  # 中等长度文字
+            width, height = 700, 350
+        else:  # 短文字
+            width, height = 600, 300
+        dialog = CustomDialog(parent, icon_type, title, text, font_size, width, height, button_type='ok')
         return dialog.exec_()
 
     @staticmethod
     def ask_question(parent, icon_type, title, text, font_size=22):
-        dialog = CustomDialog(parent, icon_type, title, text, font_size, button_type='yes_no')
+        # 根据文字长度自动调整对话框尺寸
+        text_length = len(text)
+        if text_length > 12:  # 对于较长文字使用更大尺寸
+            width, height = 750, 380
+        elif text_length > 8:  # 中等长度文字
+            width, height = 700, 350
+        else:  # 短文字
+            width, height = 600, 300
+        dialog = CustomDialog(parent, icon_type, title, text, font_size, width, height, button_type='yes_no')
         return dialog.exec_()
 
 
@@ -161,7 +184,7 @@ class Interfacewindow(QMainWindow):
         super().__init__()
         self.ui = InterfaceUI.Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # 初始化线程管理
         self.current_game_thread = None
         self.current_stop_event = None
@@ -273,16 +296,16 @@ class Interfacewindow(QMainWindow):
 
         except Exception as e:
             print(f"更新导航按钮状态时出错: {e}")
-    
+
     def update_button_state_manual(self, page_index):
         """手动更新按钮状态，用于直接执行功能的按钮"""
         self.update_navigation_buttons(page_index)
-    
+
     def go_main_with_state(self):
         """执行正式实验"""
         # 直接执行功能，不更新按钮状态（因为不切换页面）
         self.go_main()
-    
+
     def open_data_folder_with_state(self):
         """打开数据文件夹"""
         # 直接执行功能，不更新按钮状态（因为不切换页面）
@@ -293,7 +316,11 @@ class Interfacewindow(QMainWindow):
         # 设置初始状态
         self.ui.label_current_port.setText("未检测")
         self.ui.label_status_text.setText("端口未连接")
-        self.ui.pushButton_send_marker.setEnabled(False)
+        
+        # 启动自动检测定时器
+        self.auto_detect_timer = QTimer()
+        self.auto_detect_timer.timeout.connect(self.auto_detect_and_connect)
+        self.auto_detect_timer.start(2000)  # 每2秒检测一次
 
     def find_ch340_port(self):
         """查找USB-SERIAL CH340设备"""
@@ -366,16 +393,6 @@ class Interfacewindow(QMainWindow):
             else:
                 self.ui.pushButton_4.setText("人员①绘图练习模块")
 
-            if user2:
-                self.ui.pushButton_5.setText(f"{user2}单独绘图")
-            else:
-                self.ui.pushButton_5.setText("人员绘图练习模块")
-
-            if user3:
-                self.ui.pushButton_6.setText(f"{user3}单独绘图")
-            else:
-                self.ui.pushButton_6.setText("人员③绘图练习模块")
-
             if user1 and user2:
                 self.ui.pushButton_9.setText(f"{user1}和{user2}合作绘图")
             else:
@@ -396,16 +413,14 @@ class Interfacewindow(QMainWindow):
         self.ui.pushButton_data.clicked.connect(self.open_data_folder_with_state)
         self.ui.pushButton_setting.clicked.connect(self.go_setting)
         self.ui.run_main_test.clicked.connect(self.go_main)
-        self.ui.pushButton_detect_port.clicked.connect(self.detect_ch340_port)
-        self.ui.pushButton_send_marker.clicked.connect(self.send_marker8)
+        self.ui.pushButton_auto_connect.clicked.connect(self.manual_connect_port)
         self.ui.pushButton_relogin.clicked.connect(self.relogin)
         self.ui.data_check.clicked.connect(self.open_data_folder)
         self.ui.pushButton_4.clicked.connect(self.start_practice_1)
-        self.ui.pushButton_5.clicked.connect(self.start_practice_2)
-        self.ui.pushButton_6.clicked.connect(self.start_practice_3)
+
         self.ui.pushButton_9.clicked.connect(self.start_practice_4)
         self.ui.pushButton_10.clicked.connect(self.start_practice_5)
-        
+
         # 连接宏观指导语按钮
         self.ui.pushButton_macro_guidance.clicked.connect(self.go_home)
 
@@ -546,12 +561,12 @@ class Interfacewindow(QMainWindow):
     def go_main(self):
         """开始主实验/游戏。"""
         game_function = None
-        
+
         # 检查端口连接状态
         if shared_data.global_flag is None:
             # 没有设置端口，询问是否仿真模式
             reply = CustomDialog.ask_question(self, QStyle.SP_MessageBoxQuestion, "运行模式",
-                                              "未检测到端口连接。\n\n您想在仿真模式下运行（仅记录行为数据）吗？")
+                                              "未检测到端口连接。\n\n您想在仿真模式下运行吗？")
             if reply == QDialog.Accepted:
                 game_function = main_simulation.Game
             else:
@@ -559,7 +574,7 @@ class Interfacewindow(QMainWindow):
         else:
             # 已设置端口，但需要验证端口是否仍然连接
             current_port = shared_data.global_port
-            
+
             # 1. 检查设备是否仍在端口列表中
             ch340_port = self.find_ch340_port()
             if ch340_port != current_port:
@@ -594,135 +609,195 @@ class Interfacewindow(QMainWindow):
         if game_function:
             threading.Thread(target=lambda: game_function().run(), daemon=True).start()
 
-    def detect_ch340_port(self):
-        """检测CH340端口并显示"""
-        try:
-            ch340_port = self.find_ch340_port()
 
+    def auto_detect_and_connect(self):
+        """自动检测端口并连接"""
+        try:
+            # 如果已经连接，就不再重复检测
+            if shared_data.global_flag == 1 and shared_data.global_port:
+                # 验证端口是否仍然可用
+                if check_serial_connection(shared_data.global_port):
+                    return
+                else:
+                    # 端口失连，重置状态
+                    self.reset_connection_status()
+            
+            # 查找CH340端口
+            ch340_port = self.find_ch340_port()
+            
             if ch340_port:
                 # 检查端口是否可连接
                 if check_serial_connection(ch340_port):
-                    # 更新UI显示
-                    self.ui.label_current_port.setText(ch340_port)
-                    self.ui.label_current_port.setStyleSheet("""
-                        QLabel {
-                            font: bold 28pt "微软雅黑";
-                            color: rgb(46, 204, 113);
-                            border: 2px solid rgb(46, 204, 113);
-                            border-radius: 10px;
-                            background-color: rgb(248, 248, 248);
-                            padding: 10px;
-                        }
-                    """)
+                    # 自动连接成功
+                    self.set_connected_status(ch340_port)
+                else:
+                    # 检测到端口但无法连接
+                    self.set_detected_but_not_connected_status(ch340_port)
+            else:
+                # 没有检测到端口
+                self.set_no_port_detected_status()
+                
+        except Exception as e:
+            print(f"自动检测端口时出错: {e}")
 
-                    # 更新状态灯为绿色
-                    self.ui.label_connection_status.setStyleSheet("""
-                        QLabel {
-                            border: 3px solid rgb(46, 204, 113);
-                            border-radius: 70px;
-                            background-color: rgb(46, 204, 113);
-                        }
-                    """)
-                    self.ui.label_status_text.setText("端口已连接")
-                    self.ui.label_status_text.setStyleSheet("""
-                        QLabel {
-                            border: none;
-                            color: rgb(46, 204, 113);
-                            font: 24pt "微软雅黑";
-                        }
-                    """)
-
-                    # 启用确认按钮
-                    self.ui.pushButton_send_marker.setEnabled(True)
-
-                    # 设置共享数据
-                    shared_data.global_flag = 1
-                    shared_data.global_port = ch340_port
-                    shared_data.global_baudrate = serial_config.get_baudrate()
-
-                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "检测成功",
-                                              f"已成功检测到CH340设备: {ch340_port}")
+    def manual_connect_port(self):
+        """手动连接端口（当自动检测失败时）"""
+        try:
+            ch340_port = self.find_ch340_port()
+            
+            if ch340_port:
+                if check_serial_connection(ch340_port):
+                    self.set_connected_status(ch340_port)
+                    # 发送确认信号
+                    self.send_marker8(ch340_port)
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "连接成功",
+                                              f"已成功连接到端口 {ch340_port}")
                 else:
                     CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "连接失败",
                                               f"检测到CH340设备 {ch340_port}，但无法连接。请检查设备状态。")
             else:
-                # 未找到CH340设备
-                self.ui.label_current_port.setText("未检测")
-                self.ui.label_current_port.setStyleSheet("""
-                    QLabel {
-                        font: bold 28pt "微软雅黑";
-                        color: rgb(255, 0, 0);
-                        border: 2px solid rgb(200, 200, 200);
-                        border-radius: 10px;
-                        background-color: rgb(248, 248, 248);
-                        padding: 10px;
-                    }
-                """)
-
-                # 更新状态灯为红色
-                self.ui.label_connection_status.setStyleSheet("""
-                    QLabel {
-                        border: 3px solid rgb(100, 100, 100);
-                        border-radius: 70px;
-                        background-color: rgb(144, 144, 144);
-                    }
-                """)
-                self.ui.label_status_text.setText("端口未连接")
-                self.ui.label_status_text.setStyleSheet("""
-                    QLabel {
-                        border: none;
-                        color: rgb(144, 144, 144);
-                        font: 24pt "微软雅黑";
-                    }
-                """)
-
-                # 禁用确认按钮
-                self.ui.pushButton_send_marker.setEnabled(False)
-
                 CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "未检测到设备",
-                                          "未检测到CH340脑电设备，请检查设备连接。")
-
+                                          "未检测到设备，请检查设备连接。")
         except Exception as e:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "检测失败",
-                                      f"检测端口时出错：{str(e)}")
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "连接失败",
+                                      f"连接端口时出错：{str(e)}")
 
-    def send_marker8(self):
+    def send_marker8(self, port):
         """发送marker8确认连接"""
         try:
-            # 检查是否有端口设置
-            if shared_data.global_flag is None or shared_data.global_port is None:
-                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "未设置端口",
-                                          "请先检测端口后再确认连接！")
-                return
-
             # 初始化端口
             if initialize_serial():
                 try:
                     # 发送marker8
                     marker_data = bytes([8])
                     serial_marker(marker_data)
-                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "连接确认",
-                                              f"已成功向端口 {shared_data.global_port} 发送确认信号(marker8)")
                 finally:
                     # 发送完成后关闭串口，释放资源
                     close_serial()
             else:
-                # 显示详细的错误信息和解决建议
-                error_msg = f"无法初始化端口 {shared_data.global_port}。\n\n可能原因：\n"
-                error_msg += "• 端口被其他程序占用\n"
-                error_msg += "• 设备管理器正在使用端口\n"
-                error_msg += "• Arduino IDE 或其他开发工具占用\n\n"
-                error_msg += "解决方法：\n"
-                error_msg += "1. 关闭设备管理器和串口监控工具\n"
-                error_msg += "2. 拔掉USB线，等待5秒后重新插入\n"
-                error_msg += "3. 重新检测端口"
-                
-                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "连接失败", error_msg)
+                print(f"无法初始化端口 {port}")
         except Exception as e:
             # 出现异常时也要确保关闭串口
             close_serial()
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "发送失败",
-                                      f"发送确认信号时出错：{str(e)}")
+            print(f"发送确认信号时出错：{str(e)}")
+
+    def set_connected_status(self, port):
+        """设置连接成功状态"""
+        # 更新UI显示
+        self.ui.label_current_port.setText(port)
+        self.ui.label_current_port.setStyleSheet("""
+            QLabel {
+                font: bold 24pt "微软雅黑";
+                color: rgb(46, 204, 113);
+                border: 2px solid rgb(46, 204, 113);
+                border-radius: 10px;
+                background-color: rgb(248, 248, 248);
+                padding: 10px;
+            }
+        """)
+
+        # 更新状态灯为绿色
+        self.ui.label_connection_status.setStyleSheet("""
+            QLabel {
+                border: 3px solid rgb(46, 204, 113);
+                border-radius: 70px;
+                background-color: rgb(46, 204, 113);
+            }
+        """)
+        self.ui.label_status_text.setText("已自动连接")
+        self.ui.label_status_text.setStyleSheet("""
+            QLabel {
+                border: none;
+                color: rgb(46, 204, 113);
+                font: 24pt "微软雅黑";
+            }
+        """)
+
+        # 禁用连接按钮
+        self.ui.pushButton_auto_connect.setEnabled(False)
+        self.ui.pushButton_auto_connect.setText("已连接")
+
+        # 设置共享数据
+        shared_data.global_flag = 1
+        shared_data.global_port = port
+        shared_data.global_baudrate = serial_config.get_baudrate()
+
+    def set_detected_but_not_connected_status(self, port):
+        """设置检测到但无法连接状态"""
+        self.ui.label_current_port.setText(f"{port} (无法连接)")
+        self.ui.label_current_port.setStyleSheet("""
+            QLabel {
+                font: bold 24pt "微软雅黑";
+                color: rgb(255, 140, 0);
+                border: 2px solid rgb(255, 140, 0);
+                border-radius: 10px;
+                background-color: rgb(248, 248, 248);
+                padding: 10px;
+            }
+        """)
+
+        # 更新状态灯为橙色
+        self.ui.label_connection_status.setStyleSheet("""
+            QLabel {
+                border: 3px solid rgb(255, 140, 0);
+                border-radius: 70px;
+                background-color: rgb(255, 140, 0);
+            }
+        """)
+        self.ui.label_status_text.setText("检测到设备")
+        self.ui.label_status_text.setStyleSheet("""
+            QLabel {
+                border: none;
+                color: rgb(255, 140, 0);
+                font: 24pt "微软雅黑";
+            }
+        """)
+
+        # 启用连接按钮，允许手动重试
+        self.ui.pushButton_auto_connect.setEnabled(True)
+        self.ui.pushButton_auto_connect.setText("重试连接")
+
+    def set_no_port_detected_status(self):
+        """设置未检测到端口状态"""
+        self.ui.label_current_port.setText("未检测")
+        self.ui.label_current_port.setStyleSheet("""
+            QLabel {
+                font: bold 24pt "微软雅黑";
+                color: rgb(255, 0, 0);
+                border: 2px solid rgb(200, 200, 200);
+                border-radius: 10px;
+                background-color: rgb(248, 248, 248);
+                padding: 10px;
+            }
+        """)
+
+        # 更新状态灯为灰色
+        self.ui.label_connection_status.setStyleSheet("""
+            QLabel {
+                border: 3px solid rgb(100, 100, 100);
+                border-radius: 70px;
+                background-color: rgb(144, 144, 144);
+            }
+        """)
+        self.ui.label_status_text.setText("端口未连接")
+        self.ui.label_status_text.setStyleSheet("""
+            QLabel {
+                border: none;
+                color: rgb(255, 0, 0);
+                font: 24pt "微软雅黑";
+            }
+        """)
+
+        # 启用连接按钮
+        self.ui.pushButton_auto_connect.setEnabled(True)
+        self.ui.pushButton_auto_connect.setText("连接端口")
+
+    def reset_connection_status(self):
+        """重置连接状态"""
+        shared_data.global_flag = None
+        shared_data.global_port = None
+        shared_data.global_baudrate = None
+        self.set_no_port_detected_status()
 
     def relogin(self):
         """关闭主界面并返回到登录窗口。"""
@@ -793,7 +868,7 @@ class Interfacewindow(QMainWindow):
     def go_setting(self):
         """切换到端口设置页面。"""
         self.ui.stackedWidget.setCurrentIndex(5)
-    
+
     def go_home(self):
         """切换到首页。"""
         self.ui.stackedWidget.setCurrentIndex(0)
@@ -1059,7 +1134,7 @@ class Interfacewindow(QMainWindow):
         self.ui.first_user_label.setText("暂无数据")
         self.ui.second_user_label.setText("暂无数据")
         self.ui.third_user_label.setText("暂无数据")
-    
+
     def stop_current_game(self):
         """停止当前运行的游戏线程"""
         if self.current_stop_event:
@@ -1068,20 +1143,20 @@ class Interfacewindow(QMainWindow):
             self.current_game_thread.join(timeout=3)
             if self.current_game_thread.is_alive():
                 print("警告：游戏线程未能在3秒内停止")
-    
+
     def start_game_thread(self, game_class):
         """安全启动游戏线程"""
         print(f"[游戏启动] 开始启动游戏线程，游戏类: {game_class}")
-        
+
         # 先停止当前游戏
         print(f"[游戏启动] 停止当前游戏")
         self.stop_current_game()
-        
+
         # 检查游戏类的构造函数是否支持stop_event参数
         import inspect
         sig = inspect.signature(game_class.__init__)
         print(f"[游戏启动] 游戏类构造函数签名: {sig}")
-        
+
         if 'stop_event' in sig.parameters:
             # 支持stop_event参数的游戏类（如main.py中的Game类）
             print(f"[游戏启动] 游戏类支持stop_event参数")
@@ -1090,22 +1165,22 @@ class Interfacewindow(QMainWindow):
             # 不支持stop_event参数的游戏类（如测试文件中的Game类）
             print(f"[游戏启动] 游戏类不支持stop_event参数")
             target_func = lambda: game_class().run()
-        
+
         print(f"[游戏启动] 目标函数准备完成: {target_func}")
-        
+
         # 启动新游戏
         print(f"[游戏启动] 调用线程管理器启动线程")
         thread, stop_event = thread_manager.start_thread(
             target=target_func,
             timeout=60
         )
-        
+
         self.current_game_thread = thread
         self.current_stop_event = stop_event
-        
+
         print(f"[游戏启动] 游戏线程启动完成: {thread.name}")
         return thread, stop_event
-    
+
     def closeEvent(self, event):
         """窗口关闭时的清理操作"""
         self.stop_current_game()

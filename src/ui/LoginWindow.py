@@ -16,7 +16,6 @@ from src.ui.InterfaceWindow import Interfacewindow
 from src.data.login_info_handler import LoginInfoHandler, create_experiment_structure
 from src.ui import InterfaceUI  # 确保导入了主窗口UI
 
-
 class CustomDialog(QDialog):
     """
     完全自定义的对话框，用于替代QMessageBox，以实现更好的布局控制和样式。
@@ -29,39 +28,44 @@ class CustomDialog(QDialog):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # 创建主容器框架，用于实现明显的边框 (根据用户需求恢复)
         main_frame = QFrame(self)
         main_frame.setGeometry(0, 0, width, height)
         main_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: white;
                 border-radius: 20px;
-                border: 2px solid #555;  /* 恢复边框 */
+                border: 2px solid #555;
             }}
         """)
 
-        # 在主框架内创建布局
         main_layout = QVBoxLayout(main_frame)
         main_layout.setContentsMargins(25, 25, 25, 25)
         main_layout.setSpacing(20)
         main_layout.addStretch(1)
 
-        content_layout = QHBoxLayout()
+        # --- 修改为 QGridLayout 来实现特殊对齐 ---
+        content_layout = QGridLayout() # <-- 修改：使用网格布局
         content_layout.setSpacing(20)
 
+        # 文字标签
+        text_label = QLabel(text, self)
+        text_label.setFont(QFont("Microsoft YaHei", font_size))
+        text_label.setWordWrap(True)
+        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setStyleSheet("border: none; color: black;")
+        # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
+        content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
+
+        # 图标标签
         icon_label = QLabel(self)
         icon_pixmap = self.style().standardIcon(icon_type).pixmap(64, 64)
         icon_label.setPixmap(icon_pixmap)
         icon_label.setFixedSize(64, 64)
         icon_label.setStyleSheet("border: none;")
-        content_layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
+        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
+        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        # --- 修改区域结束 ---
 
-        text_label = QLabel(text, self)
-        text_label.setFont(QFont("Microsoft YaHei", font_size))
-        text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignVCenter)
-        text_label.setStyleSheet("border: none; color: black;")
-        content_layout.addWidget(text_label, 1)
 
         main_layout.addLayout(content_layout)
         main_layout.addStretch(1)
@@ -72,8 +76,8 @@ class CustomDialog(QDialog):
         if button_type == 'yes_no':
             yes_button = QPushButton("是", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
-            yes_button.setFixedSize(140, 50)
-            yes_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            yes_button.setFixedSize(220, 65)
+            yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
                 QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 25px; }
                 QPushButton:hover { background-color: #27ae60; }
@@ -84,8 +88,8 @@ class CustomDialog(QDialog):
 
             no_button = QPushButton("否", self)
             no_button.setCursor(QCursor(Qt.PointingHandCursor))
-            no_button.setFixedSize(140, 50)
-            no_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+            no_button.setFixedSize(220, 65)
+            no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
                 QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 25px; }
                 QPushButton:hover { background-color: #c0392b; }
@@ -93,10 +97,10 @@ class CustomDialog(QDialog):
             """)
             no_button.clicked.connect(self.reject)
             button_layout.addWidget(no_button)
-        else:  # 默认为 'ok'
+        else:
             ok_button = QPushButton("确定", self)
             ok_button.setCursor(QCursor(Qt.PointingHandCursor))
-            ok_button.setFixedSize(140, 50)
+            ok_button.setFixedSize(220, 65)
             ok_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
             ok_button.setStyleSheet("""
                 QPushButton { background-color: #3498db; color: white; border: none; border-radius: 25px; }
@@ -111,13 +115,12 @@ class CustomDialog(QDialog):
         main_layout.addStretch(1)
 
     def showEvent(self, event):
-        """重写 showEvent 以在显示时调整窗口位置到父窗口正中心偏上。"""
         super().showEvent(event)
         if self.parent():
             parent_rect = self.parent().geometry()
             parent_center = parent_rect.center()
             x = parent_center.x() - self.width() // 2
-            y = parent_center.y() - self.height() // 2  # 向上偏移50像素
+            y = parent_center.y() - self.height() // 2
             self.move(x, y)
 
     @staticmethod
@@ -135,13 +138,12 @@ class CustomDialog(QDialog):
         """显示登录成功确认对话框"""
         dialog = QDialog(parent)
         dialog.setWindowTitle(title)
-        dialog.setFixedSize(700, 350)
+        dialog.setFixedSize(700, 400)
         dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
 
-        # 创建主容器框架
         main_frame = QFrame(dialog)
-        main_frame.setGeometry(0, 0, 700, 350)
+        main_frame.setGeometry(0, 0, 700, 400)
         main_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
@@ -150,57 +152,58 @@ class CustomDialog(QDialog):
             }
         """)
 
-        # 在主框架内创建布局
         main_layout = QVBoxLayout(main_frame)
         main_layout.setContentsMargins(25, 25, 25, 25)
         main_layout.setSpacing(20)
         main_layout.addStretch(1)
 
-        # 内容区域（图标 + 文字）
-        content_layout = QHBoxLayout()
+        # --- 修改为 QGridLayout 来实现特殊对齐 ---
+        content_layout = QGridLayout() # <-- 修改：使用网格布局
         content_layout.setSpacing(20)
 
-        # 图标
-        icon_label = QLabel()
-        icon_label.setFixedSize(64, 64)
-        icon_pixmap = dialog.style().standardIcon(icon_type).pixmap(64, 64)
-        icon_label.setPixmap(icon_pixmap)
-        icon_label.setStyleSheet("border: none;")
-        content_layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
-
-        # 文字
+        # 文字标签
         text_label = QLabel(text)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignVCenter)
+        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
         text_label.setStyleSheet("border: none; color: black;")
-        content_layout.addWidget(text_label, 1)
+        # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
+        content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
+
+        # 图标标签
+        icon_label = QLabel()
+        icon_label.setFixedSize(80, 80)
+        icon_pixmap = dialog.style().standardIcon(icon_type).pixmap(80, 80)
+        icon_label.setPixmap(icon_pixmap)
+        icon_label.setStyleSheet("border: none;")
+        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
+        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        # --- 修改区域结束 ---
 
         main_layout.addLayout(content_layout)
         main_layout.addStretch(1)
 
-        # 按钮区域
         button_layout = QHBoxLayout()
         button_layout.addStretch()
 
-        # 进入主界面按钮
         enter_button = QPushButton("进入主界面")
-        enter_button.setFixedSize(140, 50)
-        enter_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+        enter_button.setCursor(QCursor(Qt.PointingHandCursor))
+        enter_button.setFixedSize(220, 65)
+        enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         enter_button.setStyleSheet("""
-            QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 25px; }
+            QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 32px; }
             QPushButton:hover { background-color: #27ae60; }
             QPushButton:pressed { background-color: #1e8449; }
         """)
         enter_button.clicked.connect(dialog.accept)
         button_layout.addWidget(enter_button)
 
-        # 取消按钮
         cancel_button = QPushButton("取消")
-        cancel_button.setFixedSize(140, 50)
-        cancel_button.setFont(QFont("Microsoft YaHei", 16, QFont.Bold))
+        cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
+        cancel_button.setFixedSize(220, 65)
+        cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         cancel_button.setStyleSheet("""
-            QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 25px; }
+            QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 32px; }
             QPushButton:hover { background-color: #c0392b; }
             QPushButton:pressed { background-color: #a93226; }
         """)
@@ -213,6 +216,7 @@ class CustomDialog(QDialog):
 
         # 居中显示
         if parent:
+            dialog.adjustSize() # 自适应大小
             parent_rect = parent.geometry()
             parent_center = parent_rect.center()
             x = parent_center.x() - dialog.width() // 2
@@ -221,7 +225,6 @@ class CustomDialog(QDialog):
 
         result = dialog.exec_()
 
-        # 只有在用户点击"进入主界面"时才执行回调
         if result == QDialog.Accepted and callback:
             callback()
 
@@ -518,7 +521,7 @@ class LoginWindow(QMainWindow):
                             )
 
             # 显示登录成功确认对话框
-            CustomDialog.show_login_success(self, QStyle.SP_MessageBoxInformation, "登录成功", success_text,
+            CustomDialog.show_login_success(self, QStyle.SP_DialogApplyButton, "登录成功", success_text,
                                             font_size=22, callback=self.transition_to_main_interface)
 
     def transition_to_main_interface(self):
@@ -537,7 +540,7 @@ class LoginWindow(QMainWindow):
             self,
             QStyle.SP_MessageBoxQuestion,
             "确认退出",
-            "您确定要退出登录界面吗？"
+            "确定要退出软件吗？"
         )
 
         if reply == QDialog.Accepted:

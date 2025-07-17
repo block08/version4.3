@@ -488,58 +488,8 @@ class Ui_MainWindow(object):
                                         "    padding-top:3px;\n"
                                         "}")
         self.pushButton_4.setObjectName("pushButton_4")
-        self.pushButton_5 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_5.setGeometry(QtCore.QRect(20, 110, 581, 80))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_5.sizePolicy().hasHeightForWidth())
-        self.pushButton_5.setSizePolicy(sizePolicy)
-        self.pushButton_5.setStyleSheet("QPushButton{\n"
-                                        "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 2px solid rgb(51, 51, 51);\n"
-                                        "    color: rgb(51, 51, 51);\n"
-                                        "    font: 30pt \"微软雅黑\";\n"
-                                        "    border-radius: 8px;\n"
-                                        "    padding: 10px;\n"
-                                        "}\n"
-                                        "QPushButton:hover{\n"
-                                        "    background-color: rgb(245, 245, 245);\n"
-                                        "    border: 2px solid rgb(34, 34, 34);\n"
-                                        "}\n"
-                                        "QPushButton:pressed{\n"
-                                        "    background-color: rgb(230, 230, 230);\n"
-                                        "    padding-left:3px;\n"
-                                        "    padding-top:3px;\n"
-                                        "}")
-        self.pushButton_5.setObjectName("pushButton_5")
-        self.pushButton_6 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_6.setGeometry(QtCore.QRect(20, 200, 581, 80))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_6.sizePolicy().hasHeightForWidth())
-        self.pushButton_6.setSizePolicy(sizePolicy)
-        self.pushButton_6.setStyleSheet("QPushButton{\n"
-                                        "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 2px solid rgb(51, 51, 51);\n"
-                                        "    color: rgb(51, 51, 51);\n"
-                                        "    font: 30pt \"微软雅黑\";\n"
-                                        "    border-radius: 8px;\n"
-                                        "    padding: 10px;\n"
-                                        "}\n"
-                                        "QPushButton:hover{\n"
-                                        "    background-color: rgb(245, 245, 245);\n"
-                                        "    border: 2px solid rgb(34, 34, 34);\n"
-                                        "}\n"
-                                        "QPushButton:pressed{\n"
-                                        "    background-color: rgb(230, 230, 230);\n"
-                                        "    padding-left:3px;\n"
-                                        "    padding-top:3px;\n"
-                                        "}")
-        self.pushButton_6.setObjectName("pushButton_6")
         self.pushButton_9 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_9.setGeometry(QtCore.QRect(20, 290, 581, 80))
+        self.pushButton_9.setGeometry(QtCore.QRect(20, 110, 581, 80))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -564,7 +514,7 @@ class Ui_MainWindow(object):
                                         "}")
         self.pushButton_9.setObjectName("pushButton_9")
         self.pushButton_10 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_10.setGeometry(QtCore.QRect(20, 380, 581, 80))
+        self.pushButton_10.setGeometry(QtCore.QRect(20, 200, 581, 80))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -917,17 +867,17 @@ class Ui_MainWindow(object):
         self.label_current_port.setAlignment(QtCore.Qt.AlignCenter)
         self.label_current_port.setObjectName("label_current_port")
 
-        # 获取脑电端口按钮
-        self.pushButton_detect_port = QtWidgets.QPushButton(self.frame_8)
-        self.pushButton_detect_port.setGeometry(QtCore.QRect(580, 50, 180, 60))
+        # 端口连接按钮（自动检测+连接）
+        self.pushButton_auto_connect = QtWidgets.QPushButton(self.frame_8)
+        self.pushButton_auto_connect.setGeometry(QtCore.QRect(580, 50, 180, 60))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(20)
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
-        self.pushButton_detect_port.setFont(font)
-        self.pushButton_detect_port.setStyleSheet("""
+        self.pushButton_auto_connect.setFont(font)
+        self.pushButton_auto_connect.setStyleSheet("""
             QPushButton {
                 background-color: rgb(255, 255, 255);
                 border: 2px solid rgb(51, 51, 51);
@@ -945,9 +895,14 @@ class Ui_MainWindow(object):
                 padding-left: 3px;
                 padding-top: 3px;
             }
+            QPushButton:disabled {
+                background-color: rgb(245, 245, 245);
+                border: 2px solid rgb(200, 200, 200);
+                color: rgb(150, 150, 150);
+            }
         """)
-        self.pushButton_detect_port.setText("获取脑电端口")
-        self.pushButton_detect_port.setObjectName("pushButton_detect_port")
+        self.pushButton_auto_connect.setText("连接端口")
+        self.pushButton_auto_connect.setObjectName("pushButton_auto_connect")
 
         # 状态指示灯（调整位置）
         self.label_connection_status = QtWidgets.QLabel(self.frame_8)
@@ -975,44 +930,6 @@ class Ui_MainWindow(object):
         self.label_status_text.setAlignment(QtCore.Qt.AlignCenter)
         self.label_status_text.setObjectName("label_status_text")
 
-        # 确认按钮（发送marker8）
-        self.pushButton_send_marker = QtWidgets.QPushButton(self.frame_8)
-        self.pushButton_send_marker.setGeometry(QtCore.QRect(300, 400, 200, 80))
-        font = QtGui.QFont()
-        font.setFamily("微软雅黑")
-        font.setPointSize(24)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setWeight(50)
-        self.pushButton_send_marker.setFont(font)
-        self.pushButton_send_marker.setStyleSheet("""
-            QPushButton {
-                background-color: rgb(255, 255, 255);
-                border: 2px solid rgb(46, 204, 113);
-                color: rgb(46, 204, 113);
-                font: 24pt "微软雅黑";
-                border-radius: 8px;
-                padding: 8px;
-            }
-            QPushButton:hover {
-                background-color: rgb(240, 255, 240);
-                border: 2px solid rgb(39, 174, 96);
-                color: rgb(39, 174, 96);
-            }
-            QPushButton:pressed {
-                background-color: rgb(220, 255, 220);
-                padding-left: 3px;
-                padding-top: 3px;
-            }
-            QPushButton:disabled {
-                background-color: rgb(245, 245, 245);
-                border: 2px solid rgb(200, 200, 200);
-                color: rgb(150, 150, 150);
-            }
-        """)
-        self.pushButton_send_marker.setText("确认连接")
-        self.pushButton_send_marker.setEnabled(False)  # 默认禁用
-        self.pushButton_send_marker.setObjectName("pushButton_send_marker")
         self.stackedWidget.addWidget(self.page_serial)
         self.verticalLayout_3.addWidget(self.stackedWidget)
         self.horizontalLayout_4.addWidget(self.frame_7)
@@ -1044,8 +961,6 @@ class Ui_MainWindow(object):
 
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
-        self.pushButton_5.setText(_translate("MainWindow", "人员②绘图练习模块"))
-        self.pushButton_6.setText(_translate("MainWindow", "人员③绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
         self.pushButton_10.setText(_translate("MainWindow", "人员①&人员③绘图练习模块"))
         self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))

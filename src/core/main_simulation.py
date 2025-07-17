@@ -428,7 +428,7 @@ class Game:
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
-            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
+            value_text = value_font.render(f"{speed_level}", True, (0, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
@@ -746,7 +746,7 @@ class Game:
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
-            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
+            value_text = value_font.render(f"{speed_level}", True, (0, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
@@ -1073,7 +1073,7 @@ class Game:
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
-            value_text = value_font.render(f"{speed_level}", True, (255, 0, 0))
+            value_text = value_font.render(f"{speed_level}", True, (0, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
@@ -1393,6 +1393,7 @@ class Game:
         """
         # --- 参数定义 ---
         BG_COLOR = (230, 230, 230)
+        BLACK = (0,0,0)
         TEXT_COLOR = (0, 0, 0)
         GREEN_COLOR = (0, 255, 0)
         RED = (255, 0, 0)
@@ -1629,7 +1630,7 @@ class Game:
         value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
         pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
         pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
-        value_text = main_font.render("50", True, RED)
+        value_text = main_font.render("50", True, BLACK)
         value_text_rect = value_text.get_rect(center=value_demo_rect.center)
         self.screen.blit(value_text, value_text_rect)
 
@@ -1709,7 +1710,7 @@ class Game:
         BG_COLOR = (230, 230, 230)  # 与其他界面保持一致的灰色背景
         BOX_COLOR = (144, 197, 114)  # 与流程图相同的绿色框
         TEXT_COLOR = (0, 0, 0)
-        ACCENT_COLOR = (144, 238, 144)  # 浅绿色强调
+        ACCENT_COLOR = (0, 255, 0)  # 绿色强调
         TITLE_COLOR = (0, 0, 0)
 
         screen_width = self.screen.get_width()
@@ -1783,7 +1784,6 @@ class Game:
         pygame.draw.lines(self.screen, TEXT_COLOR, False, check_points, 5)
 
         pygame.display.update()
-
 
 def draw_data(self, screen, data, subject_type=None):
     """优化的数据显示函数"""
