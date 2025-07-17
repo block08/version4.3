@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from .ui.res import res
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -661,38 +662,39 @@ class Ui_MainWindow(object):
         self.first_place_frame.setObjectName("first_place_frame")
 
         self.first_rank_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_rank_label.setGeometry(QtCore.QRect(30, 20, 80, 30))
-        self.first_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
+        self.first_rank_label.setFixedSize(60,60)
+        self.first_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_rank_label.setObjectName("first_rank_label")
 
         self.first_user_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_user_label.setGeometry(QtCore.QRect(120, 20, 150, 30))
-        self.first_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_user_label.setObjectName("first_user_label")
 
         self.first_accuracy_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_accuracy_label.setGeometry(QtCore.QRect(280, 20, 120, 30))
-        self.first_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_accuracy_label.setObjectName("first_accuracy_label")
 
         self.first_time_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_time_label.setGeometry(QtCore.QRect(410, 20, 120, 30))
-        self.first_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_time_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_time_label.setObjectName("first_time_label")
 
         self.first_deviation_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_deviation_label.setGeometry(QtCore.QRect(540, 20, 120, 30))
-        self.first_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_deviation_label.setObjectName("first_deviation_label")
 
         self.first_date_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_date_label.setGeometry(QtCore.QRect(670, 20, 90, 30))
-        self.first_date_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #8B4513; border: none;")
+        self.first_date_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.first_date_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_date_label.setObjectName("first_date_label")
 
@@ -710,38 +712,39 @@ class Ui_MainWindow(object):
         self.second_place_frame.setObjectName("second_place_frame")
 
         self.second_rank_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_rank_label.setGeometry(QtCore.QRect(30, 20, 80, 30))
-        self.second_rank_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
+        self.second_rank_label.setFixedSize(60, 60)
+        self.second_rank_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_rank_label.setObjectName("second_rank_label")
 
         self.second_user_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_user_label.setGeometry(QtCore.QRect(120, 20, 150, 30))
-        self.second_user_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_user_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_user_label.setObjectName("second_user_label")
 
         self.second_accuracy_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_accuracy_label.setGeometry(QtCore.QRect(280, 20, 120, 30))
-        self.second_accuracy_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_accuracy_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_accuracy_label.setObjectName("second_accuracy_label")
 
         self.second_time_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_time_label.setGeometry(QtCore.QRect(410, 20, 120, 30))
-        self.second_time_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_time_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_time_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_time_label.setObjectName("second_time_label")
 
         self.second_deviation_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_deviation_label.setGeometry(QtCore.QRect(540, 20, 120, 30))
-        self.second_deviation_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_deviation_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_deviation_label.setObjectName("second_deviation_label")
 
         self.second_date_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_date_label.setGeometry(QtCore.QRect(670, 20, 90, 30))
-        self.second_date_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #2F4F4F; border: none;")
+        self.second_date_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #FFFAF0; border: none;")
         self.second_date_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_date_label.setObjectName("second_date_label")
 
@@ -759,8 +762,9 @@ class Ui_MainWindow(object):
         self.third_place_frame.setObjectName("third_place_frame")
 
         self.third_rank_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_rank_label.setGeometry(QtCore.QRect(30, 20, 80, 30))
-        self.third_rank_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
+        self.third_rank_label.setFixedSize(60, 60)
+        self.third_rank_label.setStyleSheet("QLabel{font: bold 16pt '微软雅黑'; color: #FFFAF0; border: none;}")
         self.third_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_rank_label.setObjectName("third_rank_label")
 
@@ -950,7 +954,22 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "user"))
-        self.pushButton_relogin.setText(_translate("MainWindow", "重新登录"))
+        self.pushButton_relogin.setText(_translate("MainWindow", ""))
+        self.pushButton_relogin.setStyleSheet("QPushButton {\
+        image: url(:/image/exit.png);\
+        background-color: transparent;\
+        color:  #2c3e50;\
+        border: none;\
+        padding: 8px 12px;\
+        }QPushButton:hover {\
+        color: #42b983;  /* Vue风格的悬停颜色 */\
+    }\
+    QPushButton:pressed {\
+        color: #2d8d62;  /* 按下时更深的颜色 */\
+        padding-left: 13px;  /* 向右移动1像素 */\
+        padding-top: 9px;    /* 向下移动1像素 */\
+    }")
+
         self.pushButton_exercise.setText(_translate("MainWindow", "练习试次"))
         self.pushButton_main.setText(_translate("MainWindow", "正式实验"))
         self.pushButton_highestscore.setText(_translate("MainWindow", "最好成绩"))
@@ -965,19 +984,22 @@ class Ui_MainWindow(object):
         self.pushButton_10.setText(_translate("MainWindow", "人员①&人员③绘图练习模块"))
         self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))
         self.title_label.setText(_translate("MainWindow", "🏆 准确度排行榜 TOP 3"))
-        self.first_rank_label.setText(_translate("MainWindow", "🥇"))
+        # self.first_rank_label.setText(_translate("MainWindow", "🥇"))
+        self.first_rank_label.setStyleSheet("QLabel { image: url(:/image/1.png); }")
         self.first_user_label.setText(_translate("MainWindow", "用户"))
         self.first_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.first_time_label.setText(_translate("MainWindow", "用时: -"))
         self.first_deviation_label.setText(_translate("MainWindow", "偏差: -"))
         self.first_date_label.setText(_translate("MainWindow", "日期: -"))
-        self.second_rank_label.setText(_translate("MainWindow", "🥈"))
+        # self.second_rank_label.setText(_translate("MainWindow", "🥈"))
+        self.second_rank_label.setStyleSheet("QLabel { image: url(:/image/2.png); }")
         self.second_user_label.setText(_translate("MainWindow", "用户"))
         self.second_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.second_time_label.setText(_translate("MainWindow", "用时: -"))
         self.second_deviation_label.setText(_translate("MainWindow", "偏差: -"))
         self.second_date_label.setText(_translate("MainWindow", "日期: -"))
-        self.third_rank_label.setText(_translate("MainWindow", "🥉"))
+        # self.third_rank_label.setText(_translate("MainWindow", "🥉"))
+        self.third_rank_label.setStyleSheet("QLabel { image: url(:/image/3.png); }")
         self.third_user_label.setText(_translate("MainWindow", "用户"))
         self.third_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.third_time_label.setText(_translate("MainWindow", "用时: -"))

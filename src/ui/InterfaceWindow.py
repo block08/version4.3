@@ -990,7 +990,7 @@ class Interfacewindow(QMainWindow):
                         # 获取文件修改时间作为实验日期
                         import time
                         timestamp = os.path.getmtime(suba_data_file)
-                        date_str = time.strftime("%m-%d", time.localtime(timestamp))
+                        date_str = time.strftime("%Y-%m-%d", time.localtime(timestamp))
 
                         leaderboard_data.append({
                             'user_id': user_info['main_user_id'],
