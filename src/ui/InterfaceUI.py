@@ -88,7 +88,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.frame_10)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
+        # self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
+        self.pushButton_relogin = QtWidgets.QPushButton()
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(40)
@@ -97,26 +98,16 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.pushButton_relogin.setFont(font)
         self.pushButton_relogin.setStyleSheet("QPushButton{\n"
-                                              "background-color: rgb(255, 255, 255);\n"
-                                              "    border: 2px solid rgb(51, 51, 51);\n"
-                                              "    color: rgb(51, 51, 51);\n"
-                                              "    font: 40pt \"微软雅黑\";\n"
-                                              "    border-radius: 8px;\n"
-                                              "}\n"
-                                              "QPushButton:hover{\n"
-                                              "    background-color: rgb(230, 240, 255);\n"
-                                              "    border: 2px solid rgb(34, 34, 34);\n"
-                                              "    color: rgb(34, 34, 34);\n"
-                                              "}\n"
-                                              "QPushButton:pressed{\n"
-                                              "    background-color: rgb(210, 225, 255);\n"
-                                              "    padding-left:3px;\n"
-                                              "    padding-top:3px;\n"
-                                              "}")
+                                   "    border:none;\n"
+                                   "}\n"
+                                   "QPushButton:hover{\n"
+                                   "    padding-bottom:10px\n"
+                                   "\n"
+                                   "}")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/logout.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/image/exit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_relogin.setIcon(icon1)
-        self.pushButton_relogin.setIconSize(QtCore.QSize(80, 40))
+        self.pushButton_relogin.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_relogin.setObjectName("pushButton_relogin")
         self.horizontalLayout_2.addWidget(self.pushButton_relogin)
         self.horizontalLayout.addWidget(self.frame_4)
@@ -138,6 +129,7 @@ class Ui_MainWindow(object):
         self.frame_5.setObjectName("frame_5")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_5)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+
         self.pushButton_3 = QtWidgets.QPushButton(self.frame_5)
         self.pushButton_3.setText("")
         icon2 = QtGui.QIcon()
@@ -145,6 +137,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setIcon(icon2)
         self.pushButton_3.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout_3.addWidget(self.pushButton_relogin)
         self.horizontalLayout_3.addWidget(self.pushButton_3)
         self.pushButton_2 = QtWidgets.QPushButton(self.frame_5)
         self.pushButton_2.setText("")
@@ -153,7 +146,9 @@ class Ui_MainWindow(object):
         self.pushButton_2.setIcon(icon3)
         self.pushButton_2.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_2.setObjectName("pushButton_2")
+
         self.horizontalLayout_3.addWidget(self.pushButton_2)
+
         self.horizontalLayout.addWidget(self.frame_5, 0, QtCore.Qt.AlignRight)
         self.verticalLayout.addWidget(self.frame_2)
         self.frame_3 = QtWidgets.QFrame(self.frame)
@@ -902,20 +897,49 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "user"))
         self.pushButton_relogin.setText(_translate("MainWindow", ""))
-        self.pushButton_relogin.setStyleSheet("QPushButton {\
-        image: url(:/image/exit.png);\
-        background-color: transparent;\
-        color:  #2c3e50;\
-        border: none;\
-        padding: 8px 12px;\
-        }QPushButton:hover {\
-        color: #42b983;  /* Vue风格的悬停颜色 */\
-    }\
-    QPushButton:pressed {\
-        color: #2d8d62;  /* 按下时更深的颜色 */\
-        padding-left: 13px;  /* 向右移动1像素 */\
-        padding-top: 9px;    /* 向下移动1像素 */\
-    }")
+        # self.pushButton_relogin.setStyleSheet("QPushButton {\
+        # image: url(:/image/exit.png);\
+        # background-color: transparent;\
+        # color:  #2c3e50;\
+        # border: none;\
+        # padding: 8px 12px;\
+        # }QPushButton:hover {\
+        # color: #42b983;  /* Vue风格的悬停颜色 */\
+        # }\
+        # QPushButton:pressed {\
+        #     color: #2d8d62;  /* 按下时更深的颜色 */\
+        #     padding-left: 13px;  /* 向右移动1像素 */\
+        #     padding-top: 9px;    /* 向下移动1像素 */\
+        # }")
+        #
+        # self.pushButton_3.setStyleSheet("QPushButton {\
+        # image: url(:/image/minimize.png);\
+        # background-color: transparent;\
+        # color:  #2c3e50;\
+        # border: none;\
+        # padding: 8px 12px;\
+        # }QPushButton:hover {\
+        # color: #42b983;  /* Vue风格的悬停颜色 */\
+        # }\
+        # QPushButton:pressed {\
+        #     color: #2d8d62;  /* 按下时更深的颜色 */\
+        #     padding-left: 13px;  /* 向右移动1像素 */\
+        #     padding-top: 9px;    /* 向下移动1像素 */\
+        # }")
+        # self.pushButton_3.setStyleSheet("QPushButton {\
+        #  image: url(:/image/close.png);\
+        #  background-color: transparent;\
+        #  color:  #2c3e50;\
+        #  border: none;\
+        #  padding: 8px 12px;\
+        #  }QPushButton:hover {\
+        #  color: #42b983;  /* Vue风格的悬停颜色 */\
+        #  }\
+        #  QPushButton:pressed {\
+        #      color: #2d8d62;  /* 按下时更深的颜色 */\
+        #      padding-left: 13px;  /* 向右移动1像素 */\
+        #      padding-top: 9px;    /* 向下移动1像素 */\
+        #  }")
 
         self.pushButton_exercise.setText(_translate("MainWindow", "练习试次"))
         self.pushButton_main.setText(_translate("MainWindow", "正式实验"))
