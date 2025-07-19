@@ -220,7 +220,7 @@ class Interfacewindow(QMainWindow):
             2: self.ui.pushButton_main,  # page_main 对应 正式实验按钮
             3: self.ui.pushButton_highestscore,  # page_highestscore 对应 最高纪录按钮
             4: self.ui.pushButton_data,  # page_data 对应 数据查看按钮
-            5: self.ui.pushButton_setting  # page_serial 对应 串口设置按钮
+            # 5: self.ui.pushButton_setting  # page_serial 对应 串口设置按钮 - 已注释
         }
 
         # 定义按钮的正常状态样式
@@ -411,7 +411,7 @@ class Interfacewindow(QMainWindow):
         self.ui.pushButton_main.clicked.connect(self.go_main_with_state)
         self.ui.pushButton_highestscore.clicked.connect(self.go_highestscore)
         self.ui.pushButton_data.clicked.connect(self.open_data_folder_with_state)
-        self.ui.pushButton_setting.clicked.connect(self.go_setting)
+        # self.ui.pushButton_setting.clicked.connect(self.go_setting)  # 端口设置按钮已注释
         self.ui.run_main_test.clicked.connect(self.go_main)
         self.ui.pushButton_auto_connect.clicked.connect(self.manual_connect_port)
         self.ui.pushButton_relogin.clicked.connect(self.relogin)
@@ -835,7 +835,7 @@ class Interfacewindow(QMainWindow):
         reply = CustomDialog.ask_question(
             self,
             QStyle.SP_MessageBoxQuestion,  # 使用问号图标
-            "确认退出",
+            "",
             "您确定要退出程序吗？"
         )
 

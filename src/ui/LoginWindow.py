@@ -227,7 +227,92 @@ class CustomDialog(QDialog):
 
         if result == QDialog.Accepted and callback:
             callback()
+    @staticmethod
+    def show_login_success1(parent, title, text, font_size=28, callback=None):
+        """显示登录成功确认对话框"""
+        dialog = QDialog(parent)
+        dialog.setWindowTitle(title)
+        dialog.setFixedSize(700, 400)
+        dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialog.setAttribute(Qt.WA_TranslucentBackground)
 
+        main_frame = QFrame(dialog)
+        main_frame.setGeometry(0, 0, 700, 400)
+        main_frame.setStyleSheet("""
+            QFrame {
+                background-color: white;
+                border-radius: 20px;
+                border: 2px solid #555;
+            }
+        """)
+
+        main_layout = QVBoxLayout(main_frame)
+        main_layout.setContentsMargins(25, 25, 25, 25)
+        main_layout.setSpacing(20)
+        main_layout.addStretch(1)
+
+        # --- 修改为 QGridLayout 来实现特殊对齐 ---
+        content_layout = QGridLayout() # <-- 修改：使用网格布局
+        content_layout.setSpacing(20)
+
+        # 文字标签
+        text_label = QLabel(text)
+        text_label.setFont(QFont("Microsoft YaHei", font_size))
+        text_label.setWordWrap(True)
+        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setStyleSheet("border: none; color: black;")
+        # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
+        content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
+
+
+
+        main_layout.addLayout(content_layout)
+        main_layout.addStretch(1)
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+
+        enter_button = QPushButton("进入主界面")
+        enter_button.setCursor(QCursor(Qt.PointingHandCursor))
+        enter_button.setFixedSize(220, 65)
+        enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
+        enter_button.setStyleSheet("""
+            QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 32px; }
+            QPushButton:hover { background-color: #27ae60; }
+            QPushButton:pressed { background-color: #1e8449; }
+        """)
+        enter_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(enter_button)
+
+        cancel_button = QPushButton("取消")
+        cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
+        cancel_button.setFixedSize(220, 65)
+        cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
+        cancel_button.setStyleSheet("""
+            QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 32px; }
+            QPushButton:hover { background-color: #c0392b; }
+            QPushButton:pressed { background-color: #a93226; }
+        """)
+        cancel_button.clicked.connect(dialog.reject)
+        button_layout.addWidget(cancel_button)
+
+        button_layout.addStretch()
+        main_layout.addLayout(button_layout)
+        main_layout.addStretch(1)
+
+        # 居中显示
+        if parent:
+            dialog.adjustSize() # 自适应大小
+            parent_rect = parent.geometry()
+            parent_center = parent_rect.center()
+            x = parent_center.x() - dialog.width() // 2
+            y = parent_center.y() - dialog.height() // 2
+            dialog.move(x, y)
+
+        result = dialog.exec_()
+
+        if result == QDialog.Accepted and callback:
+            callback()
 
 class EllipseUserButton(QPushButton):
     """自定义椭圆形用户按钮"""
@@ -477,7 +562,7 @@ class LoginWindow(QMainWindow):
 
     def final_login(self):
         if not self.selected_task:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择任务编号")
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择任务代号")
             return
         if not self.selected_subject_a:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择佩戴脑电帽的航天员")
@@ -515,13 +600,13 @@ class LoginWindow(QMainWindow):
             export_to_txt(output_db_path, "data", output_txt_path)
 
             success_text = (f"登录成功！\n\n"
-                            f"任务编号: {self.selected_task}\n"
+                            f"任务代号: {self.selected_task}\n"
                             f"被测航天员: {self.selected_subject_a['mark'].replace('SZ21-', '')} \n"
                             f"辅助航天员: {self.selected_subject_b['mark'].replace('SZ21-', '')} 和 {self.selected_subject_c['mark'].replace('SZ21-', '')}\n"
                             )
 
             # 显示登录成功确认对话框
-            CustomDialog.show_login_success(self, QStyle.SP_DialogApplyButton, "登录成功", success_text,
+            CustomDialog.show_login_success1(self,  "登录成功", success_text,
                                             font_size=22, callback=self.transition_to_main_interface)
 
     def transition_to_main_interface(self):

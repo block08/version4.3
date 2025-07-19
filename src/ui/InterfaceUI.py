@@ -205,25 +205,15 @@ class Ui_MainWindow(object):
         self.frame_6.setObjectName("frame_6")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_6)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        # 1. 实验流程
+        # 1. 实验介绍
         self.pushButton_macro_guidance = QtWidgets.QPushButton(self.frame_6)
-        self.pushButton_macro_guidance.setText("实验流程")
+        self.pushButton_macro_guidance.setText("实验介绍")
         self.pushButton_macro_guidance.setObjectName("pushButton_macro_guidance")
         self.verticalLayout_2.addWidget(self.pushButton_macro_guidance)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
         
-        # 2. 端口设置
-        self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
-        self.pushButton_setting = QtWidgets.QPushButton(self.frame_6)
-        self.pushButton_setting.setObjectName("pushButton_setting")
-        self.horizontalLayout_11.addWidget(self.pushButton_setting)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem2)
-        
-        # 3. 练习试次
+        # 2. 练习试次
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setSpacing(6)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
@@ -239,10 +229,10 @@ class Ui_MainWindow(object):
         self.pushButton_exercise.setObjectName("pushButton_exercise")
         self.horizontalLayout_8.addWidget(self.pushButton_exercise)
         self.verticalLayout_2.addLayout(self.horizontalLayout_8)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem3)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem2)
         
-        # 4. 正式实验
+        # 3. 正式实验
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setSpacing(6)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
@@ -250,28 +240,38 @@ class Ui_MainWindow(object):
         self.pushButton_main.setObjectName("pushButton_main")
         self.horizontalLayout_9.addWidget(self.pushButton_main)
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
-        spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem4)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem3)
         
-        # 5. 数据查看
+        # 4. 数据查看
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_12.setObjectName("horizontalLayout_12")
         self.pushButton_data = QtWidgets.QPushButton(self.frame_6)
         self.pushButton_data.setObjectName("pushButton_data")
         self.horizontalLayout_12.addWidget(self.pushButton_data)
         self.verticalLayout_2.addLayout(self.horizontalLayout_12)
-        spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem5)
+        spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem4)
         
-        # 6. 最好成绩
+        # 5. 最好成绩
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.pushButton_highestscore = QtWidgets.QPushButton(self.frame_6)
         self.pushButton_highestscore.setObjectName("pushButton_highestscore")
         self.horizontalLayout_10.addWidget(self.pushButton_highestscore)
         self.verticalLayout_2.addLayout(self.horizontalLayout_10)
-        spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem6)
+        spacerItem5 = QtWidgets.QSpacerItem(20, 70, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem5)
+        
+        # 6. 端口设置 - 已注释，功能保留
+        # self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
+        # self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        # self.pushButton_setting = QtWidgets.QPushButton(self.frame_6)
+        # self.pushButton_setting.setObjectName("pushButton_setting")
+        # self.horizontalLayout_11.addWidget(self.pushButton_setting)
+        # self.verticalLayout_2.addLayout(self.horizontalLayout_11)
+        # spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        # self.verticalLayout_2.addItem(spacerItem6)
         self.horizontalLayout_4.addWidget(self.frame_6)
         self.frame_7 = QtWidgets.QFrame(self.frame_3)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -307,7 +307,7 @@ class Ui_MainWindow(object):
 
         # 添加介绍界面内容 - 调整居中位置
         self.label_welcome_title = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_title.setGeometry(QtCore.QRect(250, 80, 600, 80))
+        self.label_welcome_title.setGeometry(QtCore.QRect(250, 50, 600, 80))
         self.label_welcome_title.setStyleSheet("""
             QLabel {
                 font: bold 40pt "微软雅黑";
@@ -320,7 +320,7 @@ class Ui_MainWindow(object):
         self.label_welcome_title.setObjectName("label_welcome_title")
 
         self.label_welcome_subtitle = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 170, 700, 50))
+        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 150, 700, 50))
         self.label_welcome_subtitle.setStyleSheet("""
             QLabel {
                 font: 24pt "微软雅黑";
@@ -332,111 +332,55 @@ class Ui_MainWindow(object):
         self.label_welcome_subtitle.setAlignment(QtCore.Qt.AlignCenter)
         self.label_welcome_subtitle.setObjectName("label_welcome_subtitle")
 
-        # 实验流程指导框 - 在右侧内容区域居中
-        self.frame_guidance = QtWidgets.QFrame(self.page_home)
-        self.frame_guidance.setGeometry(QtCore.QRect(50, 250, 1000, 350))
-        self.frame_guidance.setStyleSheet("""
+        # 实验介绍内容框
+        self.frame_introduction = QtWidgets.QFrame(self.page_home)
+        self.frame_introduction.setGeometry(QtCore.QRect(100, 220, 900, 350))
+        self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
                 border: 2px solid rgb(180, 180, 180);
                 border-radius: 12px;
             }
         """)
-        self.frame_guidance.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_guidance.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_guidance.setObjectName("frame_guidance")
+        self.frame_introduction.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_introduction.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_introduction.setObjectName("frame_introduction")
 
-        self.label_guidance = QtWidgets.QLabel(self.frame_guidance)
-        self.label_guidance.setGeometry(QtCore.QRect(50, 250, 900, 80))
-        self.label_guidance.setStyleSheet("""
+        # 实验介绍标题
+        self.label_intro_title = QtWidgets.QLabel(self.frame_introduction)
+        self.label_intro_title.setGeometry(QtCore.QRect(50, 10, 800, 50))
+        self.label_intro_title.setStyleSheet("""
             QLabel {
-                font: bold 30pt "微软雅黑";
+                font: bold 28pt "微软雅黑";
                 color: rgb(51, 51, 51);
                 text-align: center;
                 border: none;
-                line-height: 1.5;
             }
         """)
-        self.label_guidance.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_guidance.setWordWrap(True)
-        self.label_guidance.setObjectName("label_guidance")
 
-        # 添加流程图标 - 在1000px宽框架中居中分布
-        self.label_step1 = QtWidgets.QLabel(self.frame_guidance)
-        self.label_step1.setGeometry(QtCore.QRect(80, 60, 200, 160))
-        self.label_step1.setStyleSheet("""
+        # 实验介绍内容
+        self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
+        self.label_intro_content.setGeometry(QtCore.QRect(50, 40, 800, 250))
+        self.label_intro_content.setStyleSheet("""
             QLabel {
-                font: bold 24pt "微软雅黑";
-                color: rgb(255, 255, 255);
-                background-color: rgb(79, 79, 79);
-                border-radius: 40px;
-                text-align: center;
+                font: 20pt "微软雅黑";
+                color: rgb(51, 51, 51);
+                text-align: left;
                 border: none;
+                line-height: 1.6;
             }
         """)
-        self.label_step1.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_step1.setText("① 端口设置")
-        self.label_step1.setObjectName("label_step1")
+        self.label_intro_content.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_intro_content.setWordWrap(True)
+        self.label_intro_content.setText("""本实验是一个绘图任务，您需要根据屏幕上的提示进行绘图操作。
+   • 练习试次：熟悉系统操作，掌握绘图技巧
+   • 正式实验：完成正式的绘图任务测试
 
-        self.label_arrow1 = QtWidgets.QLabel(self.frame_guidance)
-        self.label_arrow1.setGeometry(QtCore.QRect(290, 100, 70, 80))
-        self.label_arrow1.setStyleSheet("""
-            QLabel {
-                font: bold 36pt "微软雅黑";
-                color: rgb(79, 79, 79);
-                text-align: center;
-                border: none;
-            }
-        """)
-        self.label_arrow1.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_arrow1.setText("→")
-        self.label_arrow1.setObjectName("label_arrow1")
+ 重要提示：
+   • 请先完成练习试次，熟练后可直接进行正式实验
+   • 实验过程中请保持注意力集中""")
+        self.label_intro_content.setObjectName("label_intro_content")
 
-        self.label_step2 = QtWidgets.QLabel(self.frame_guidance)
-        self.label_step2.setGeometry(QtCore.QRect(370, 60, 200, 160))
-        self.label_step2.setStyleSheet("""
-            QLabel {
-                font: bold 24pt "微软雅黑";
-                color: rgb(255, 255, 255);
-                background-color: rgb(79, 79, 79);
-                border-radius: 40px;
-                text-align: center;
-                border: none;
-            }
-        """)
-        self.label_step2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_step2.setText("② 练习试次")
-        self.label_step2.setObjectName("label_step2")
-
-        self.label_arrow2 = QtWidgets.QLabel(self.frame_guidance)
-        self.label_arrow2.setGeometry(QtCore.QRect(580, 100, 70, 80))
-        self.label_arrow2.setStyleSheet("""
-            QLabel {
-                font: bold 36pt "微软雅黑";
-                color: rgb(79, 79, 79);
-                text-align: center;
-                border: none;
-            }
-        """)
-        self.label_arrow2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_arrow2.setText("→")
-        self.label_arrow2.setObjectName("label_arrow2")
-
-        self.label_step3 = QtWidgets.QLabel(self.frame_guidance)
-        self.label_step3.setGeometry(QtCore.QRect(660, 60, 200, 160))
-        self.label_step3.setStyleSheet("""
-            QLabel {
-                font: bold 24pt "微软雅黑";
-                color: rgb(255, 255, 255);
-                background-color: rgb(79, 79, 79);
-                border-radius: 40px;
-                text-align: center;
-                border: none;
-            }
-        """)
-        self.label_step3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_step3.setText("③ 正式实验")
-        self.label_step3.setObjectName("label_step3")
 
         # 添加输入法提醒标签到首页
         self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
@@ -456,7 +400,7 @@ class Ui_MainWindow(object):
         self.page_exercise = QtWidgets.QWidget()
         self.page_exercise.setObjectName("page_exercise")
         self.label_2 = QtWidgets.QLabel(self.page_exercise)
-        self.label_2.setGeometry(QtCore.QRect(220, 90, 751, 71))
+        self.label_2.setGeometry(QtCore.QRect(280, 90, 751, 71))
         self.label_2.setStyleSheet("font-size: 50px")
         self.label_2.setObjectName("label_2")
         self.frame_11 = QtWidgets.QFrame(self.page_exercise)
@@ -465,7 +409,7 @@ class Ui_MainWindow(object):
         self.frame_11.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_11.setObjectName("frame_11")
         self.pushButton_4 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_4.setGeometry(QtCore.QRect(20, 20, 581, 80))
+        self.pushButton_4.setGeometry(QtCore.QRect(20, 30, 581, 80))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -490,7 +434,7 @@ class Ui_MainWindow(object):
                                         "}")
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_9 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_9.setGeometry(QtCore.QRect(20, 110, 581, 80))
+        self.pushButton_9.setGeometry(QtCore.QRect(20, 140, 581, 80))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -515,7 +459,7 @@ class Ui_MainWindow(object):
                                         "}")
         self.pushButton_9.setObjectName("pushButton_9")
         self.pushButton_10 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_10.setGeometry(QtCore.QRect(20, 200, 581, 80))
+        self.pushButton_10.setGeometry(QtCore.QRect(20, 250, 581, 80))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -643,7 +587,7 @@ class Ui_MainWindow(object):
 
         self.header_date = QtWidgets.QLabel(self.header_frame)
         self.header_date.setGeometry(QtCore.QRect(670, 10, 90, 30))
-        self.header_date.setStyleSheet("font: bold 16pt '微软雅黑'; color: white; border: none;")
+        self.header_date.setStyleSheet("font: bold 14pt '微软雅黑'; color: white; border: none;")
         self.header_date.setAlignment(QtCore.Qt.AlignCenter)
         self.header_date.setText("日期")
         self.header_date.setObjectName("header_date")
@@ -664,37 +608,37 @@ class Ui_MainWindow(object):
         self.first_rank_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
         self.first_rank_label.setFixedSize(60,60)
-        self.first_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #000000; border: none;")
         self.first_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_rank_label.setObjectName("first_rank_label")
 
         self.first_user_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_user_label.setGeometry(QtCore.QRect(120, 20, 150, 30))
-        self.first_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #000000; border: none;")
         self.first_user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_user_label.setObjectName("first_user_label")
 
         self.first_accuracy_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_accuracy_label.setGeometry(QtCore.QRect(280, 20, 120, 30))
-        self.first_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.first_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_accuracy_label.setObjectName("first_accuracy_label")
 
         self.first_time_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_time_label.setGeometry(QtCore.QRect(410, 20, 120, 30))
-        self.first_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.first_time_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_time_label.setObjectName("first_time_label")
 
         self.first_deviation_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_deviation_label.setGeometry(QtCore.QRect(540, 20, 120, 30))
-        self.first_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.first_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_deviation_label.setObjectName("first_deviation_label")
 
         self.first_date_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_date_label.setGeometry(QtCore.QRect(670, 20, 90, 30))
-        self.first_date_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.first_date_label.setStyleSheet("font: bold 10pt '微软雅黑'; color: #000000; border: none;")
         self.first_date_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_date_label.setObjectName("first_date_label")
 
@@ -714,37 +658,37 @@ class Ui_MainWindow(object):
         self.second_rank_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
         self.second_rank_label.setFixedSize(60, 60)
-        self.second_rank_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #000000; border: none;")
         self.second_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_rank_label.setObjectName("second_rank_label")
 
         self.second_user_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_user_label.setGeometry(QtCore.QRect(120, 20, 150, 30))
-        self.second_user_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #000000; border: none;")
         self.second_user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_user_label.setObjectName("second_user_label")
 
         self.second_accuracy_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_accuracy_label.setGeometry(QtCore.QRect(280, 20, 120, 30))
-        self.second_accuracy_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.second_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_accuracy_label.setObjectName("second_accuracy_label")
 
         self.second_time_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_time_label.setGeometry(QtCore.QRect(410, 20, 120, 30))
-        self.second_time_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.second_time_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_time_label.setObjectName("second_time_label")
 
         self.second_deviation_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_deviation_label.setGeometry(QtCore.QRect(540, 20, 120, 30))
-        self.second_deviation_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.second_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_deviation_label.setObjectName("second_deviation_label")
 
         self.second_date_label = QtWidgets.QLabel(self.second_place_frame)
         self.second_date_label.setGeometry(QtCore.QRect(670, 20, 90, 30))
-        self.second_date_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.second_date_label.setStyleSheet("font: bold 10pt '微软雅黑'; color: #000000; border: none;")
         self.second_date_label.setAlignment(QtCore.Qt.AlignCenter)
         self.second_date_label.setObjectName("second_date_label")
 
@@ -764,37 +708,37 @@ class Ui_MainWindow(object):
         self.third_rank_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
         self.third_rank_label.setFixedSize(60, 60)
-        self.third_rank_label.setStyleSheet("QLabel{font: bold 16pt '微软雅黑'; color: #FFFAF0; border: none;}")
+        self.third_rank_label.setStyleSheet("QLabel{font: bold 20pt '微软雅黑'; color: #000000; border: none;}")
         self.third_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_rank_label.setObjectName("third_rank_label")
 
         self.third_user_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_user_label.setGeometry(QtCore.QRect(120, 20, 150, 30))
-        self.third_user_label.setStyleSheet("font: bold 12pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_user_label.setStyleSheet("font: bold 16pt '微软雅黑'; color: #000000; border: none;")
         self.third_user_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_user_label.setObjectName("third_user_label")
 
         self.third_accuracy_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_accuracy_label.setGeometry(QtCore.QRect(280, 20, 120, 30))
-        self.third_accuracy_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_accuracy_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.third_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_accuracy_label.setObjectName("third_accuracy_label")
 
         self.third_time_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_time_label.setGeometry(QtCore.QRect(410, 20, 120, 30))
-        self.third_time_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_time_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.third_time_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_time_label.setObjectName("third_time_label")
 
         self.third_deviation_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_deviation_label.setGeometry(QtCore.QRect(540, 20, 120, 30))
-        self.third_deviation_label.setStyleSheet("font: bold 11pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_deviation_label.setStyleSheet("font: bold 14pt '微软雅黑'; color: #000000; border: none;")
         self.third_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_deviation_label.setObjectName("third_deviation_label")
 
         self.third_date_label = QtWidgets.QLabel(self.third_place_frame)
         self.third_date_label.setGeometry(QtCore.QRect(670, 20, 90, 30))
-        self.third_date_label.setStyleSheet("font: bold 10pt '微软雅黑'; color: #FFFAF0; border: none;")
+        self.third_date_label.setStyleSheet("font: bold 10pt '微软雅黑'; color: #000000; border: none;")
         self.third_date_label.setAlignment(QtCore.Qt.AlignCenter)
         self.third_date_label.setObjectName("third_date_label")
 
@@ -944,7 +888,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.setCurrentIndex(0)
         
         # 设置提醒标签位置在首页，确保不遮挡指导语 - 调整居中
-        self.label_input_method_reminder.setGeometry(QtCore.QRect(150, 620, 800, 60))
+        self.label_input_method_reminder.setGeometry(QtCore.QRect(150, 640, 800, 60))
         
         self.pushButton_2.clicked.connect(MainWindow.close)  # type: ignore
         self.pushButton_3.clicked.connect(MainWindow.showMinimized)  # type: ignore
@@ -974,16 +918,21 @@ class Ui_MainWindow(object):
         self.pushButton_main.setText(_translate("MainWindow", "正式实验"))
         self.pushButton_highestscore.setText(_translate("MainWindow", "最好成绩"))
         self.pushButton_data.setText(_translate("MainWindow", "数据查看"))
-        self.pushButton_setting.setText(_translate("MainWindow", "端口设置"))
+        # self.pushButton_setting.setText(_translate("MainWindow", "端口设置"))
         self.label_welcome_title.setText(_translate("MainWindow", "欢迎使用实验系统"))
-        self.label_welcome_subtitle.setText(_translate("MainWindow", "请遵循以下实验流程"))
+        self.label_welcome_subtitle.setText(_translate("MainWindow", "请仔细阅读以下实验说明"))
+        self.label_intro_content.setText(_translate("MainWindow", """本实验由一名主试分别与两位被试轮流配对进行，每轮任务为两人协作完成绘图。
+•首次使用：请点击【练习任务】，完成练习后进入【正式实验】。
+•非首次使用：熟悉操作后可直接点击【正式实验】，无需再次练习。
+•实验中端口自动连接，若未连接请点击端口设置按钮查看连接情况。"""))
+
 
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
         self.pushButton_10.setText(_translate("MainWindow", "人员①&人员③绘图练习模块"))
         self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))
-        self.title_label.setText(_translate("MainWindow", "🏆 准确度排行榜 TOP 3"))
+        self.title_label.setText(_translate("MainWindow", "🏆 单人准确度排行榜 TOP 3"))
         # self.first_rank_label.setText(_translate("MainWindow", "🥇"))
         self.first_rank_label.setStyleSheet("QLabel { image: url(:/image/1.png); }")
         self.first_user_label.setText(_translate("MainWindow", "用户"))
@@ -1008,7 +957,7 @@ class Ui_MainWindow(object):
         self.info_label.setText(_translate("MainWindow", "💡 排名基于准确度高低，偏差面积越小越好，用时越短越好"))
         self.label_4.setText(_translate("MainWindow", "点击按钮查看行为数据"))
         self.label_input_method_reminder.setText(_translate("MainWindow", "⚠️提醒：请确保切换到英文输入法"))
-        self.pushButton_macro_guidance.setText(_translate("MainWindow", "实验流程"))
+        self.pushButton_macro_guidance.setText(_translate("MainWindow", "实验介绍"))
         self.label_status_text.setText(_translate("MainWindow", "未连接"))
 
 

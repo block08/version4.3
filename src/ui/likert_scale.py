@@ -54,13 +54,13 @@ class LikertScale:
     def _init_levels(self):
         """初始化等级定义"""
         self.LEVELS = [
-            {"score": 7, "label": "非常困难"},
-            {"score": 6, "label": "困难"},
-            {"score": 5, "label": "有点困难"},
-            {"score": 4, "label": "一般"},
-            {"score": 3, "label": "有点简单"},
+            {"score": 1, "label": "非常简单"},
             {"score": 2, "label": "简单"},
-            {"score": 1, "label": "非常简单"}
+            {"score": 3, "label": "有点简单"},
+            {"score": 4, "label": "一般"},
+            {"score": 5, "label": "有点困难"},
+            {"score": 6, "label": "困难"},
+            {"score": 7, "label": "非常困难"}
         ]
 
     def _init_points(self):

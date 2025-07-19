@@ -322,7 +322,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -338,7 +338,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -375,7 +375,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
             elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
@@ -394,7 +394,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -439,7 +439,7 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -561,15 +561,19 @@ class Game:
             speed_rect = speed_text.get_rect(right=minus_button_rect.left - 10, centery=minus_button_rect.centery)
             self.screen.blit(speed_text, speed_rect)
 
-            # 绘制减速按钮
-            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
+            # --- 减速按钮 ---
+            minus_disabled = speed_value <= speed_min
+            minus_color = (200, 200, 200) if minus_disabled else (255, 255, 255)
+            minus_border_color = (180, 180, 180) if minus_disabled else (100, 100, 100)
+            minus_text_color = (180, 180, 180) if minus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
-            minus_text = button_font.render("-", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, minus_border_color, minus_button_rect, 2, border_radius=5)
+            minus_text = button_font.render("-", True, minus_text_color)
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
 
-            # 绘制数值显示
+            # --- 数值显示 ---
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
@@ -577,11 +581,15 @@ class Game:
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
-            # 绘制加速按钮
-            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
+            # --- 加速按钮 ---
+            plus_disabled = speed_value >= speed_max
+            plus_color = (200, 200, 200) if plus_disabled else (255, 255, 255)
+            plus_border_color = (180, 180, 180) if plus_disabled else (100, 100, 100)
+            plus_text_color = (180, 180, 180) if plus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
-            plus_text = button_font.render("+", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, plus_border_color, plus_button_rect, 2, border_radius=5)
+            plus_text = button_font.render("+", True, plus_text_color)
             plus_text_rect = plus_text.get_rect(center=plus_button_rect.center)
             self.screen.blit(plus_text, plus_text_rect)
 
@@ -605,13 +613,18 @@ class Game:
                 if first_image_shown and 1 <= stats.game_score <= 8:
                     step_button2.text = f"{stats.game_score} / 8"
                     hint_text = "按P键暂停"
-                    center_button.text = "到达终点后按空格键继续"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键继续"
+                    else:
+                        center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     hint_surface = key_hint_font.render(hint_text, True, black)
                     hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
                     self.screen.blit(hint_surface, hint_rect)
                     step_button2.draw_button()
-                    center_button.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                 elif stats.game_score > 8:
                     step_button2.text = "完成"
                     hint_text = "任务已完成"
@@ -709,7 +722,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -769,7 +782,7 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -936,13 +949,18 @@ class Game:
                 if first_image_shown and 12 <= stats.game_score <= 19:
                     step_button2.text = f"{stats.game_score - 11} / 8"
                     hint_text = "按P键暂停"
-                    center_button.text = "到达终点后按空格键继续"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键继续"
+                    else:
+                        center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     hint_surface = key_hint_font.render(hint_text, True, black)
                     hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
                     self.screen.blit(hint_surface, hint_rect)
                     step_button2.draw_button()
-                    center_button.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                 elif stats.game_score > 19:
                     step_button2.text = "完成"
                     hint_text = "任务已完成"
@@ -1044,7 +1062,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -1107,7 +1125,7 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -1277,13 +1295,18 @@ class Game:
                 if first_image_shown and 24 <= stats.game_score <= 31:
                     step_button2.text = f"{stats.game_score - 23} / 8"
                     hint_text = "按P键暂停"
-                    center_button.text = "到达终点后按空格键继续"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键继续"
+                    else:
+                        center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     hint_surface = key_hint_font.render(hint_text, True, black)
                     hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
                     self.screen.blit(hint_surface, hint_rect)
                     step_button2.draw_button()
-                    center_button.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                 elif stats.game_score > 31:
                     step_button2.text = "完成"
                     hint_text = "任务已完成"
@@ -1373,7 +1396,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -1409,7 +1432,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "确认退出", "您确定要返回主页面吗？"):
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
             elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
@@ -1802,8 +1825,8 @@ class Game:
 
         minus_demo_rect = pygame.Rect(0, 0, 50, 50)
         minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (150, 150, 150), minus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (100, 100, 100), minus_demo_rect, 2, border_radius=5)
+        pygame.draw.rect(self.screen, (255, 255, 255), minus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (180, 180, 180), minus_demo_rect, 2, border_radius=5)
         minus_text = main_font.render("-", True, TEXT_COLOR)
         minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
         self.screen.blit(minus_text, minus_text_rect)
@@ -1818,8 +1841,8 @@ class Game:
 
         plus_demo_rect = pygame.Rect(0, 0, 50, 50)
         plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (150, 150, 150), plus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (100, 100, 100), plus_demo_rect, 2, border_radius=5)
+        pygame.draw.rect(self.screen, (255, 255, 255), plus_demo_rect, border_radius=5)
+        pygame.draw.rect(self.screen, (180, 180, 180), plus_demo_rect, 2, border_radius=5)
         plus_text = main_font.render("+", True, TEXT_COLOR)
         plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
         self.screen.blit(plus_text, plus_text_rect)
