@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .ui.res import res
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -212,7 +213,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.pushButton_macro_guidance)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
-        
+
         # 2. 练习试次
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setSpacing(6)
@@ -231,7 +232,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_8)
         spacerItem2 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem2)
-        
+
         # 3. 正式实验
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setSpacing(6)
@@ -242,7 +243,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
         spacerItem3 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem3)
-        
+
         # 4. 数据查看
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_12.setObjectName("horizontalLayout_12")
@@ -252,7 +253,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_12)
         spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem4)
-        
+
         # 5. 最好成绩
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
@@ -262,7 +263,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_10)
         spacerItem5 = QtWidgets.QSpacerItem(20, 70, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem5)
-        
+
         # 6. 端口设置 - 已注释，功能保留
         # self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         # self.horizontalLayout_11.setObjectName("horizontalLayout_11")
@@ -305,9 +306,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.page_home)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
 
-        # 添加介绍界面内容 - 调整居中位置
+        # <<< MODIFICATION START >>>
+        # --- Adjusted layout for introduction page ---
+
         self.label_welcome_title = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_title.setGeometry(QtCore.QRect(250, 50, 600, 80))
+        self.label_welcome_title.setGeometry(QtCore.QRect(250, 40, 600, 80))  # y adjusted
         self.label_welcome_title.setStyleSheet("""
             QLabel {
                 font: bold 40pt "微软雅黑";
@@ -320,7 +323,7 @@ class Ui_MainWindow(object):
         self.label_welcome_title.setObjectName("label_welcome_title")
 
         self.label_welcome_subtitle = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 150, 700, 50))
+        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 120, 700, 50))  # y adjusted
         self.label_welcome_subtitle.setStyleSheet("""
             QLabel {
                 font: 24pt "微软雅黑";
@@ -332,13 +335,13 @@ class Ui_MainWindow(object):
         self.label_welcome_subtitle.setAlignment(QtCore.Qt.AlignCenter)
         self.label_welcome_subtitle.setObjectName("label_welcome_subtitle")
 
-        # 实验介绍内容框
+        # 实验介绍内容框 (Resized)
         self.frame_introduction = QtWidgets.QFrame(self.page_home)
-        self.frame_introduction.setGeometry(QtCore.QRect(100, 220, 900, 350))
+        self.frame_introduction.setGeometry(QtCore.QRect(100, 180, 900, 240))  # Resized for new layout
         self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
-                border: 2px solid rgb(180, 180, 180);
+                border: 2px solid rgb(220, 220, 220);
                 border-radius: 12px;
             }
         """)
@@ -346,44 +349,46 @@ class Ui_MainWindow(object):
         self.frame_introduction.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_introduction.setObjectName("frame_introduction")
 
-        # 实验介绍标题
-        self.label_intro_title = QtWidgets.QLabel(self.frame_introduction)
-        self.label_intro_title.setGeometry(QtCore.QRect(50, 10, 800, 50))
-        self.label_intro_title.setStyleSheet("""
-            QLabel {
-                font: bold 28pt "微软雅黑";
-                color: rgb(51, 51, 51);
-                text-align: center;
-                border: none;
-            }
-        """)
-
-        # 实验介绍内容
+        # 实验介绍内容 (Text updated, no separate title)
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
-        self.label_intro_content.setGeometry(QtCore.QRect(50, 40, 800, 250))
+        self.label_intro_content.setGeometry(QtCore.QRect(50, 15, 800, 210))  # Resized and positioned
         self.label_intro_content.setStyleSheet("""
             QLabel {
-                font: 20pt "微软雅黑";
+                font: 18pt "微软雅黑";
                 color: rgb(51, 51, 51);
-                text-align: left;
                 border: none;
-                line-height: 1.6;
             }
         """)
+        self.label_intro_content.setTextFormat(QtCore.Qt.RichText)  # Enable rich text for formatting
         self.label_intro_content.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.label_intro_content.setWordWrap(True)
-        self.label_intro_content.setText("""本实验是一个绘图任务，您需要根据屏幕上的提示进行绘图操作。
-   • 练习试次：熟悉系统操作，掌握绘图技巧
-   • 正式实验：完成正式的绘图任务测试
-
- 重要提示：
-   • 请先完成练习试次，熟练后可直接进行正式实验
-   • 实验过程中请保持注意力集中""")
         self.label_intro_content.setObjectName("label_intro_content")
 
+        # Added Image/Diagram Placeholder for the task
+        self.label_task_image = QtWidgets.QLabel(self.page_home)
+        self.label_task_image.setGeometry(QtCore.QRect(150, 440, 800, 250))
+        self.label_task_image.setStyleSheet("""
+            QLabel {
+                background-color: rgb(240, 240, 240);
+                border: 2px dashed rgb(180, 180, 180);
+                border-radius: 10px;
+                color: rgb(150, 150, 150);
+                font: 16pt "微软雅黑";
+            }
+        """)
+        self.label_task_image.setAlignment(QtCore.Qt.AlignCenter)
+        # IMPORTANT: Replace with your actual image path from resources
+        pixmap = QtGui.QPixmap(":/images/task_example.png")
+        if pixmap.isNull():
+            self.label_task_image.setText("任务图示 (请在 res.qrc 中添加图片)")
+        else:
+            self.label_task_image.setPixmap(
+                pixmap.scaled(self.label_task_image.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+        self.label_task_image.setObjectName("label_task_image")
 
-        # 添加输入法提醒标签到首页
+        # 添加输入法提醒标签到首页 (Position adjusted)
         self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
+        self.label_input_method_reminder.setGeometry(QtCore.QRect(150, 710, 800, 60))
         self.label_input_method_reminder.setStyleSheet("QLabel{\n"
                                                        "    border: 2px solid rgb(255, 165, 0);\n"
                                                        "    border-radius: 10px;\n"
@@ -395,6 +400,7 @@ class Ui_MainWindow(object):
         self.label_input_method_reminder.setAlignment(QtCore.Qt.AlignCenter)
         self.label_input_method_reminder.setObjectName("label_input_method_reminder")
 
+        # <<< MODIFICATION END >>>
 
         self.stackedWidget.addWidget(self.page_home)
         self.page_exercise = QtWidgets.QWidget()
@@ -607,7 +613,7 @@ class Ui_MainWindow(object):
 
         self.first_rank_label = QtWidgets.QLabel(self.first_place_frame)
         self.first_rank_label.setGeometry(QtCore.QRect(30, 5, 80, 30))
-        self.first_rank_label.setFixedSize(60,60)
+        self.first_rank_label.setFixedSize(60, 60)
         self.first_rank_label.setStyleSheet("font: bold 20pt '微软雅黑'; color: #000000; border: none;")
         self.first_rank_label.setAlignment(QtCore.Qt.AlignCenter)
         self.first_rank_label.setObjectName("first_rank_label")
@@ -886,10 +892,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
-        
-        # 设置提醒标签位置在首页，确保不遮挡指导语 - 调整居中
-        self.label_input_method_reminder.setGeometry(QtCore.QRect(150, 640, 800, 60))
-        
+
         self.pushButton_2.clicked.connect(MainWindow.close)  # type: ignore
         self.pushButton_3.clicked.connect(MainWindow.showMinimized)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -919,14 +922,11 @@ class Ui_MainWindow(object):
         self.pushButton_highestscore.setText(_translate("MainWindow", "最好成绩"))
         self.pushButton_data.setText(_translate("MainWindow", "数据查看"))
         # self.pushButton_setting.setText(_translate("MainWindow", "端口设置"))
-        self.label_welcome_title.setText(_translate("MainWindow", "欢迎使用实验系统"))
         self.label_welcome_subtitle.setText(_translate("MainWindow", "请仔细阅读以下实验说明"))
-        self.label_intro_content.setText(_translate("MainWindow", """本实验由一名主试分别与两位被试轮流配对进行，每轮任务为两人协作完成绘图。
-•首次使用：请点击【练习任务】，完成练习后进入【正式实验】。
-•非首次使用：熟悉操作后可直接点击【正式实验】，无需再次练习。
-•实验中端口自动连接，若未连接请点击端口设置按钮查看连接情况。"""))
-
-
+        # <<< MODIFICATION >>>
+        # --- Updated instruction text ---
+        self.label_intro_content.setText(_translate("MainWindow",
+                                                    "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
