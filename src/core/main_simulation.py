@@ -13,6 +13,7 @@ from src.data.Calculate_pixel_difference import calculate_pixel_difference, calc
 from src.data.Deviation_area import deviation_area1, deviation_area2, deviation_area3
 from src.utils.game_stats import GameStats
 from src.core.level import Level
+
 from src.config.settings import *
 import random
 from src.ui.likert_scale import LikertScale
@@ -50,6 +51,7 @@ def read_speed_value():
 
 def handle_image_navigation(game_drawing, numbers, current_index, self, action="next"):
     """统一处理图片导航逻辑，确保图片按固定顺序显示"""
+
     if current_index < len(numbers):
         return game_drawing.random_painting(numbers[current_index], self, current_index)
     return None, None
@@ -356,7 +358,7 @@ class Game:
 
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 2
+        countdown_time = 10
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -373,10 +375,27 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        # 暂停计时器
+                        if not paused:
+                            pause_start_time = pygame.time.get_ticks()
+                            paused = True
+
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
-            elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
+                        else:
+                            # 用户选择继续，恢复计时器
+                            if paused:
+                                total_pause_time += pygame.time.get_ticks() - pause_start_time
+                                paused = False
+
+            # 计算实际经过的时间（不包括暂停时间）
+            current_ticks = pygame.time.get_ticks()
+            if paused:
+                elapsed_time = (pause_start_time - start_ticks - total_pause_time) / 1000
+            else:
+                elapsed_time = (current_ticks - start_ticks - total_pause_time) / 1000
+
             remaining_time = max(0, countdown_time - elapsed_time)
             if remaining_time == 0:
                 running = False
@@ -704,7 +723,7 @@ class Game:
                 stats.game_score = 10
                 break
 
-        rest_instructions(self, rest_duration=2)
+        rest_instructions(self, rest_duration=20)
         # 被试1+2协作阶段
         with open('config.txt', 'w') as f:
             f.truncate(0)
@@ -1039,7 +1058,7 @@ class Game:
                 stats.game_score = 21
                 break
 
-        rest_instructions(self, 2)  # 120秒休息倒计时
+        rest_instructions(self, 20)  # 120秒休息倒计时
         stats.game_score += 1
 
         # 被试1+3协作阶段
@@ -1188,6 +1207,7 @@ class Game:
                     elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
                         if not first_image_shown:
                             # 显示第一张图
+
                             t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23)
                             stats.game_score = 24
                             first_image_shown = True
@@ -1406,7 +1426,7 @@ class Game:
 
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 2
+        countdown_time = 10
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -2228,7 +2248,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         clock.tick(60)
 
 
-def rest_instructions(self, rest_duration=120):
+def rest_instructions(self, rest_duration=20):
     """
     显示休息指导文本并进行倒计时
     rest_duration: 休息时长（秒），默认120秒（2分钟）
@@ -2262,13 +2282,22 @@ def rest_instructions(self, rest_duration=120):
     # 倒计时循环
     start_time = time.time()
     clock = pygame.time.Clock()
+    paused = False
+    pause_start_time = 0
+    total_pause_time = 0
 
     while True:
         # 检查停止信号
         if hasattr(self, 'stop_event') and self.stop_event and self.stop_event.is_set():
             break
 
-        elapsed = time.time() - start_time
+        # 计算实际经过的时间（不包括暂停时间）
+        current_time = time.time()
+        if paused:
+            elapsed = pause_start_time - start_time - total_pause_time
+        else:
+            elapsed = current_time - start_time - total_pause_time
+
         remaining = max(0, rest_duration - elapsed)
 
         if remaining <= 0:
@@ -2295,6 +2324,10 @@ def rest_instructions(self, rest_duration=120):
         seconds = int(remaining % 60)
         countdown_text = f"{minutes:02d}:{seconds:02d}"
 
+        # 如果暂停，添加暂停提示
+        if paused:
+            countdown_text += " (已暂停)"
+
         # 最后30秒变红色
         countdown_color = RED if remaining <= 30 else GREEN
         countdown_surface = font_countdown.render(countdown_text, True, countdown_color)
@@ -2308,8 +2341,19 @@ def rest_instructions(self, rest_duration=120):
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                    # 暂停计时器
+                    if not paused:
+                        pause_start_time = time.time()
+                        paused = True
+
+                    if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                        pygame.quit()
+                        sys.exit()
+                    else:
+                        # 用户选择继续，恢复计时器
+                        if paused:
+                            total_pause_time += time.time() - pause_start_time
+                            paused = False
 
         pygame.display.flip()
         clock.tick(60)
