@@ -17,19 +17,23 @@ from src.hardware.serial_marker import serial_marker, initialize_serial
 from src.config.settings import *
 import random
 from src.ui.likert_scale import LikertScale
-from src.data.handle_slider_event import  handle_button_event
+from src.data.handle_slider_event import handle_button_event
 import csv
 import os
 from datetime import datetime
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
+
+
 def speed_level_to_value(level):
     """将1-100级别转换为1-100的实际速度值"""
     return level
 
+
 def speed_value_to_level(value):
     """将1-100的实际速度值转换为1-100级别"""
     return int(value)
+
 
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
@@ -44,12 +48,14 @@ def read_speed_value():
             f.write('50')
         return 50
 
+
 def handle_image_navigation(game_drawing, numbers, current_index, self, action="next"):
     """统一处理图片导航逻辑，确保图片按固定顺序显示"""
     serial_marker(bytes([0x01]))
     if current_index < len(numbers):
         return game_drawing.random_painting(numbers[current_index], self, current_index)
     return None, None
+
 
 # 绘图参数
 dots_time = []
@@ -98,7 +104,7 @@ def show_confirm_dialog(screen, title, message):
     """
     # 保存当前屏幕内容
     original_screen = screen.copy()
-    
+
     # 对话框尺寸和位置
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -107,7 +113,7 @@ def show_confirm_dialog(screen, title, message):
     dialog_x = (screen_width - dialog_width) // 2
     dialog_y = (screen_height - dialog_height) // 2
     dialog_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
-    
+
     # 颜色定义
     bg_color = (255, 255, 255)
     border_color = (85, 85, 85)
@@ -116,7 +122,7 @@ def show_confirm_dialog(screen, title, message):
     button_yes_hover = (39, 174, 96)
     button_no_color = (231, 76, 60)
     button_no_hover = (192, 57, 43)
-    
+
     # 字体设置
     try:
         title_font = pygame.font.Font(get_font_path(), 60)
@@ -126,7 +132,7 @@ def show_confirm_dialog(screen, title, message):
         title_font = pygame.font.Font(None, 60)
         message_font = pygame.font.Font(None, 50)
         button_font = pygame.font.Font(None, 50)
-    
+
     # 按钮设置
     button_width = 220
     button_height = 65
@@ -134,55 +140,55 @@ def show_confirm_dialog(screen, title, message):
     total_buttons_width = 2 * button_width + button_spacing
     buttons_start_x = dialog_x + (dialog_width - total_buttons_width) // 2
     button_y = dialog_y + dialog_height - 80
-    
+
     yes_button = pygame.Rect(buttons_start_x, button_y, button_width, button_height)
     no_button = pygame.Rect(buttons_start_x + button_width + button_spacing, button_y, button_width, button_height)
-    
+
     # 悬停状态
     yes_hover = False
     no_hover = False
-    
+
     def draw_dialog():
         """绘制对话框"""
         # 恢复原始屏幕内容
         screen.blit(original_screen, (0, 0))
-        
+
         # 绘制半透明背景
         overlay = pygame.Surface((screen_width, screen_height))
         overlay.set_alpha(128)
         overlay.fill((0, 0, 0))
         screen.blit(overlay, (0, 0))
-        
+
         # 绘制对话框背景
         pygame.draw.rect(screen, bg_color, dialog_rect, border_radius=10)
         pygame.draw.rect(screen, border_color, dialog_rect, 3, border_radius=10)
-        
+
         # 绘制标题
         title_surface = title_font.render(title, True, text_color)
         title_rect = title_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 60))
         screen.blit(title_surface, title_rect)
-        
+
         # 绘制消息
         message_surface = message_font.render(message, True, text_color)
         message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 200))
         screen.blit(message_surface, message_rect)
-        
+
         # 绘制按钮
         yes_color = button_yes_hover if yes_hover else button_yes_color
         no_color = button_no_hover if no_hover else button_no_color
-        
+
         pygame.draw.rect(screen, yes_color, yes_button, border_radius=8)
         pygame.draw.rect(screen, no_color, no_button, border_radius=8)
-        
+
         # 绘制按钮文字
         yes_text = button_font.render("是(Y)", True, (255, 255, 255))
         yes_text_rect = yes_text.get_rect(center=yes_button.center)
         screen.blit(yes_text, yes_text_rect)
-        
+
         no_text = button_font.render("否(N)", True, (255, 255, 255))
         no_text_rect = no_text.get_rect(center=no_button.center)
         screen.blit(no_text, no_text_rect)
-    
+
     # 主循环
     clock = pygame.time.Clock()
     while True:
@@ -192,12 +198,12 @@ def show_confirm_dialog(screen, title, message):
                 screen.blit(original_screen, (0, 0))
                 pygame.display.flip()
                 return False
-            
+
             elif event.type == pygame.MOUSEMOTION:
                 mouse_pos = pygame.mouse.get_pos()
                 yes_hover = yes_button.collidepoint(mouse_pos)
                 no_hover = no_button.collidepoint(mouse_pos)
-            
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # 左键
                     mouse_pos = pygame.mouse.get_pos()
@@ -211,7 +217,7 @@ def show_confirm_dialog(screen, title, message):
                         screen.blit(original_screen, (0, 0))
                         pygame.display.flip()
                         return False
-            
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN or event.key == pygame.K_y:
                     # 恢复原始屏幕内容并刷新显示
@@ -223,7 +229,7 @@ def show_confirm_dialog(screen, title, message):
                     screen.blit(original_screen, (0, 0))
                     pygame.display.flip()
                     return False
-        
+
         # 绘制对话框
         draw_dialog()
         pygame.display.flip()
@@ -254,8 +260,6 @@ class Game:
         # 创建Level对象
         self.level = Level()
 
-
-
     def run(self):
         global paused, t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3, timestamp4, timestamp5, timestamp6, timestamp7, timestamp8
         settings = Settings()
@@ -283,7 +287,7 @@ class Game:
         # 导入绘图模块
 
         game_drawing = GameDrawing()
-        
+
         try:
             initialize_serial()
             print("串口初始化成功")
@@ -300,21 +304,21 @@ class Game:
         speed_value = read_speed_value()
         speed_min, speed_max = 0, 100
         speed_step = 10
-        
+
         # 按钮状态用于长按功能
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
-        
+
         # 按钮位置设置
         button_y = 30
         button_size = 40
         button_spacing = 40
-        
+
         # 减速按钮
         minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
         # 加速按钮
         plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200 , button_y, 55, button_size)
+        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
 
         self.display_flowchart_instructions()
         wait = True
@@ -358,7 +362,7 @@ class Game:
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 2
+        countdown_time = 10
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -367,7 +371,7 @@ class Game:
             if self.stop_event and self.stop_event.is_set():
                 running = False
                 break
-                
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -375,10 +379,27 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        # 暂停计时器
+                        if not paused:
+                            pause_start_time = pygame.time.get_ticks()
+                            paused = True
+
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
-            elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
+                        else:
+                            # 用户选择继续，恢复计时器
+                            if paused:
+                                total_pause_time += pygame.time.get_ticks() - pause_start_time
+                                paused = False
+
+            # 计算实际经过的时间（不包括暂停时间）
+            current_ticks = pygame.time.get_ticks()
+            if paused:
+                elapsed_time = (pause_start_time - start_ticks - total_pause_time) / 1000
+            else:
+                elapsed_time = (current_ticks - start_ticks - total_pause_time) / 1000
+
             remaining_time = max(0, countdown_time - elapsed_time)
             if remaining_time == 0:
                 running = False
@@ -408,24 +429,22 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
-        
+
         # 读取id变量
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
-        
+
         while running:
             dt = self.clock.tick(60) / 1000
-            
+
             # 确保背景正确刷新
             self.screen.fill(grey)
-            
+
             user_button2 = Button3(settings, self.screen, f"航天员:{user1}", 10, 20)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
-            
 
-            
             # 处理键盘和鼠标事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -434,8 +453,8 @@ class Game:
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     self.screen.fill(grey)
                 elif event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max, speed_value, speed_step, button_states)
-
+                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
+                                                      speed_value, speed_step, button_states)
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -471,11 +490,11 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1)
@@ -497,11 +516,11 @@ class Game:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
                             pygame.display.update()
-                            
+
                             # 保存最后一张图的post_screenshot
                             post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot7.png"
                             pygame.image.save(self.screen, post_screenshot_path)
-                            
+
                             t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
                             stats.game_score = 9
                     elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
@@ -518,11 +537,11 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1)
@@ -543,11 +562,11 @@ class Game:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
                             pygame.display.update()
-                            
+
                             # 保存最后一张图的post_screenshot
                             post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot7.png"
                             pygame.image.save(self.screen, post_screenshot_path)
-                            
+
                             t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
                             stats.game_score = 9
 
@@ -596,7 +615,7 @@ class Game:
             # 创建按钮并设置状态
             # 中下方状态提示按钮
             center_button = Button4(settings, self.screen, "", 550, 1000)
-            
+
             # 显示按键提示
             key_hint_font = pygame.font.Font(get_font_path(), 50)
             if paused:
@@ -641,13 +660,13 @@ class Game:
                     center_button.draw_button()
 
             if 0 <= stats.game_score < 9:
-                for button in [user_button2]: 
+                for button in [user_button2]:
                     gf.update_screen(button)
-            
+
             # 处理长按（即使没有事件也要检查）
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
-            
+
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
             if stats.game_score == 9:
@@ -660,7 +679,7 @@ class Game:
                 with open(f"./Behavioral_data/{id}/subA/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     data = [f"图像 {i + 1}  {lines[i].strip()} {lines[i].strip()}" for i in range(8)]
-                
+
                 serial_marker(bytes([0x05]))
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
@@ -672,10 +691,10 @@ class Game:
                 score = None
                 while likert_running:
                     self.screen.fill(grey)
-                    
+
                     # 显示数据
                     draw_data(self, self.screen, data, "A")
-                    
+
                     # 处理事件
                     mouse_clicked = False
                     key_pressed = None
@@ -683,31 +702,32 @@ class Game:
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             mouse_clicked = True
                         if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE: 
+                            if event.key == pygame.K_ESCAPE:
                                 pygame.quit()
                                 sys.exit()
                             else:
                                 key_pressed = event.key
-                    
+
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
-                    
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked,
+                                          key_pressed=key_pressed)
+
                     pygame.display.flip()
                     self.clock.tick(60)
-                    if score is not None: 
+                    if score is not None:
                         likert_running = False
-                        
+
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file: 
+                    with open(f"Behavioral_data/id.txt", "r") as file:
                         id = file.read()
-                    with open(f"./Behavioral_data/{id}/subA/likert_scale/量表.txt", "w") as f: 
+                    with open(f"./Behavioral_data/{id}/subA/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
-                
+
                 stats.game_score = 10
                 break
 
-        rest_instructions(self, rest_duration=2)
+        rest_instructions(self, rest_duration=20)
         # 被试1+2协作阶段
         with open('config.txt', 'w') as f:
             f.truncate(0)
@@ -738,43 +758,41 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
-        
+
         # 速度调整按钮设置
         speed_value = read_speed_value()
         speed_min, speed_max = 1, 100
         speed_step = 10
-        
+
         # 按钮状态用于长按功能
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
-        
+
         # 按钮位置设置
         button_y = 30
         button_size = 40
         button_spacing = 40
-        
+
         # 减速按钮
         minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
         # 加速按钮
         plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200 , button_y, 55, button_size)
+        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
 
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
         while running:
             dt = self.clock.tick(60) / 1000
-            
+
             # 确保背景正确刷新
             self.screen.fill(grey)
-            
+
             # 设置按钮
             user_button2 = Button3(settings, self.screen, f"航天员:{user1}和{user2}", 10, 20)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
-            
 
-            
             # 处理键盘和鼠标事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -815,11 +833,11 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12)
@@ -841,7 +859,7 @@ class Game:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
                             pygame.display.update()
-                            
+
                             # 保存最后一张图的post_screenshot
                             post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot7.png"
                             pygame.image.save(self.screen, post_screenshot_path)
@@ -861,11 +879,11 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12)
@@ -886,7 +904,7 @@ class Game:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
                             pygame.display.update()
-                            
+
                             # 保存最后一张图的post_screenshot
                             post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot7.png"
                             pygame.image.save(self.screen, post_screenshot_path)
@@ -897,14 +915,12 @@ class Game:
             speed_font = pygame.font.Font(get_font_path(), 50)
             button_font = pygame.font.Font(get_font_path(), 50)
             value_font = pygame.font.Font(get_font_path(), 30)
-            
 
-            
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
             speed_rect = speed_text.get_rect(right=minus_button_rect.left - 10, centery=minus_button_rect.centery)
             self.screen.blit(speed_text, speed_rect)
-            
+
             # 绘制减速按钮
             minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
@@ -912,7 +928,7 @@ class Game:
             minus_text = button_font.render("-", True, (0, 0, 0))
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
-            
+
             # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
@@ -920,7 +936,7 @@ class Game:
             value_text = value_font.render(f"{speed_level}", True, (0, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
-            
+
             # 绘制加速按钮
             plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
@@ -932,7 +948,7 @@ class Game:
             # 创建按钮并设置状态
             # 中下方状态提示按钮
             center_button = Button4(settings, self.screen, "", 550, 1000)
-            
+
             # 显示按键提示
             key_hint_font = pygame.font.Font(get_font_path(), 50)
             if paused:
@@ -977,13 +993,13 @@ class Game:
                     center_button.draw_button()
 
             if 10 < stats.game_score < 20:
-                for button in [user_button2]: 
+                for button in [user_button2]:
                     gf.update_screen(button)
-            
+
             # 处理长按（即使没有事件也要检查）
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
-            
+
             # 更新游戏等级
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
@@ -998,7 +1014,7 @@ class Game:
                 with open(f"./Behavioral_data/{id}/subAB/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     data = [f"图像{i + 1} {lines[i].strip()} {lines[i].strip()}" for i in range(8)]
-                
+
                 serial_marker(bytes([0x05]))
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
@@ -1010,10 +1026,10 @@ class Game:
                 score = None
                 while likert_running:
                     self.screen.fill(grey)
-                    
+
                     # 显示数据
                     draw_data(self, self.screen, data, "B")
-                    
+
                     # 处理事件
                     mouse_clicked = False
                     key_pressed = None
@@ -1026,26 +1042,27 @@ class Game:
                                 sys.exit()
                             else:
                                 key_pressed = event.key
-                    
+
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
-                    
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked,
+                                          key_pressed=key_pressed)
+
                     pygame.display.flip()
                     self.clock.tick(60)
-                    if score is not None: 
+                    if score is not None:
                         likert_running = False
-                        
+
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file: 
+                    with open(f"Behavioral_data/id.txt", "r") as file:
                         id = file.read()
-                    with open(f"./Behavioral_data/{id}/subAB/likert_scale/量表.txt", "w") as f: 
+                    with open(f"./Behavioral_data/{id}/subAB/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
-                
+
                 stats.game_score = 21
                 break
         serial_marker(bytes([0x07]))
-        rest_instructions(self, 2)  # 120秒休息倒计时
+        rest_instructions(self, 20)  # 120秒休息倒计时
         stats.game_score += 1
 
         # 被试1+3协作阶段
@@ -1078,27 +1095,26 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
-        
+
         # 速度调整按钮设置
         speed_value = read_speed_value()
         speed_min, speed_max = 1, 100
         speed_step = 10
-        
+
         # 按钮状态用于长按功能
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
-        
+
         # 按钮位置设置
         button_y = 30
         button_size = 40
         button_spacing = 40
-        
+
         # 减速按钮
         minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
         # 加速按钮
         plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200 , button_y, 55, button_size)
-
+        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
 
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
@@ -1157,13 +1173,13 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 with open(f"Behavioral_data/id.txt", "r") as file:
                                     id = file.read().strip()
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24)
@@ -1183,15 +1199,15 @@ class Game:
                                 self.level.reset_endpoint_reached()
                         elif stats.game_score == 31:
 
-                                # 确保绘制内容已经显示到屏幕上
-                                self.level.run(dt, stats, [], self.screen)
-                                pygame.display.update()
+                            # 确保绘制内容已经显示到屏幕上
+                            self.level.run(dt, stats, [], self.screen)
+                            pygame.display.update()
 
-                                # 保存最后一张图的post_screenshot
-                                post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot7.png"
-                                pygame.image.save(self.screen, post_screenshot_path)
-                                t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
-                                stats.game_score = 32
+                            # 保存最后一张图的post_screenshot
+                            post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot7.png"
+                            pygame.image.save(self.screen, post_screenshot_path)
+                            t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
+                            stats.game_score = 32
                     elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
                         if not first_image_shown:
                             # 显示第一张图
@@ -1205,13 +1221,13 @@ class Game:
                                 # 确保绘制内容已经显示到屏幕上
                                 self.level.run(dt, stats, [], self.screen)
                                 pygame.display.update()
-                                
+
                                 # 保存当前绘制内容为post_screenshot
                                 with open(f"Behavioral_data/id.txt", "r") as file:
                                     id = file.read().strip()
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
-                                
+
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
                                     t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24)
@@ -1244,13 +1260,11 @@ class Game:
             button_font = pygame.font.Font(get_font_path(), 50)
             value_font = pygame.font.Font(get_font_path(), 30)
 
-
-
             # 绘制速度标签
             speed_text = speed_font.render("速度:", True, (0, 0, 0))
             speed_rect = speed_text.get_rect(right=minus_button_rect.left - 10, centery=minus_button_rect.centery)
             self.screen.blit(speed_text, speed_rect)
-            
+
             # 绘制减速按钮
             minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
@@ -1258,7 +1272,7 @@ class Game:
             minus_text = button_font.render("-", True, (0, 0, 0))
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
-            
+
             # 绘制数值显示
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
@@ -1266,7 +1280,7 @@ class Game:
             value_text = value_font.render(f"{speed_level}", True, (0, 0, 0))
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
-            
+
             # 绘制加速按钮
             plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
@@ -1278,7 +1292,7 @@ class Game:
             # 创建按钮并设置状态
             # 中下方状态提示按钮
             center_button = Button4(settings, self.screen, "", 550, 1000)
-            
+
             # 显示按键提示
             key_hint_font = pygame.font.Font(get_font_path(), 50)
             if paused:
@@ -1323,13 +1337,13 @@ class Game:
                     center_button.draw_button()
 
             if 22 < stats.game_score < 32:
-                for button in [user_button2]: 
+                for button in [user_button2]:
                     gf.update_screen(button)
-            
+
             # 处理长按（即使没有事件也要检查）
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
-            
+
             # 更新游戏等级
             self.level.run(dt, stats, [], self.screen)
             pygame.display.update()
@@ -1344,9 +1358,9 @@ class Game:
                 with open(f"./Behavioral_data/{id}/subAC/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
                     data = [f"图像{i + 1}{lines[i].strip()}{lines[i].strip()}" for i in range(8)]
-                
+
                 serial_marker(bytes([0x05]))
-                
+
                 # 合并显示数据和量表界面
                 likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
                                      position=(260, 400),
@@ -1356,10 +1370,10 @@ class Game:
                 score = None
                 while likert_running:
                     self.screen.fill(grey)
-                    
+
                     # 显示数据
                     draw_data(self, self.screen, data, "AB")
-                    
+
                     # 处理事件
                     mouse_clicked = False
                     key_pressed = None
@@ -1372,22 +1386,23 @@ class Game:
                                 sys.exit()
                             else:
                                 key_pressed = event.key
-                    
+
                     # 更新量表
-                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked, key_pressed=key_pressed)
-                    
+                    score = likert.update(mouse_pos=pygame.mouse.get_pos(), mouse_clicked=mouse_clicked,
+                                          key_pressed=key_pressed)
+
                     pygame.display.flip()
                     self.clock.tick(60)
-                    if score is not None: 
+                    if score is not None:
                         likert_running = False
-                        
+
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file: 
+                    with open(f"Behavioral_data/id.txt", "r") as file:
                         id = file.read()
-                    with open(f"./Behavioral_data/{id}/subAC/likert_scale/量表.txt", "w") as f: 
+                    with open(f"./Behavioral_data/{id}/subAC/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
-                
+
                 stats.game_score = 33
                 break
         self.display_meditation_instructions()
@@ -1415,7 +1430,7 @@ class Game:
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 2
+        countdown_time = 10
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -1424,7 +1439,7 @@ class Game:
             if self.stop_event and self.stop_event.is_set():
                 running = False
                 break
-                
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -1472,9 +1487,9 @@ class Game:
         try:
             title_font = pygame.font.Font(get_font_path(), 72)  # 增大标题字体
             header_font = pygame.font.Font(get_font_path(), 42)  # 增大头部字体
-            main_font = pygame.font.Font(get_font_path(), 48)    # 增大主字体
-            sub_font = pygame.font.Font(get_font_path(), 34)     # 增大子字体
-            desc_font = pygame.font.Font(get_font_path(), 48)    # 新增描述字体
+            main_font = pygame.font.Font(get_font_path(), 48)  # 增大主字体
+            sub_font = pygame.font.Font(get_font_path(), 34)  # 增大子字体
+            desc_font = pygame.font.Font(get_font_path(), 48)  # 新增描述字体
             prompt_font = pygame.font.Font(get_font_path(), 68)
             key_info_font = pygame.font.Font(get_font_path(), 60)
         except IOError:
@@ -1493,13 +1508,13 @@ class Game:
         title_surf = title_font.render("实验流程", True, TEXT_COLOR)
         title_rect = title_surf.get_rect(center=(screen_width / 2, 80))
         self.screen.blit(title_surf, title_rect)
-        
+
         # --- 添加流程图描述 ---
         desc_text = "本实验包含5个阶段，按顺序依次进行，每个阶段都有明确的时间限制和任务要求"
         desc_surf = desc_font.render(desc_text, True, TEXT_COLOR)
         desc_rect = desc_surf.get_rect(center=(screen_width / 2, 340))
         self.screen.blit(desc_surf, desc_rect)
-        
+
         user1 = getattr(shared_data, 'user1_mark', None)
         user2 = getattr(shared_data, 'user2_mark', None)
         user3 = getattr(shared_data, 'user3_mark', None)
@@ -1547,22 +1562,22 @@ class Game:
         for i in range(len(box_rects) - 1):
             start_point = box_rects[i].midright
             end_point = box_rects[i + 1].midleft
-            
+
             # 计算箭头参数
             arrow_size = 20
             line_start = (start_point[0] + 15, start_point[1])
             # 箭头线条的终点要与箭头头部的后端对齐
             line_end = (end_point[0] - 15 - arrow_size, end_point[1])
             arrow_tip = (end_point[0] - 15, end_point[1])  # 箭头尖端
-            
+
             # 绘制箭头线条 (从起点到箭头后端)
             pygame.draw.line(self.screen, ARROW_COLOR, line_start, line_end, 6)
-            
+
             # 绘制箭头头部三角形 (确保与线条无缝连接)
             arrow_points = [
-                arrow_tip,                                             # 箭头尖端
-                (line_end[0], line_end[1] - arrow_size//2),           # 左上角 (与线条终点对齐)
-                (line_end[0], line_end[1] + arrow_size//2)            # 左下角 (与线条终点对齐)
+                arrow_tip,  # 箭头尖端
+                (line_end[0], line_end[1] - arrow_size // 2),  # 左上角 (与线条终点对齐)
+                (line_end[0], line_end[1] + arrow_size // 2)  # 左下角 (与线条终点对齐)
             ]
             pygame.draw.polygon(self.screen, ARROW_COLOR, arrow_points)
 
@@ -1599,7 +1614,7 @@ class Game:
         # --- 参数定义 ---
         BG_COLOR = (230, 230, 230)
         TEXT_COLOR = (0, 0, 0)
-        BLACK = (0,0,0)
+        BLACK = (0, 0, 0)
         GREEN_COLOR = (0, 255, 0)
         RED = (255, 0, 0)
         PROMPT_GREEN_COLOR = (0, 180, 0)
@@ -1882,7 +1897,7 @@ class Game:
             instructions = ["放松身体 保持静止", "避免思考 放松大脑", "睁开双眼 减少眨眼",
                             "双手双脚 避免交叉", "按空格键开始"]
         if special_words is None:
-            special_words = { "空格键": GREEN}
+            special_words = {"空格键": GREEN}
 
         title_surface = font_large.render(title, True, BLACK)
         title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 100))
@@ -1909,6 +1924,7 @@ class Game:
 
             y_position += line_spacing
         pygame.display.update()
+
     def display_end_screen(self):
         """显示实验结束画面，保持与整体风格一致"""
         BG_COLOR = (230, 230, 230)  # 与其他界面保持一致的灰色背景
@@ -1943,9 +1959,7 @@ class Game:
         subtitle_rect = subtitle_surf.get_rect(center=(screen_width / 2, 420))
         self.screen.blit(subtitle_surf, subtitle_rect)
 
-
         # 底部提示
-
 
         # Break the note into parts, each with its own text and color
         note_parts = [
@@ -1991,6 +2005,7 @@ class Game:
 
         pygame.display.update()
 
+
 def draw_data(self, screen, data, subject_type=None):
     """优化的数据显示函数"""
     percentages = []
@@ -2031,26 +2046,26 @@ def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, time
     with open("Behavioral_data/id.txt", "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subA/output_image"
-    
+
     # 检查基准图像是否存在
     reference_path = f"{base_path}/post_screenshot-1.png"
     if not os.path.exists(reference_path):
         print(f"Warning: Reference image not found: {reference_path}")
         return
-    
+
     image = cv2.imread(reference_path)
     if image is None:
         print(f"Warning: Could not read reference image: {reference_path}")
         return
-    
+
     pre_images = []
     post_images = []
-    
+
     # 安全地读取图像文件
     for i in range(8):
         pre_path = f"{base_path}/pre_screenshot{i}.png"
         post_path = f"{base_path}/post_screenshot{i}.png"
-        
+
         if os.path.exists(pre_path):
             pre_img = cv2.imread(pre_path)
             if pre_img is not None:
@@ -2061,7 +2076,7 @@ def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, time
         else:
             print(f"Warning: Pre image not found: {pre_path}")
             pre_images.append(None)
-            
+
         if os.path.exists(post_path):
             post_img = cv2.imread(post_path)
             if post_img is not None:
@@ -2072,18 +2087,19 @@ def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, time
         else:
             print(f"Warning: Post image not found: {post_path}")
             post_images.append(None)
-    
+
     time_params = [(t1, t2), (t2, t3), (t3, t4), (t4, t5), (t5, t6), (t6, t7), (t7, t8), (t8, t9)]
     timestamps = [timestamp1, timestamp2, timestamp3, timestamp4, timestamp5, timestamp6, timestamp7, timestamp8]
-    
+
     for i in range(8):
         if pre_images[i] is not None and post_images[i] is not None:
             calculate_pixel_difference(image, pre_images[i], post_images[i], time_params[i][0], time_params[i][1],
                                        timestamps[i], total_pause_time)
-    
+
     for post_image in post_images:
         if post_image is not None:
             deviation_area1(post_image)
+
 
 def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
                  timestamp4, timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time=0):
@@ -2091,26 +2107,26 @@ def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
     with open("Behavioral_data/id.txt", "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subAB/output_image"
-    
+
     # 检查基准图像是否存在
     reference_path = f"{base_path}/post_screenshot-1.png"
     if not os.path.exists(reference_path):
         print(f"Warning: Reference image not found: {reference_path}")
         return
-    
+
     image = cv2.imread(reference_path)
     if image is None:
         print(f"Warning: Could not read reference image: {reference_path}")
         return
-    
+
     pre_images = []
     post_images = []
-    
+
     # 安全地读取图像文件
     for i in range(8):
         pre_path = f"{base_path}/pre_screenshot{i}.png"
         post_path = f"{base_path}/post_screenshot{i}.png"
-        
+
         if os.path.exists(pre_path):
             pre_img = cv2.imread(pre_path)
             if pre_img is not None:
@@ -2121,7 +2137,7 @@ def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
         else:
             print(f"Warning: Pre image not found: {pre_path}")
             pre_images.append(None)
-            
+
         if os.path.exists(post_path):
             post_img = cv2.imread(post_path)
             if post_img is not None:
@@ -2132,46 +2148,48 @@ def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
         else:
             print(f"Warning: Post image not found: {post_path}")
             post_images.append(None)
-    
+
     time_params = [(t1, t2), (t2, t3), (t3, t4), (t4, t5),
                    (t5, t6), (t6, t7), (t7, t8), (t8, t9)]
     timestamps = [timestamp1, timestamp2, timestamp3, timestamp4,
                   timestamp5, timestamp6, timestamp7, timestamp8]
-    
+
     for i in range(8):
         if pre_images[i] is not None and post_images[i] is not None:
             calculate_pixel_difference2(image, pre_images[i], post_images[i],
                                         time_params[i][0], time_params[i][1], timestamps[i], total_pause_time)
-    
+
     for post_image in post_images:
         if post_image is not None:
             deviation_area2(post_image)
+
+
 def dataloading3(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
                  timestamp4, timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time=0):
     # 读取ID
     with open("Behavioral_data/id.txt", "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subAC/output_image"
-    
+
     # 检查基准图像是否存在
     reference_path = f"{base_path}/post_screenshot-1.png"
     if not os.path.exists(reference_path):
         print(f"Warning: Reference image not found: {reference_path}")
         return
-    
+
     image = cv2.imread(reference_path)
     if image is None:
         print(f"Warning: Could not read reference image: {reference_path}")
         return
-    
+
     pre_images = []
     post_images = []
-    
+
     # 安全地读取图像文件
     for i in range(8):
         pre_path = f"{base_path}/pre_screenshot{i}.png"
         post_path = f"{base_path}/post_screenshot{i}.png"
-        
+
         if os.path.exists(pre_path):
             pre_img = cv2.imread(pre_path)
             if pre_img is not None:
@@ -2182,7 +2200,7 @@ def dataloading3(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
         else:
             print(f"Warning: Pre image not found: {pre_path}")
             pre_images.append(None)
-            
+
         if os.path.exists(post_path):
             post_img = cv2.imread(post_path)
             if post_img is not None:
@@ -2193,19 +2211,19 @@ def dataloading3(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
         else:
             print(f"Warning: Post image not found: {post_path}")
             post_images.append(None)
-    
+
     # 时间参数和时间戳打包成列表
     time_params = [(t1, t2), (t2, t3), (t3, t4), (t4, t5),
                    (t5, t6), (t6, t7), (t7, t8), (t8, t9)]
     timestamps = [timestamp1, timestamp2, timestamp3, timestamp4,
                   timestamp5, timestamp6, timestamp7, timestamp8]
-    
+
     # 计算像素差异
     for i in range(8):
         if pre_images[i] is not None and post_images[i] is not None:
             calculate_pixel_difference3(image, pre_images[i], post_images[i],
                                         time_params[i][0], time_params[i][1], timestamps[i], total_pause_time)
-    
+
     # 计算偏差区域
     for post_image in post_images:
         if post_image is not None:
@@ -2234,13 +2252,13 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         clock.tick(60)
 
 
-def rest_instructions(self, rest_duration=120):
+def rest_instructions(self, rest_duration=20):
     """
     显示休息指导文本并进行倒计时
     rest_duration: 休息时长（秒），默认120秒（2分钟）
     """
     import time
-    
+
     # 颜色定义
     BLACK = (0, 0, 0)
     GREEN = green
@@ -2268,26 +2286,35 @@ def rest_instructions(self, rest_duration=120):
     # 倒计时循环
     start_time = time.time()
     clock = pygame.time.Clock()
-    
+    paused = False
+    pause_start_time = 0
+    total_pause_time = 0
+
     while True:
         # 检查停止信号
         if hasattr(self, 'stop_event') and self.stop_event and self.stop_event.is_set():
             break
-            
-        elapsed = time.time() - start_time
+
+        # 计算实际经过的时间（不包括暂停时间）
+        current_time = time.time()
+        if paused:
+            elapsed = pause_start_time - start_time - total_pause_time
+        else:
+            elapsed = current_time - start_time - total_pause_time
+
         remaining = max(0, rest_duration - elapsed)
-        
+
         if remaining <= 0:
             break
-            
+
         # 清空屏幕
         self.screen.fill(grey)
-        
+
         # 显示标题
         title_surface = font_large.render(title, True, BLACK)
         title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 200))
         self.screen.blit(title_surface, title_rect)
-        
+
         # 显示指导文本
         y_pos = 280
         for line in instruction_lines:
@@ -2295,18 +2322,22 @@ def rest_instructions(self, rest_duration=120):
             text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, y_pos))
             self.screen.blit(text_surface, text_rect)
             y_pos += 60
-        
+
         # 显示倒计时
         minutes = int(remaining // 60)
         seconds = int(remaining % 60)
         countdown_text = f"{minutes:02d}:{seconds:02d}"
-        
+
+        # 如果暂停，添加暂停提示
+        if paused:
+            countdown_text += " (已暂停)"
+
         # 最后30秒变红色
         countdown_color = RED if remaining <= 30 else GREEN
         countdown_surface = font_countdown.render(countdown_text, True, countdown_color)
         countdown_rect = countdown_surface.get_rect(center=(self.screen.get_width() // 2, 550))
         self.screen.blit(countdown_surface, countdown_rect)
-        
+
         # 检查退出事件
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -2314,15 +2345,24 @@ def rest_instructions(self, rest_duration=120):
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-        
+                    # 暂停计时器
+                    if not paused:
+                        pause_start_time = time.time()
+                        paused = True
+
+                    if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                        pygame.quit()
+                        sys.exit()
+                    else:
+                        # 用户选择继续，恢复计时器
+                        if paused:
+                            total_pause_time += time.time() - pause_start_time
+                            paused = False
+
         pygame.display.flip()
         clock.tick(60)
 
 
-
 if __name__ == '__main__':
-
     game = Game()
     game.run()
