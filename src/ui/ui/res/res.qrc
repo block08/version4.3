@@ -9,5 +9,6 @@
         <file>2.png</file>
         <file>3.png</file>
         <file>exit.png</file>
+         <file>task.png</file>
     </qresource>
 </RCC>

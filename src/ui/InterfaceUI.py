@@ -305,7 +305,8 @@ class Ui_MainWindow(object):
         # --- Adjusted layout for introduction page ---
 
         self.label_welcome_title = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_title.setGeometry(QtCore.QRect(250, 40, 600, 80))  # y adjusted
+        self.label_welcome_title.setGeometry(QtCore.QRect(150, 10, 800, 50))  # y adjusted
+        self.label_welcome_title.setText("欢迎进入合作行为能力评估系统")
         self.label_welcome_title.setStyleSheet("""
             QLabel {
                 font: bold 40pt "微软雅黑";
@@ -318,7 +319,7 @@ class Ui_MainWindow(object):
         self.label_welcome_title.setObjectName("label_welcome_title")
 
         self.label_welcome_subtitle = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 120, 700, 50))  # y adjusted
+        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 70, 700, 50))  # y adjusted
         self.label_welcome_subtitle.setStyleSheet("""
             QLabel {
                 font: 24pt "微软雅黑";
@@ -332,7 +333,7 @@ class Ui_MainWindow(object):
 
         # 实验介绍内容框 (Resized)
         self.frame_introduction = QtWidgets.QFrame(self.page_home)
-        self.frame_introduction.setGeometry(QtCore.QRect(100, 180, 900, 240))  # Resized for new layout
+        self.frame_introduction.setGeometry(QtCore.QRect(100, 120, 900, 130))  # Resized for new layout
         self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
@@ -346,7 +347,7 @@ class Ui_MainWindow(object):
 
         # 实验介绍内容 (Text updated, no separate title)
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
-        self.label_intro_content.setGeometry(QtCore.QRect(50, 15, 800, 210))  # Resized and positioned
+        self.label_intro_content.setGeometry(QtCore.QRect(50, 15, 800, 110))  # Resized and positioned
         self.label_intro_content.setStyleSheet("""
             QLabel {
                 font: 18pt "微软雅黑";
@@ -361,19 +362,20 @@ class Ui_MainWindow(object):
 
         # Added Image/Diagram Placeholder for the task
         self.label_task_image = QtWidgets.QLabel(self.page_home)
-        self.label_task_image.setGeometry(QtCore.QRect(150, 440, 800, 250))
-        self.label_task_image.setStyleSheet("""
-            QLabel {
-                background-color: rgb(240, 240, 240);
-                border: 2px dashed rgb(180, 180, 180);
-                border-radius: 10px;
-                color: rgb(150, 150, 150);
-                font: 16pt "微软雅黑";
-            }
-        """)
+        self.label_task_image.setGeometry(QtCore.QRect(100, 250, 900, 500))
+        # self.label_task_image.setStyleSheet("""
+        #     QLabel {
+        #         background-color: rgb(240, 240, 240);
+        #         border: 2px dashed rgb(180, 180, 180);
+        #         border-radius: 10px;
+        #         color: rgb(150, 150, 150);
+        #         font: 16pt "微软雅黑";
+        #     }
+        # """)
         self.label_task_image.setAlignment(QtCore.Qt.AlignCenter)
         # IMPORTANT: Replace with your actual image path from resources
-        pixmap = QtGui.QPixmap(":/images/task_example.png")
+        pixmap = QtGui.QPixmap(":/image/task.png")
+        self.label_task_image.setScaledContents(False)
         if pixmap.isNull():
             self.label_task_image.setText("任务图示 (请在 res.qrc 中添加图片)")
         else:
@@ -949,8 +951,10 @@ class Ui_MainWindow(object):
         self.label_welcome_subtitle.setText(_translate("MainWindow", "请仔细阅读以下实验说明"))
         # <<< MODIFICATION >>>
         # --- Updated instruction text ---
+        # self.label_intro_content.setText(_translate("MainWindow",
+        #                                             "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
         self.label_intro_content.setText(_translate("MainWindow",
-                                                    "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
+                                                                                                "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图流程所示，您的目标是尽可能准确、快速地复现目标图形。</p></body></html>"))
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
