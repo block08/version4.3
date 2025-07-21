@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
 "}")
         self.right_panel.setObjectName("right_panel")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(110, 30, 381, 51))
+        self.login_title.setGeometry(QtCore.QRect(110, 100, 381, 51))
         font = QtGui.QFont()
         font.setFamily("Microsoft YaHei UI")
         font.setPointSize(28)
@@ -71,7 +71,7 @@ class Ui_MainWindow(object):
         self.login_title.setAlignment(QtCore.Qt.AlignCenter)
         self.login_title.setObjectName("login_title")
         self.task_selection_card = QtWidgets.QWidget(self.right_panel)
-        self.task_selection_card.setGeometry(QtCore.QRect(50, 120, 481, 160))
+        self.task_selection_card.setGeometry(QtCore.QRect(50, 180, 481, 160))
         self.task_selection_card.setStyleSheet("QWidget#task_selection_card {\n"
 "    background: white;\n"
 "    border: 2px solid #e1e5e9;\n"
@@ -103,7 +103,7 @@ class Ui_MainWindow(object):
 "}")
         self.task_button_container.setObjectName("task_button_container")
         self.subject_a_card = QtWidgets.QWidget(self.right_panel)
-        self.subject_a_card.setGeometry(QtCore.QRect(50, 300, 481, 160))
+        self.subject_a_card.setGeometry(QtCore.QRect(50, 360, 481, 160))
         self.subject_a_card.setStyleSheet("QWidget#subject_a_card {\n"
 "    background: white;\n"
 "    border: 2px solid #e1e5e9;\n"
@@ -150,7 +150,7 @@ class Ui_MainWindow(object):
 "}")
         self.subject_a_ellipse_container.setObjectName("subject_a_ellipse_container")
         self.final_login_button = QtWidgets.QPushButton(self.right_panel)
-        self.final_login_button.setGeometry(QtCore.QRect(150, 550, 300, 60))
+        self.final_login_button.setGeometry(QtCore.QRect(150, 580, 300, 60))
         font = QtGui.QFont()
         font.setPointSize(20)
         font.setBold(True)

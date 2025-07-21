@@ -88,7 +88,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.frame_10)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
+        # self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
+        self.pushButton_relogin = QtWidgets.QPushButton()
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(40)
@@ -97,26 +98,16 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.pushButton_relogin.setFont(font)
         self.pushButton_relogin.setStyleSheet("QPushButton{\n"
-                                              "background-color: rgb(255, 255, 255);\n"
-                                              "    border: 2px solid rgb(51, 51, 51);\n"
-                                              "    color: rgb(51, 51, 51);\n"
-                                              "    font: 40pt \"微软雅黑\";\n"
-                                              "    border-radius: 8px;\n"
-                                              "}\n"
-                                              "QPushButton:hover{\n"
-                                              "    background-color: rgb(230, 240, 255);\n"
-                                              "    border: 2px solid rgb(34, 34, 34);\n"
-                                              "    color: rgb(34, 34, 34);\n"
-                                              "}\n"
-                                              "QPushButton:pressed{\n"
-                                              "    background-color: rgb(210, 225, 255);\n"
-                                              "    padding-left:3px;\n"
-                                              "    padding-top:3px;\n"
-                                              "}")
+                                   "    border:none;\n"
+                                   "}\n"
+                                   "QPushButton:hover{\n"
+                                   "    padding-bottom:10px\n"
+                                   "\n"
+                                   "}")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/logout.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/image/exit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_relogin.setIcon(icon1)
-        self.pushButton_relogin.setIconSize(QtCore.QSize(80, 40))
+        self.pushButton_relogin.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_relogin.setObjectName("pushButton_relogin")
         self.horizontalLayout_2.addWidget(self.pushButton_relogin)
         self.horizontalLayout.addWidget(self.frame_4)
@@ -138,6 +129,7 @@ class Ui_MainWindow(object):
         self.frame_5.setObjectName("frame_5")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_5)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+
         self.pushButton_3 = QtWidgets.QPushButton(self.frame_5)
         self.pushButton_3.setText("")
         icon2 = QtGui.QIcon()
@@ -145,6 +137,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setIcon(icon2)
         self.pushButton_3.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout_3.addWidget(self.pushButton_relogin)
         self.horizontalLayout_3.addWidget(self.pushButton_3)
         self.pushButton_2 = QtWidgets.QPushButton(self.frame_5)
         self.pushButton_2.setText("")
@@ -153,7 +146,9 @@ class Ui_MainWindow(object):
         self.pushButton_2.setIcon(icon3)
         self.pushButton_2.setIconSize(QtCore.QSize(40, 40))
         self.pushButton_2.setObjectName("pushButton_2")
+
         self.horizontalLayout_3.addWidget(self.pushButton_2)
+
         self.horizontalLayout.addWidget(self.frame_5, 0, QtCore.Qt.AlignRight)
         self.verticalLayout.addWidget(self.frame_2)
         self.frame_3 = QtWidgets.QFrame(self.frame)
@@ -310,7 +305,8 @@ class Ui_MainWindow(object):
         # --- Adjusted layout for introduction page ---
 
         self.label_welcome_title = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_title.setGeometry(QtCore.QRect(250, 40, 600, 80))  # y adjusted
+        self.label_welcome_title.setGeometry(QtCore.QRect(150, 10, 800, 50))  # y adjusted
+        self.label_welcome_title.setText("欢迎进入合作行为能力评估系统")
         self.label_welcome_title.setStyleSheet("""
             QLabel {
                 font: bold 40pt "微软雅黑";
@@ -323,7 +319,7 @@ class Ui_MainWindow(object):
         self.label_welcome_title.setObjectName("label_welcome_title")
 
         self.label_welcome_subtitle = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 120, 700, 50))  # y adjusted
+        self.label_welcome_subtitle.setGeometry(QtCore.QRect(200, 70, 700, 50))  # y adjusted
         self.label_welcome_subtitle.setStyleSheet("""
             QLabel {
                 font: 24pt "微软雅黑";
@@ -337,7 +333,7 @@ class Ui_MainWindow(object):
 
         # 实验介绍内容框 (Resized)
         self.frame_introduction = QtWidgets.QFrame(self.page_home)
-        self.frame_introduction.setGeometry(QtCore.QRect(100, 180, 900, 240))  # Resized for new layout
+        self.frame_introduction.setGeometry(QtCore.QRect(100, 120, 900, 130))  # Resized for new layout
         self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
@@ -351,7 +347,7 @@ class Ui_MainWindow(object):
 
         # 实验介绍内容 (Text updated, no separate title)
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
-        self.label_intro_content.setGeometry(QtCore.QRect(50, 15, 800, 210))  # Resized and positioned
+        self.label_intro_content.setGeometry(QtCore.QRect(50, 15, 800, 110))  # Resized and positioned
         self.label_intro_content.setStyleSheet("""
             QLabel {
                 font: 18pt "微软雅黑";
@@ -366,19 +362,20 @@ class Ui_MainWindow(object):
 
         # Added Image/Diagram Placeholder for the task
         self.label_task_image = QtWidgets.QLabel(self.page_home)
-        self.label_task_image.setGeometry(QtCore.QRect(150, 440, 800, 250))
-        self.label_task_image.setStyleSheet("""
-            QLabel {
-                background-color: rgb(240, 240, 240);
-                border: 2px dashed rgb(180, 180, 180);
-                border-radius: 10px;
-                color: rgb(150, 150, 150);
-                font: 16pt "微软雅黑";
-            }
-        """)
+        self.label_task_image.setGeometry(QtCore.QRect(100, 250, 900, 500))
+        # self.label_task_image.setStyleSheet("""
+        #     QLabel {
+        #         background-color: rgb(240, 240, 240);
+        #         border: 2px dashed rgb(180, 180, 180);
+        #         border-radius: 10px;
+        #         color: rgb(150, 150, 150);
+        #         font: 16pt "微软雅黑";
+        #     }
+        # """)
         self.label_task_image.setAlignment(QtCore.Qt.AlignCenter)
         # IMPORTANT: Replace with your actual image path from resources
-        pixmap = QtGui.QPixmap(":/images/task_example.png")
+        pixmap = QtGui.QPixmap(":/image/task.png")
+        self.label_task_image.setScaledContents(False)
         if pixmap.isNull():
             self.label_task_image.setText("任务图示 (请在 res.qrc 中添加图片)")
         else:
@@ -902,20 +899,49 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "user"))
         self.pushButton_relogin.setText(_translate("MainWindow", ""))
-        self.pushButton_relogin.setStyleSheet("QPushButton {\
-        image: url(:/image/exit.png);\
-        background-color: transparent;\
-        color:  #2c3e50;\
-        border: none;\
-        padding: 8px 12px;\
-        }QPushButton:hover {\
-        color: #42b983;  /* Vue风格的悬停颜色 */\
-    }\
-    QPushButton:pressed {\
-        color: #2d8d62;  /* 按下时更深的颜色 */\
-        padding-left: 13px;  /* 向右移动1像素 */\
-        padding-top: 9px;    /* 向下移动1像素 */\
-    }")
+        # self.pushButton_relogin.setStyleSheet("QPushButton {\
+        # image: url(:/image/exit.png);\
+        # background-color: transparent;\
+        # color:  #2c3e50;\
+        # border: none;\
+        # padding: 8px 12px;\
+        # }QPushButton:hover {\
+        # color: #42b983;  /* Vue风格的悬停颜色 */\
+        # }\
+        # QPushButton:pressed {\
+        #     color: #2d8d62;  /* 按下时更深的颜色 */\
+        #     padding-left: 13px;  /* 向右移动1像素 */\
+        #     padding-top: 9px;    /* 向下移动1像素 */\
+        # }")
+        #
+        # self.pushButton_3.setStyleSheet("QPushButton {\
+        # image: url(:/image/minimize.png);\
+        # background-color: transparent;\
+        # color:  #2c3e50;\
+        # border: none;\
+        # padding: 8px 12px;\
+        # }QPushButton:hover {\
+        # color: #42b983;  /* Vue风格的悬停颜色 */\
+        # }\
+        # QPushButton:pressed {\
+        #     color: #2d8d62;  /* 按下时更深的颜色 */\
+        #     padding-left: 13px;  /* 向右移动1像素 */\
+        #     padding-top: 9px;    /* 向下移动1像素 */\
+        # }")
+        # self.pushButton_3.setStyleSheet("QPushButton {\
+        #  image: url(:/image/close.png);\
+        #  background-color: transparent;\
+        #  color:  #2c3e50;\
+        #  border: none;\
+        #  padding: 8px 12px;\
+        #  }QPushButton:hover {\
+        #  color: #42b983;  /* Vue风格的悬停颜色 */\
+        #  }\
+        #  QPushButton:pressed {\
+        #      color: #2d8d62;  /* 按下时更深的颜色 */\
+        #      padding-left: 13px;  /* 向右移动1像素 */\
+        #      padding-top: 9px;    /* 向下移动1像素 */\
+        #  }")
 
         self.pushButton_exercise.setText(_translate("MainWindow", "练习试次"))
         self.pushButton_main.setText(_translate("MainWindow", "正式实验"))
@@ -925,8 +951,10 @@ class Ui_MainWindow(object):
         self.label_welcome_subtitle.setText(_translate("MainWindow", "请仔细阅读以下实验说明"))
         # <<< MODIFICATION >>>
         # --- Updated instruction text ---
+        # self.label_intro_content.setText(_translate("MainWindow",
+        #                                             "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
         self.label_intro_content.setText(_translate("MainWindow",
-                                                    "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
+                                                                                                "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>您需要根据屏幕提示，与搭档配合或独立完成指定的图形绘制。</p><p>如下图流程所示，您的目标是尽可能准确、快速地复现目标图形。</p></body></html>"))
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
