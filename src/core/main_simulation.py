@@ -1698,18 +1698,22 @@ class Game:
 
         pygame.display.update()
 
-    def display_task_instructions_formatted(self, subject='A'):
+    def display_task_instructions_formatted(self, subject='AB'):
         """
-        以简化风格动态绘制绘图任务的指导语。
-        【已按照用户最终指定的顺序重排布局，代码完整无省略】
+        以简化和层级化的风格动态绘制绘图任务的指导语。
+        【整合版：高亮按键、自动换行、速度说明、最终布局】
         """
         # --- 参数定义 ---
         BG_COLOR = (230, 230, 230)
-        TEXT_COLOR = (0, 0, 0)
+        TEXT_COLOR = (33, 37, 41)
         BLACK = (0, 0, 0)
-        GREEN_COLOR = (0, 255, 0)
-        RED = (255, 0, 0)
-        PROMPT_GREEN_COLOR = (0, 180, 0)
+        DIVIDER_COLOR = (200, 200, 200)
+        PROMPT_GREEN_COLOR = (40, 167, 69)
+        HIGHLIGHT_COLOR = (40, 167, 69)
+        GREEN_ICON_COLOR = (40, 167, 69)
+        RED_ICON_COLOR = (220, 53, 69)
+        # 【修改3】为示意图的方块使用一个对比度更高的灰色
+        DIAGRAM_BOX_COLOR = (200, 204, 208)
 
         screen_w, screen_h = self.screen.get_size()
         self.screen.fill(BG_COLOR)
@@ -1717,256 +1721,235 @@ class Game:
         # --- 字体加载 ---
         try:
             font_name = get_font_path()
-            title_font = pygame.font.Font(font_name, 65)
-            main_font = pygame.font.Font(font_name, 44)
-            main_font_bold = pygame.font.Font(font_name, 48)
-            main_font_bold.set_bold(True)
-            key_font = pygame.font.Font(font_name, 42)
-            prompt_font = pygame.font.Font(font_name, 50)
+            title_font = pygame.font.Font(font_name, 70)
+            title_font.set_bold(True)
+            subtitle_font = pygame.font.Font(font_name, 52)
+            body_font = pygame.font.Font(font_name, 42)
+            key_font = pygame.font.Font(font_name, 22)
+            key_font.set_bold(True)
+            prompt_font = pygame.font.Font(font_name, 45)
+            speed_button_symbol_font = pygame.font.Font(font_name, 50)
         except (IOError, TypeError):
-            # 如果自定义字体加载失败，则使用系统后备字体
-            title_font = pygame.font.SysFont('sans-serif', 70)
-            main_font = pygame.font.SysFont('sans-serif', 45)
-            main_font_bold = pygame.font.SysFont('sans-serif', 45, bold=True)
-            key_font = pygame.font.SysFont('sans-serif', 40)
-            prompt_font = pygame.font.SysFont('sans-serif', 55)
+            title_font = pygame.font.SysFont('sans-serif', 75, bold=True)
+            subtitle_font = pygame.font.SysFont('sans-serif', 55, bold=False)
+            body_font = pygame.font.SysFont('sans-serif', 45, bold=False)
+            key_font = pygame.font.SysFont('sans-serif', 24, bold=True)
+            prompt_font = pygame.font.SysFont('sans-serif', 50)
+            speed_button_symbol_font = pygame.font.SysFont('sans-serif', 50)
 
         user1 = getattr(shared_data, 'user1_mark', '用户1')
         user2 = getattr(shared_data, 'user2_mark', '用户2')
         user3 = getattr(shared_data, 'user3_mark', '用户3')
 
-        # --- 辅助函数 (完整定义) ---
-        def render_composite_line(y, line_def):
-            """渲染由普通文本和按键方框组成的复合行"""
-            total_width = 0
+        # --- 辅助函数 ---
+        def render_highlighted_text(text_parts, font, default_color, highlight_color, highlight_words):
             surfaces = []
-            for item in line_def:
-                content, font, part_type = item
-                if part_type == "key":
-                    text_surf = font.render(content, True, (0, 0, 0))
-                    total_width += text_surf.get_width() + 16  # 加上左右内边距
-                    surfaces.append({'type': 'key', 'content': content, 'font': font})
-                else:
-                    text_surf = font.render(content, True, TEXT_COLOR)
-                    total_width += text_surf.get_width()
-                    surfaces.append({'type': 'text', 'surf': text_surf})
+            for part in text_parts:
+                is_highlighted = part in highlight_words
+                color = highlight_color if is_highlighted else default_color
+                surfaces.append(font.render(part, True, color))
+            return surfaces
 
-            x_pos = (screen_w - total_width) / 2
-            for item in surfaces:
-                if item['type'] == "key":
-                    temp_surf = item['font'].render(item['content'], True, (0, 0, 0))
-                    key_rect_width = temp_surf.get_width() + 16
-                    draw_key_box(self.screen, item['content'], item['font'],
-                                 (x_pos + key_rect_width / 2, y + item['font'].get_height() / 2 - 4))
-                    x_pos += key_rect_width
-                else:
-                    self.screen.blit(item['surf'], (x_pos, y))
-                    x_pos += item['surf'].get_width()
+        def draw_single_key(screen, rect, text, font, color_scheme):
+            pygame.draw.rect(screen, color_scheme['shadow'], (rect.x, rect.y + 3, rect.width, rect.height),
+                             border_radius=8)
+            pygame.draw.rect(screen, color_scheme['face'], rect, border_radius=8)
+            pygame.draw.rect(screen, color_scheme['border'], rect, 2, border_radius=8)
+            text_surf = font.render(text, True, color_scheme['text'])
+            screen.blit(text_surf, text_surf.get_rect(center=rect.center))
 
-        def render_line(parts, x, y):
-            """渲染带有粗体和下划线的文本行"""
-            for text, font, color in parts:
-                surf = font.render(text, True, color)
-                self.screen.blit(surf, (x, y))
-                if font == main_font_bold:
-                    pygame.draw.line(self.screen, color, (x, y + surf.get_height() - 2),
-                                     (x + surf.get_width(), y + surf.get_height() - 2), 2)
-                x += surf.get_width()
+        def draw_keyboard_layout(screen, center_x, top_y, key_font, is_highlighted):
+            KEY_SIZE = 60
+            GAP = 8
+            highlight_color_scheme = {'face': HIGHLIGHT_COLOR, 'border': (25, 135, 84), 'text': (255, 255, 255),
+                                      'shadow': (150, 150, 150)}
+            default_color_scheme = {'face': (245, 245, 245), 'border': (180, 180, 180), 'text': (0, 0, 0),
+                                    'shadow': (150, 150, 150)}
+            layout = {
+                'W': {'pos': (2.5, 0)}, 'S': {'pos': (2.5, 1)}, 'A': {'pos': (1.5, 1)}, 'D': {'pos': (3.5, 1)},
+                '↑': {'pos': (12, 0)}, '↓': {'pos': (12, 1)}, '←': {'pos': (11, 1)}, '→': {'pos': (13, 1)},
+            }
+            keyboard_width = 14 * (KEY_SIZE + GAP)
+            start_x = center_x - keyboard_width / 2
+            for key_name, properties in layout.items():
+                x_mult, y_mult = properties['pos']
+                key_rect = pygame.Rect(start_x + x_mult * (KEY_SIZE + GAP), top_y + y_mult * (KEY_SIZE + GAP), KEY_SIZE,
+                                       KEY_SIZE)
+                color_scheme = highlight_color_scheme if key_name in is_highlighted else default_color_scheme
+                draw_single_key(screen, key_rect, key_name, key_font, color_scheme)
 
-        # --- 布局绘制开始 ---
-        y_pos = 160
-        line_height = 65
+        # --- 布局开始 ---
+        margin = 150
+        y_pos = 100
 
-        # =================================================================
-        # 步骤 1: 标题
-        # =================================================================
-        if subject == 'A':
-            title_text = f"{user1}单人绘图任务指导语"
-        elif subject == 'B':
-            title_text = f"{user2}单人绘图任务指导语"
-        elif subject == 'C':
-            title_text = f"{user3}单人绘图任务指导语"
-        elif subject == 'AB':
-            title_text = f"{user1}和{user2}合作绘图任务指导语"
-        else:  # AC
-            title_text = f"{user1}和{user3}合作绘图任务指导语"
-
+        # --- Section 1: 标题与角色 ---
+        title_map = {
+            'A': f"{user1}单人绘图任务指导语", 'B': f"{user2}单人绘图任务指导语", 'C': f"{user3}单人绘图任务指导语",
+            'AB': f"{user1}和{user2}合作绘图任务指导语", 'AC': f"{user1}和{user3}合作绘图任务指导语"
+        }
+        title_text = title_map.get(subject, "绘图任务指导语")
         title_surf = title_font.render(title_text, True, TEXT_COLOR)
-        title_rect = title_surf.get_rect(center=(screen_w / 2, 80))
-        self.screen.blit(title_surf, title_rect)
+        self.screen.blit(title_surf, title_surf.get_rect(center=(screen_w / 2, y_pos)))
+        y_pos += title_surf.get_height()
 
-        # =================================================================
-        # 步骤 2: 指明操作者
-        # =================================================================
-        if subject == 'A':
-            role_text = f"请{user1}绘图，{user2}和{user3}休息"
-        elif subject == 'B':
-            role_text = f"请{user2}绘图，{user1}和{user3}休息"
-        elif subject == 'C':
-            role_text = f"请{user3}绘图，{user1}和{user2}休息"
-        elif subject == 'AB':
-            role_text = f"请{user1}和{user2}绘图，{user3}休息"
-        else:  # AC
-            role_text = f"请{user1}和{user3}绘图，{user2}休息"
+        role_map = {
+            'A': f"请{user1}绘图，{user2}和{user3}休息", 'B': f"请{user2}绘图，{user1}和{user3}休息",
+            'C': f"请{user3}绘图，{user1}和{user2}休息",
+            'AB': f"请{user1}和{user2}绘图，{user3}休息", 'AC': f"请{user1}和{user3}绘图，{user2}休息"
+        }
+        role_text = role_map.get(subject, "")
+        role_surf = subtitle_font.render(role_text, True, TEXT_COLOR)
+        self.screen.blit(role_surf, role_surf.get_rect(center=(screen_w / 2, y_pos + 20)))
+        y_pos += role_surf.get_height() + 50
 
-        role_surf = main_font.render(role_text, True, TEXT_COLOR)
-        role_rect = role_surf.get_rect(center=(screen_w / 2, y_pos))
-        self.screen.blit(role_surf, role_rect)
-        y_pos += line_height
+        # --- Section 2: 任务流程图与速度 ---
+        pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
+        y_pos += 40
 
-        # =================================================================
-        # 步骤 3: 任务描述
-        # =================================================================
-        if subject == 'A':
-            parts1 = [(f"{user1}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
-                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
-        elif subject == 'B':
-            parts1 = [(f"{user2}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
-                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
-        elif subject == 'C':
-            parts1 = [(f"{user3}航天员控制键盘沿", main_font, TEXT_COLOR), ("黑色轨迹", main_font_bold, TEXT_COLOR),
-                      ("从", main_font, TEXT_COLOR), ("绿色起点", main_font_bold, TEXT_COLOR),
-                      ("移至", main_font, TEXT_COLOR), ("红色终点", main_font_bold, TEXT_COLOR)]
-        elif subject == 'AB':
-            parts1 = [(f"{user1}和{user2}航天员控制键盘沿", main_font, TEXT_COLOR),
-                      ("黑色轨迹", main_font_bold, TEXT_COLOR), ("从", main_font, TEXT_COLOR),
-                      ("绿色起点", main_font_bold, TEXT_COLOR), ("移至", main_font, TEXT_COLOR),
-                      ("红色终点", main_font_bold, TEXT_COLOR)]
-        else:  # AC
-            parts1 = [(f"{user1}和{user3}航天员控制键盘沿", main_font, TEXT_COLOR),
-                      ("黑色轨迹", main_font_bold, TEXT_COLOR), ("从", main_font, TEXT_COLOR),
-                      ("绿色起点", main_font_bold, TEXT_COLOR), ("移至", main_font, TEXT_COLOR),
-                      ("红色终点", main_font_bold, TEXT_COLOR)]
+        user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和{user2}", 'AC': f"{user1}和{user3}"}.get(
+            subject, "")
+        full_desc_text = f"{user_text}航天员需控制键盘，沿黑色轨迹从绿色起点移动至红色终点。"
+        desc_surf = body_font.render(full_desc_text, True, TEXT_COLOR)
+        self.screen.blit(desc_surf, desc_surf.get_rect(center=(screen_w / 2, y_pos)))
+        y_pos += desc_surf.get_height() + 40
 
-        total_width_parts1 = sum(f.render(t, True, c).get_width() for t, f, c in parts1)
-        render_line(parts1, (screen_w - total_width_parts1) / 2, y_pos)
-        y_pos += line_height + 20
+        steps = ["任务起点", "沿轨迹绘图", "任务终点"]
+        diagram_label = body_font.render("流程示意图:", True, TEXT_COLOR)
+        diagram_label_gap = 20
+        box_w, box_h = 200, 90
+        gap = 30
 
-        # =================================================================
-        # 步骤 4: 任务流程图
-        # =================================================================
-        diagram_y = y_pos
-        steps = ["任务开始", "沿轨迹绘图", "到达终点"]
-        box_w, box_h = 220, 100
-        gap = 80
-        total_width_diagram = len(steps) * box_w + (len(steps) - 1) * gap
-        start_x = (screen_w - total_width_diagram) / 2
+        speed_label_surf = body_font.render("速度:", True, TEXT_COLOR)
+        speed_gap = 40
+        speed_button_size = 55
+        speed_value_box_w = 75
+        speed_box_gap = 10
+        speed_section_width = speed_label_surf.get_width() + speed_gap + 2 * speed_button_size + speed_value_box_w + 2 * speed_box_gap
+        diagram_content_width = len(steps) * box_w + (len(steps) - 1) * gap
+        total_diagram_width = diagram_label.get_width() + diagram_label_gap + diagram_content_width + speed_gap + speed_section_width
+
+        current_x = screen_w / 2 - total_diagram_width / 2
+        self.screen.blit(diagram_label, diagram_label.get_rect(left=current_x, centery=y_pos + box_h / 2))
+        current_x += diagram_label.get_width() + diagram_label_gap
+
         for i, step_text in enumerate(steps):
-            box_x = start_x + i * (box_w + gap)
-            box_rect = pygame.Rect(box_x, diagram_y, box_w, box_h)
-            pygame.draw.rect(self.screen, (200, 200, 200), box_rect, border_radius=10)
-            pygame.draw.rect(self.screen, TEXT_COLOR, box_rect, 2, border_radius=10)
+            box_rect = pygame.Rect(current_x, y_pos, box_w, box_h)
+            # 【修改3】使用新的、对比度更高的颜色
+            pygame.draw.rect(self.screen, DIAGRAM_BOX_COLOR, box_rect, border_radius=10)
             if i == 0:
-                pygame.draw.rect(self.screen, GREEN_COLOR, (box_rect.centerx - 15, box_rect.centery - 15, 30, 30))
+                pygame.draw.circle(self.screen, GREEN_ICON_COLOR, box_rect.center, 12)
             elif i == 1:
-                path_points = [(box_rect.left + 30, box_rect.centery + 15), (box_rect.centerx, box_rect.centery - 15),
-                               (box_rect.right - 30, box_rect.centery + 15)]
-                pygame.draw.lines(self.screen, TEXT_COLOR, False, path_points, 4)
+                pygame.draw.lines(self.screen, BLACK, False, [(box_rect.left + 30, box_rect.centery + 15),
+                                                              (box_rect.centerx, box_rect.centery - 15),
+                                                              (box_rect.right - 30, box_rect.centery + 15)], 4)
             else:
-                pygame.draw.rect(self.screen, RED, (box_rect.centerx - 15, box_rect.centery - 15, 30, 30))
-            label_surf = main_font.render(step_text, True, TEXT_COLOR)
-            label_rect = label_surf.get_rect(center=(box_rect.centerx, box_rect.bottom + 30))
-            self.screen.blit(label_surf, label_rect)
+                pygame.draw.rect(self.screen, RED_ICON_COLOR, (box_rect.centerx - 12, box_rect.centery - 12, 24, 24))
+
+            label_surf = body_font.render(step_text, True, TEXT_COLOR)
+            self.screen.blit(label_surf, label_surf.get_rect(center=(box_rect.centerx, box_rect.bottom + 25)))
+
             if i < len(steps) - 1:
-                arrow_start = (box_rect.right + 10, box_rect.centery)
-                arrow_end = (box_rect.right + gap - 10, box_rect.centery)
-                pygame.draw.line(self.screen, TEXT_COLOR, arrow_start, arrow_end, 4)
-                pygame.draw.polygon(self.screen, TEXT_COLOR,
-                                    [(arrow_end[0], arrow_end[1]), (arrow_end[0] - 15, arrow_end[1] - 8),
-                                     (arrow_end[0] - 15, arrow_end[1] + 8)])
+                arrow_start = (box_rect.right + 5, box_rect.centery)
+                arrow_end = (box_rect.right + gap - 5, box_rect.centery)
+                # 【修改2】缩短箭头的线，使其被箭头头部完美覆盖
+                pygame.draw.line(self.screen, DIVIDER_COLOR, arrow_start, (arrow_end[0] - 10, arrow_end[1]), 4)
+                pygame.draw.polygon(self.screen, DIVIDER_COLOR,
+                                    [(arrow_end[0], arrow_end[1]), (arrow_end[0] - 12, arrow_end[1] - 7),
+                                     (arrow_end[0] - 12, arrow_end[1] + 7)])
+            current_x += box_w + gap
+
+        speed_start_x = current_x - gap + speed_gap
+        self.screen.blit(speed_label_surf, speed_label_surf.get_rect(
+            center=(speed_start_x + speed_label_surf.get_width() / 2, y_pos + box_h / 2)))
+        speed_controls_x = speed_start_x + speed_label_surf.get_width() + speed_box_gap
+        minus_rect = pygame.Rect(speed_controls_x, y_pos + (box_h - speed_button_size) / 2, speed_button_size,
+                                 speed_button_size)
+        value_rect = pygame.Rect(minus_rect.right + speed_box_gap, minus_rect.top, speed_value_box_w, speed_button_size)
+        plus_rect = pygame.Rect(value_rect.right + speed_box_gap, minus_rect.top, speed_button_size, speed_button_size)
+
+        for rect, symbol in [(minus_rect, "-"), (plus_rect, "+")]:
+            pygame.draw.rect(self.screen, (255, 255, 255), rect, border_radius=5)
+            pygame.draw.rect(self.screen, (100, 100, 100), rect, 2, border_radius=5)
+            symbol_surf = speed_button_symbol_font.render(symbol, True, BLACK)
+            self.screen.blit(symbol_surf, symbol_surf.get_rect(center=rect.center))
+
+        pygame.draw.rect(self.screen, (240, 240, 240), value_rect, border_radius=3)
+        pygame.draw.rect(self.screen, (100, 100, 100), value_rect, 2, border_radius=3)
+        value_surf = body_font.render("50", True, BLACK)
+        self.screen.blit(value_surf, value_surf.get_rect(center=value_rect.center))
+
+        # 【修改1】修正高亮问题
+        full_hint_text = '+ 和 - 可调节速度'
+        speed_highlight_words = ['+', '-']
+        # 使用 re.split 来正确地分割字符串以进行高亮
+        speed_hint_parts = [part for part in re.split(r'(\+|-)', full_hint_text) if part]
+
+        speed_hint_surfaces = render_highlighted_text(
+            speed_hint_parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR, speed_highlight_words
+        )
+
+        total_hint_width = sum(s.get_width() for s in speed_hint_surfaces)
+        speed_module_center_x = speed_start_x + (plus_rect.right - speed_start_x) / 2
+        hint_start_x = speed_module_center_x - total_hint_width / 2
+        hint_y_pos = minus_rect.bottom + 25
+
+        for surf in speed_hint_surfaces:
+            self.screen.blit(surf, (hint_start_x, hint_y_pos))
+            hint_start_x += surf.get_width()
+
         y_pos += box_h + 80
 
-        # =================================================================
-        # 步骤 5: 每个人的分工
-        # =================================================================
-        if subject in ['AB', 'AC']:
-            line3_surf = main_font.render("本轮为合作任务：", True, TEXT_COLOR)
-            line3_rect = line3_surf.get_rect(center=(screen_w / 2, y_pos))
-            self.screen.blit(line3_surf, line3_rect)
-            y_pos += line_height
+        # --- Section 3: 按键说明 ---
+        pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
+        y_pos += 40
 
+        instruction_parts_list = []
+        key_highlight_words = []
         if subject == 'A':
-            line_def = [(f"请{user1}:使用 ", main_font, "text"), ("W", key_font, "key"),
-                        (" 控制上, ", main_font, "text"), ("A", key_font, "key"), (" 控制左, ", main_font, "text"),
-                        ("S", key_font, "key"), (" 控制下, ", main_font, "text"), ("D", key_font, "key"),
-                        (" 控制右。", main_font, "text")]
-        elif subject == 'B':
-            line_def = [(f"请{user2}:使用 ", main_font, "text"), ("↑", key_font, "key"),
-                        (" 控制上, ", main_font, "text"), ("←", key_font, "key"), (" 控制左, ", main_font, "text"),
-                        ("↓", key_font, "key"), (" 控制下, ", main_font, "text"), ("→", key_font, "key"),
-                        (" 控制右。", main_font, "text")]
-        elif subject == 'C':
-            line_def = [(f"请{user3}:使用 ", main_font, "text"), ("↑", key_font, "key"),
-                        (" 控制上, ", main_font, "text"), ("←", key_font, "key"), (" 控制左, ", main_font, "text"),
-                        ("↓", key_font, "key"), (" 控制下, ", main_font, "text"), ("→", key_font, "key"),
-                        (" 控制右。", main_font, "text")]
-        elif subject == 'AB':
-            line_def = [(f"请{user1}: 使用", main_font, "text"), ("A", key_font, "key"), ("控制左 ", main_font, "text"),
-                        ("D", key_font, "key"), ("控制右", main_font, "text"), (f"，请{user2}:使用 ", main_font, "text"),
-                        ("↑", key_font, "key"), ("控制上 ", main_font, "text"), ("↓", key_font, "key"),
-                        ("控制下。", main_font, "text")]
-        else:  # AC
-            line_def = [(f"请{user1}: 使用", main_font, "text"), ("A", key_font, "key"), ("控制左 ", main_font, "text"),
-                        ("D", key_font, "key"), ("控制右", main_font, "text"), (f"，请{user3}:使用 ", main_font, "text"),
-                        ("↑", key_font, "key"), ("控制上 ", main_font, "text"), ("↓", key_font, "key"),
-                        ("控制下。", main_font, "text")]
+            key_highlight_words = ['W', 'A', 'S', 'D']
+            instruction_parts_list.append(
+                re.split(r'(W|A|S|D)', f"请{user1}按键：W键控制上, A键控制左, S键控制下, D键控制右。"))
+        elif subject in ['B', 'C']:
+            key_highlight_words = ['↑', '←', '↓', '→']
+            user_mark = user2 if subject == 'B' else user3
+            instruction_parts_list.append(
+                re.split(r'(↑|←|↓|→)', f"请{user_mark}按键：↑键控制上, ←键控制左, ↓键控制下, →键控制右。"))
+        elif subject in ['AB', 'AC']:
+            key_highlight_words = ['A', 'D', '↑', '↓']
+            partner_mark = user2 if subject == 'AB' else user3
+            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右；")
+            line2_parts = re.split(r'(↑|↓)', f"请{partner_mark}使用↑键控制上, ↓键控制下。")
+            instruction_parts_list.append(line1_parts)
+            instruction_parts_list.append(line2_parts)
 
-        render_composite_line(y_pos, line_def)
-        y_pos += line_height + 20
+        for parts in instruction_parts_list:
+            # 过滤掉 re.split 可能产生的空字符串
+            parts = [p for p in parts if p]
+            surfaces = render_highlighted_text(parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR, key_highlight_words)
+            total_width = sum(s.get_width() for s in surfaces)
+            current_text_x = screen_w / 2 - total_width / 2
+            for surf in surfaces:
+                self.screen.blit(surf, (current_text_x, y_pos))
+                current_text_x += surf.get_width()
+            y_pos += body_font.get_height() + 10
+        y_pos += 20
 
-        # =================================================================
-        # 步骤 6: 速度调整
-        # =================================================================
-        button_text = [("您还可以通过键盘上的: ", main_font, "text"), (" -", key_font, "key"), ("+", key_font, "key"),
-                       ("按钮来调整绘图速度", main_font, "text")]
-        render_composite_line(y_pos, button_text)
-        y_pos += line_height + 50
-        # 速度调整示意图
-        diagram_bg_rect = pygame.Rect(0, 0, 500, 100)
-        diagram_bg_rect.center = (screen_w / 2, y_pos)
-        speed_label_surf = main_font.render("速度:", True, TEXT_COLOR)
-        label_rect = speed_label_surf.get_rect(center=(diagram_bg_rect.centerx - 160, diagram_bg_rect.centery))
-        self.screen.blit(speed_label_surf, label_rect)
+        # --- Section 4: 键盘示意图 ---
+        draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words)
+        y_pos += 140
 
-        minus_demo_rect = pygame.Rect(0, 0, 50, 50)
-        minus_demo_rect.center = (diagram_bg_rect.centerx - 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (255, 255, 255), minus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (180, 180, 180), minus_demo_rect, 2, border_radius=5)
-        minus_text = main_font.render("-", True, TEXT_COLOR)
-        minus_text_rect = minus_text.get_rect(center=minus_demo_rect.center)
-        self.screen.blit(minus_text, minus_text_rect)
-
-        value_demo_rect = pygame.Rect(0, 0, 50, 50)
-        value_demo_rect.center = (diagram_bg_rect.centerx, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (240, 240, 240), value_demo_rect, border_radius=3)
-        pygame.draw.rect(self.screen, (100, 100, 100), value_demo_rect, 2, border_radius=3)
-        value_text = main_font.render("50", True, BLACK)
-        value_text_rect = value_text.get_rect(center=value_demo_rect.center)
-        self.screen.blit(value_text, value_text_rect)
-
-        plus_demo_rect = pygame.Rect(0, 0, 50, 50)
-        plus_demo_rect.center = (diagram_bg_rect.centerx + 55, diagram_bg_rect.centery)
-        pygame.draw.rect(self.screen, (255, 255, 255), plus_demo_rect, border_radius=5)
-        pygame.draw.rect(self.screen, (180, 180, 180), plus_demo_rect, 2, border_radius=5)
-        plus_text = main_font.render("+", True, TEXT_COLOR)
-        plus_text_rect = plus_text.get_rect(center=plus_demo_rect.center)
-        self.screen.blit(plus_text, plus_text_rect)
-
-        # =================================================================
-        # 步骤 7: 底部提示
-        # =================================================================
-        prompt_parts = [("准备好后，请按 ", prompt_font, TEXT_COLOR), ("空格键", prompt_font, PROMPT_GREEN_COLOR),
-                        (" 开始实验", prompt_font, TEXT_COLOR)]
-        total_prompt_width = sum(f.render(t, True, c).get_width() for t, f, c in prompt_parts)
+        # --- Section 5: 底部提示 ---
+        prompt_bar_rect = pygame.Rect(0, screen_h - 80, screen_w, 80)
+        pygame.draw.rect(self.screen, (222, 226, 230), prompt_bar_rect)
+        prompt_part1 = prompt_font.render("准备好后，请按", True, TEXT_COLOR)
+        prompt_part2_key = prompt_font.render("空格", True, PROMPT_GREEN_COLOR)
+        prompt_part3_suffix = prompt_font.render("键开始实验", True, TEXT_COLOR)
+        prompt_parts = [prompt_part1, prompt_part2_key, prompt_part3_suffix]
+        total_prompt_width = sum(part.get_width() for part in prompt_parts) + 16
         current_x = (screen_w - total_prompt_width) / 2
-        prompt_y_pos = screen_h - 100
-        for text, font, color in prompt_parts:
-            surf = font.render(text, True, color)
-            prompt_rect = surf.get_rect(left=current_x, centery=prompt_y_pos)
-            self.screen.blit(surf, prompt_rect)
-            current_x += surf.get_width()
+        for part in prompt_parts:
+            self.screen.blit(part, part.get_rect(left=current_x, centery=prompt_bar_rect.centery))
+            current_x += part.get_width() + 8
 
         pygame.display.update()
 
