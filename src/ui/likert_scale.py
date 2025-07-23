@@ -1,3 +1,5 @@
+import time
+
 import pygame
 from typing import Optional, Callable
 
@@ -46,6 +48,7 @@ class LikertScale:
         self.selected_score = None
         self.animation_alpha = 0
         self.fade_in = True
+        self.key_press_time = None
 
         # 初始化等级和点位置
         self._init_levels()
@@ -166,13 +169,12 @@ class LikertScale:
             self.surface.blit(feedback_surface, (0, self.HEIGHT - 80))
             self.surface.blit(feedback_text, feedback_rect)
 
-    def update(self, mouse_pos, mouse_clicked, key_pressed=None):
+    def update(self, mouse_pos, key_pressed=None):
         """
         更新量表状态
 
         Args:
             mouse_pos: 鼠标位置 (相对于整个窗口)
-            mouse_clicked: 是否点击了鼠标
             key_pressed: 按下的键盘按键
 
         Returns:
@@ -201,24 +203,14 @@ class LikertScale:
             elif key_pressed == pygame.K_7:
                 self.selected_score = 7
 
-            # 如果有有效的键盘输入，触发动画和回调
+            # 如果有有效的键盘输入，记录按键时间
             if self.selected_score is not None:
+                self.key_press_time = time.time()
                 self.animation_alpha = 0
                 self.fade_in = True
                 if self.callback:
                     self.callback(self.selected_score)
 
-        # 检查鼠标点击
-        if mouse_clicked:
-            for point in self.points:
-                distance = ((point["x"] - local_mouse_pos[0]) ** 2 +
-                            (point["y"] - local_mouse_pos[1]) ** 2) ** 0.5
-                if distance < self.SELECTED_CIRCLE_RADIUS:
-                    self.selected_score = point["level"]["score"]
-                    self.animation_alpha = 0
-                    self.fade_in = True
-                    if self.callback:
-                        self.callback(self.selected_score)
 
         # 更新动画
         if self.selected_score is not None and self.fade_in:
@@ -234,12 +226,7 @@ class LikertScale:
         self._draw_selected_score()
 
         # 添加操作提示
-        if self.selected_score is not None:
-            confirm_font = pygame.font.SysFont('SimHei', 36)
-            confirm_text = confirm_font.render("点击任意位置确认选择", True, self.BLUE)
-            confirm_rect = confirm_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 20))
-            self.surface.blit(confirm_text, confirm_rect)
-        else:
+        if self.selected_score is None:
             # 显示键盘输入提示
             hint_font = pygame.font.SysFont('SimHei', 32)
             hint_text = hint_font.render("请按下键盘数字键1-7进行选择", True, self.GRAY)
@@ -249,7 +236,12 @@ class LikertScale:
         # 绘制到主屏幕
         self.screen.blit(self.surface, self.position)
 
-        return self.selected_score
+        # 检查是否满足3秒延时条件
+        if self.selected_score is not None and self.key_press_time:
+            if time.time() - self.key_press_time >= 2.0:
+                return self.selected_score
+        
+        return None
 
     def is_selected(self):
         """检查是否已选择分数"""

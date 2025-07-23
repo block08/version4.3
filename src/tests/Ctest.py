@@ -330,7 +330,7 @@ class Game:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
                             else: key_pressed = event.key
-                    score = likert.update(mouse_pos=mouse_pos, mouse_clicked=mouse_clicked, key_pressed=key_pressed)
+                    score = likert.update(mouse_pos=mouse_pos, key_pressed=key_pressed)
                     pygame.display.flip()
                     if score is not None: likert_running = False
                 if score is not None:

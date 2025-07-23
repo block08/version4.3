@@ -18,8 +18,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         # 简化全屏设置
         MainWindow.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        # 注释掉半透明背景，可能影响全屏显示
-        # MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         # 设置centralwidget为MainWindow的中心部件
@@ -30,9 +29,7 @@ class Ui_MainWindow(object):
         main_layout.setContentsMargins(10, 10, 10, 10)  # 进一步减少边距
         
         self.frame = QtWidgets.QFrame(self.centralwidget)
-        # 移除固定尺寸设置，让布局管理器处理
-        # self.frame.setGeometry(QtCore.QRect(50, 50, 1820, 980))
-        # self.frame.setMinimumSize(QtCore.QSize(1820, 980))
+
         
         # 将frame添加到布局中
         main_layout.addWidget(self.frame)
@@ -100,7 +97,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.frame_10)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        # self.pushButton_relogin = QtWidgets.QPushButton(self.frame_4)
         self.pushButton_relogin = QtWidgets.QPushButton()
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
@@ -434,7 +430,7 @@ class Ui_MainWindow(object):
         # 为 frame_11 添加布局
         frame11_layout = QtWidgets.QVBoxLayout(self.frame_11)
         frame11_layout.setContentsMargins(20, 30, 20, 30)
-        frame11_layout.setSpacing(30)
+        frame11_layout.setSpacing(100)
         self.pushButton_4 = QtWidgets.QPushButton(self.frame_11)
         self.pushButton_4.setMinimumHeight(80)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
