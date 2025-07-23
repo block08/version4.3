@@ -314,24 +314,26 @@ class Ui_MainWindow(object):
         # <<< MODIFICATION START >>>
         # --- Using layout managers for responsive design ---
 
-        # 欢迎标题
-        self.label_welcome_subtitle = QtWidgets.QLabel(self.page_home)
-        self.label_welcome_subtitle.setStyleSheet("""
-            QLabel {
-                font: 24pt "微软雅黑";
-                color: rgb(100, 100, 100);
-                text-align: center;
-                border: none;
-            }
-        """)
-        self.label_welcome_subtitle.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_welcome_subtitle.setObjectName("label_welcome_subtitle")
-        self.verticalLayout_4.addWidget(self.label_welcome_subtitle)
+        # 输入法提醒标签（移到最上面）
+        self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
+        self.label_input_method_reminder.setMinimumHeight(60)
+        self.label_input_method_reminder.setMaximumHeight(80)
+        self.label_input_method_reminder.setStyleSheet("QLabel{\n"
+                                                       "    border: 2px solid rgb(255, 165, 0);\n"
+                                                       "    border-radius: 10px;\n"
+                                                       "    background-color: rgb(255, 248, 220);\n"
+                                                       "    color: rgb(255, 140, 0);\n"
+                                                       "    font: bold 28pt \"微软雅黑\";\n"
+                                                       "    padding: 15px;\n"
+                                                       "}")
+        self.label_input_method_reminder.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_input_method_reminder.setObjectName("label_input_method_reminder")
+        self.verticalLayout_4.addWidget(self.label_input_method_reminder)
 
         # 实验介绍内容框
         self.frame_introduction = QtWidgets.QFrame(self.page_home)
-        self.frame_introduction.setMinimumHeight(130)
-        self.frame_introduction.setMaximumHeight(180)
+        self.frame_introduction.setMinimumHeight(600)
+        self.frame_introduction.setMaximumHeight(700)
         self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
@@ -351,9 +353,10 @@ class Ui_MainWindow(object):
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
         self.label_intro_content.setStyleSheet("""
             QLabel {
-                font: 18pt "微软雅黑";
+                font: 24pt "微软雅黑";
                 color: rgb(51, 51, 51);
                 border: none;
+                line-height: 1.6;
             }
         """)
         self.label_intro_content.setTextFormat(QtCore.Qt.RichText)
@@ -364,41 +367,10 @@ class Ui_MainWindow(object):
         
         self.verticalLayout_4.addWidget(self.frame_introduction)
 
-        # 任务图示
-        self.label_task_image = QtWidgets.QLabel(self.page_home)
-        self.label_task_image.setMinimumHeight(300)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.label_task_image.sizePolicy().hasHeightForWidth())
-        self.label_task_image.setSizePolicy(sizePolicy)
-        self.label_task_image.setAlignment(QtCore.Qt.AlignCenter)
-        # IMPORTANT: Replace with your actual image path from resources
-        pixmap = QtGui.QPixmap(":/image/task.png")
-        self.label_task_image.setScaledContents(False)
-        if pixmap.isNull():
-            self.label_task_image.setText("任务图示 (请在 res.qrc 中添加图片)")
-        else:
-            self.label_task_image.setPixmap(
-                pixmap.scaled(self.label_task_image.size(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-        self.label_task_image.setObjectName("label_task_image")
-        self.verticalLayout_4.addWidget(self.label_task_image)
+        # 添加可扩展的空间，让内容不会贴底
+        spacerItem_middle = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem_middle)
 
-        # 输入法提醒标签
-        self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
-        self.label_input_method_reminder.setMinimumHeight(60)
-        self.label_input_method_reminder.setMaximumHeight(80)
-        self.label_input_method_reminder.setStyleSheet("QLabel{\n"
-                                                       "    border: 2px solid rgb(255, 165, 0);\n"
-                                                       "    border-radius: 10px;\n"
-                                                       "    background-color: rgb(255, 248, 220);\n"
-                                                       "    color: rgb(255, 140, 0);\n"
-                                                       "    font: bold 25pt \"微软雅黑\";\n"
-                                                       "    padding: 10px;\n"
-                                                       "}")
-        self.label_input_method_reminder.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_input_method_reminder.setObjectName("label_input_method_reminder")
-        self.verticalLayout_4.addWidget(self.label_input_method_reminder)
 
         # <<< MODIFICATION END >>>
 
@@ -1106,13 +1078,35 @@ class Ui_MainWindow(object):
         self.pushButton_highestscore.setText(_translate("MainWindow", "最好成绩"))
         self.pushButton_data.setText(_translate("MainWindow", "数据查看"))
         # self.pushButton_setting.setText(_translate("MainWindow", "端口设置"))
-        self.label_welcome_subtitle.setText(_translate("MainWindow", "请仔细阅读以下实验说明"))
         # <<< MODIFICATION >>>
         # --- Updated instruction text ---
         # self.label_intro_content.setText(_translate("MainWindow",
         #                                             "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个合作绘图任务。</span>首次使用:请点击【练习任务】，完成练习后进入【正式实验】，熟悉操作后可直接点击【正式实验】</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
         self.label_intro_content.setText(_translate("MainWindow",
-                                                                                                "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个协作绘图任务。</span>首次使用时,请点击【练习任务】，完成练习后进入【正式实验】，熟悉操作后可直接点击【正式实验】</p><p>如下图流程所示，您的目标是尽可能准确、快速地复现目标图形。</p></body></html>"))
+                                                                                                "<html><head/><body style='line-height: 1.8;'>"
+                                                                                                "<div style='text-align: center; margin-bottom: 30px;'>"
+                                                                                                "<p style='font-size: 30pt; font-weight: bold; color: #2c3e50; margin: 15px 0;'>实验说明</p>"
+                                                                                                "</div>"
+                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
+                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>配合要求：被测航天员需与两位辅助航天员依次配合完成绘图任务</p>"
+                                                                                                "</div>"
+                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
+                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>操作方式：点击左侧【练习试次】或【正式实验】按钮开始</p>"
+                                                                                                "</div>"
+                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
+                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>实验流程：</p>"
+                                                                                                "<p style='font-size: 20pt; margin: 10px 0 10px 35px; color: #000000;'>1. 练习试次 - 需完成3张图片绘制（熟练后可直接进入正式实验）</p>"
+                                                                                                "<p style='font-size: 20pt; margin: 10px 0 10px 35px; color: #000000;'>2. 正式实验 - 依次完成三个阶段的绘图任务</p>"
+                                                                                                "</div>"
+                                                                                                "<div style='text-align: left; margin-left: 70px; margin-bottom: 20px;'>"
+                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段一：被测航天员单独绘图（8张图片）</p>"
+                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段二：被测航天员与辅助航天员A合作（8张图片）</p>"
+                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段三：被测航天员与辅助航天员B合作（8张图片）</p>"
+                                                                                                "</div>"
+                                                                                                "<div style='text-align: left; margin-top: 20px;'>"
+                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>温馨提示：实验中每个阶段都有详细的指导语</p>"
+                                                                                                "</div>"
+                                                                                                "</body></html>"))
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
@@ -1141,7 +1135,7 @@ class Ui_MainWindow(object):
         self.third_date_label.setText(_translate("MainWindow", "日期: -"))
         self.info_label.setText(_translate("MainWindow", "💡 排名基于准确度高低，偏差面积越小越好，用时越短越好"))
         self.label_4.setText(_translate("MainWindow", "点击按钮查看行为数据"))
-        self.label_input_method_reminder.setText(_translate("MainWindow", "⚠️提醒：请确保切换到英文输入法"))
+        self.label_input_method_reminder.setText(_translate("MainWindow", "重要提醒：实验开始前请务必切换到英文输入法"))
         self.pushButton_macro_guidance.setText(_translate("MainWindow", "实验介绍"))
         self.label_status_text.setText(_translate("MainWindow", "未连接"))
 

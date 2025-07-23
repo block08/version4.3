@@ -5,7 +5,7 @@ import cv2
 import pygame
 import sys
 import math
-from src.core import game_function as gf
+from src.core import game_function_simulation as gf
 from src.utils import shared_data
 from src.ui.Button import Button, Button2, Button3, Button4
 from src.data.Calculate_pixel_difference import calculate_pixel_difference, calculate_pixel_difference2, \
@@ -745,7 +745,7 @@ class Game:
                 stats.game_score = 10
                 break
 
-        rest_instructions(self, rest_duration=2)
+        rest_instructions(self, rest_duration=30)
         # 被试1+2协作阶段
         with open('config.txt', 'w') as f:
             f.truncate(0)
@@ -1092,7 +1092,7 @@ class Game:
                 stats.game_score = 21
                 break
 
-        rest_instructions(self, rest_duration=2)  # 120秒休息倒计时
+        rest_instructions(self, rest_duration=30)  # 120秒休息倒计时
         stats.game_score += 1
 
         # 被试1+3协作阶段
@@ -1472,7 +1472,7 @@ class Game:
 
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 1
+        countdown_time = 120
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -2328,7 +2328,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         clock.tick(60)
 
 
-def rest_instructions(self, rest_duration=2):
+def rest_instructions(self, rest_duration=30):
     """
     显示休息指导文本并进行倒计时
     rest_duration: 休息时长（秒），默认120秒（2分钟）

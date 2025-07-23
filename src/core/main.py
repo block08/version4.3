@@ -1476,7 +1476,7 @@ class Game:
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 1
+        countdown_time = 120
         paused = False
         pause_start_time = 0
         total_pause_time = 0
