@@ -105,23 +105,25 @@ def show_confirm_dialog(screen, title, message):
     # 保存当前屏幕内容
     original_screen = screen.copy()
 
-    # 对话框尺寸和位置
+    # 对话框尺寸和位置（增加高度以容纳提示文字）
     screen_width = screen.get_width()
     screen_height = screen.get_height()
     dialog_width = 800
-    dialog_height = 400
+    dialog_height = 450  # 增加高度
     dialog_x = (screen_width - dialog_width) // 2
     dialog_y = (screen_height - dialog_height) // 2
     dialog_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
 
-    # 颜色定义
-    bg_color = (255, 255, 255)
-    border_color = (85, 85, 85)
-    text_color = (0, 0, 0)
-    button_yes_color = (46, 204, 113)
-    button_yes_hover = (39, 174, 96)
-    button_no_color = (231, 76, 60)
-    button_no_hover = (192, 57, 43)
+    # 颜色定义（匹配CustomDialog样式）
+    bg_color = (255, 255, 255)  # 白色背景
+    border_color = (85, 85, 85)  # 灰色边框
+    text_color = (0, 0, 0)  # 黑色文字
+    button_color = (255, 255, 255)  # 白色按钮背景
+    button_border = (204, 204, 204)  # 浅灰色按钮边框
+    button_hover = (240, 240, 240)  # 浅灰色悬停背景
+    button_border_hover = (153, 153, 153)  # 深灰色悬停边框
+    button_text_color = (0, 0, 0)  # 黑色按钮文字
+    hint_text_color = (136, 136, 136)  # 灰色提示文字
 
     # 字体设置
     try:
@@ -139,7 +141,7 @@ def show_confirm_dialog(screen, title, message):
     button_spacing = 65
     total_buttons_width = 2 * button_width + button_spacing
     buttons_start_x = dialog_x + (dialog_width - total_buttons_width) // 2
-    button_y = dialog_y + dialog_height - 80
+    button_y = dialog_y + dialog_height - 120  # 上移为提示文字留空间
 
     yes_button = pygame.Rect(buttons_start_x, button_y, button_width, button_height)
     no_button = pygame.Rect(buttons_start_x + button_width + button_spacing, button_y, button_width, button_height)
@@ -159,9 +161,9 @@ def show_confirm_dialog(screen, title, message):
         overlay.fill((0, 0, 0))
         screen.blit(overlay, (0, 0))
 
-        # 绘制对话框背景
-        pygame.draw.rect(screen, bg_color, dialog_rect, border_radius=10)
-        pygame.draw.rect(screen, border_color, dialog_rect, 3, border_radius=10)
+        # 绘制对话框背景（圆角匹配CustomDialog）
+        pygame.draw.rect(screen, bg_color, dialog_rect, border_radius=20)
+        pygame.draw.rect(screen, border_color, dialog_rect, 2, border_radius=20)
 
         # 绘制标题
         title_surface = title_font.render(title, True, text_color)
@@ -173,21 +175,35 @@ def show_confirm_dialog(screen, title, message):
         message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
         screen.blit(message_surface, message_rect)
 
-        # 绘制按钮
-        yes_color = button_yes_hover if yes_hover else button_yes_color
-        no_color = button_no_hover if no_hover else button_no_color
+        # 绘制按钮（匹配CustomDialog样式）
+        yes_bg_color = button_hover if yes_hover else button_color
+        yes_border_color = button_border_hover if yes_hover else button_border
+        no_bg_color = button_hover if no_hover else button_color
+        no_border_color = button_border_hover if no_hover else button_border
 
-        pygame.draw.rect(screen, yes_color, yes_button, border_radius=8)
-        pygame.draw.rect(screen, no_color, no_button, border_radius=8)
+        # 绘制按钮背景（圆角矩形）
+        pygame.draw.rect(screen, yes_bg_color, yes_button, border_radius=25)
+        pygame.draw.rect(screen, yes_border_color, yes_button, 2, border_radius=25)
+        pygame.draw.rect(screen, no_bg_color, no_button, border_radius=25)
+        pygame.draw.rect(screen, no_border_color, no_button, 2, border_radius=25)
 
         # 绘制按钮文字
-        yes_text = button_font.render("是(Y)", True, (255, 255, 255))
+        yes_text = button_font.render("是", True, button_text_color)
         yes_text_rect = yes_text.get_rect(center=yes_button.center)
         screen.blit(yes_text, yes_text_rect)
 
-        no_text = button_font.render("否(N)", True, (255, 255, 255))
+        no_text = button_font.render("否", True, button_text_color)
         no_text_rect = no_text.get_rect(center=no_button.center)
         screen.blit(no_text, no_text_rect)
+
+        # 绘制按钮下方的提示文字
+        yes_hint = pygame.font.Font(get_font_path(), 35).render("按Y键", True, hint_text_color)
+        yes_hint_rect = yes_hint.get_rect(center=(yes_button.centerx, yes_button.bottom + 25))
+        screen.blit(yes_hint, yes_hint_rect)
+
+        no_hint = pygame.font.Font(get_font_path(), 35).render("按N键", True, hint_text_color)
+        no_hint_rect = no_hint.get_rect(center=(no_button.centerx, no_button.bottom + 25))
+        screen.blit(no_hint, no_hint_rect)
 
     # 主循环
     clock = pygame.time.Clock()
@@ -667,7 +683,11 @@ class Game:
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
 
-            self.level.run(dt, stats, [], self.screen)
+            if not paused:
+                self.level.run(dt, stats, [], self.screen)
+            else:
+                # 暂停时只绘制，不更新精灵位置
+                self.level.draw(self.screen, stats)
             pygame.display.update()
             if stats.game_score == 9:
                 self.level.clear()
@@ -1009,7 +1029,11 @@ class Game:
                                               speed_value, speed_step, button_states)
 
             # 更新游戏等级
-            self.level.run(dt, stats, [], self.screen)
+            if not paused:
+                self.level.run(dt, stats, [], self.screen)
+            else:
+                # 暂停时只绘制，不更新精灵位置
+                self.level.draw(self.screen, stats)
             pygame.display.update()
             # 处理游戏结束逻辑
             if stats.game_score == 20:
@@ -1361,7 +1385,11 @@ class Game:
                                               speed_value, speed_step, button_states)
 
             # 更新游戏等级
-            self.level.run(dt, stats, [], self.screen)
+            if not paused:
+                self.level.run(dt, stats, [], self.screen)
+            else:
+                # 暂停时只绘制，不更新精灵位置
+                self.level.draw(self.screen, stats)
             pygame.display.update()
             # 处理游戏结束逻辑
             if stats.game_score == 32:
