@@ -22,6 +22,7 @@ import os
 from datetime import datetime
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
+import re
 
 
 def speed_level_to_value(level):

@@ -145,7 +145,7 @@ class Game:
         total_width = sum(s.get_width() for s in surfaces)
         current_x, y = center_pos[0] - total_width / 2, center_pos[1] - surfaces[0].get_height() / 2
         for s in surfaces:
-            surface.blit(s, (current_x, y));
+            surface.blit(s, (current_x, y))
             current_x += s.get_width()
 
     def run(self):
@@ -676,39 +676,6 @@ class Game:
         pygame.draw.lines(self.screen, TEXT_COLOR, False, check_points, 5)
         pygame.display.update()
 
-
-    def display_end_screen(self, is_training=False):
-        """显示标准化的结束画面"""
-        BG_COLOR, TEXT_COLOR, ACCENT_COLOR = (230, 230, 230), (0, 0, 0), (0, 255, 0)
-        screen_width, screen_height = self.screen.get_size()
-        try:
-            title_font, subtitle_font, note_font = [pygame.font.Font(get_font_path(), size) for size in [88, 78, 78]]
-        except IOError:
-            title_font, subtitle_font, note_font = [pygame.font.SysFont(None, size) for size in [100, 78, 45]]
-
-        self.screen.fill(BG_COLOR)
-
-        title_text = "恭喜您完成练习" if is_training else "恭喜您完成实验"
-        title_surf = title_font.render(title_text, True, TEXT_COLOR);
-        self.screen.blit(title_surf, title_surf.get_rect(center=(screen_width / 2, 220)))
-        subtitle_surf = subtitle_font.render("数据已保存", True, TEXT_COLOR);
-        self.screen.blit(subtitle_surf, subtitle_surf.get_rect(center=(screen_width / 2, 420)))
-
-        note_parts = [("按", TEXT_COLOR), ("Esc", ACCENT_COLOR), ("返回主界面", TEXT_COLOR)]
-        note_surfaces = [note_font.render(text, True, color) for text, color in note_parts]
-        total_width = sum(surf.get_width() for surf in note_surfaces);
-        current_x = (screen_width - total_width) / 2
-        for surf in note_surfaces:
-            self.screen.blit(surf, surf.get_rect(left=current_x, centery=screen_height - 100));
-            current_x += surf.get_width()
-
-        check_center, check_size = (screen_width / 2, 120), 40
-        pygame.draw.circle(self.screen, ACCENT_COLOR, check_center, check_size)
-        pygame.draw.circle(self.screen, TEXT_COLOR, check_center, check_size, 3)
-        check_points = [(check_center[0] - 15, check_center[1]), (check_center[0] - 5, check_center[1] + 10),
-                        (check_center[0] + 15, check_center[1] - 10)]
-        pygame.draw.lines(self.screen, TEXT_COLOR, False, check_points, 5)
-        pygame.display.update()
 
 
 def draw_data(self, screen, data):
