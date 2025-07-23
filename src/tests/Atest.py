@@ -148,7 +148,7 @@ def show_confirm_dialog(screen, title, message):
         
         # 绘制消息
         message_surface = message_font.render(message, True, text_color)
-        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 200))
+        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
         screen.blit(message_surface, message_rect)
         
         # 绘制按钮

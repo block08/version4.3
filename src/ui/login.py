@@ -22,8 +22,17 @@ class Ui_MainWindow(object):
 "}")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        
+        # 创建主布局管理器
+        main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
+        main_layout.setContentsMargins(100, 100, 100, 100)
+        
         self.main_container = QtWidgets.QWidget(self.centralwidget)
-        self.main_container.setGeometry(QtCore.QRect(100, 100, 1200, 700))
+        # 移除固定几何坐标，使用布局管理器
+        # self.main_container.setGeometry(QtCore.QRect(100, 100, 1200, 700))
+        
+        # 将容器添加到布局中
+        main_layout.addWidget(self.main_container)
         self.main_container.setStyleSheet("QWidget#main_container {\n"
 "    background: white;\n"
 "    border-radius: 25px;\n"
@@ -57,7 +66,7 @@ class Ui_MainWindow(object):
 "}")
         self.right_panel.setObjectName("right_panel")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(110, 100, 381, 51))
+        self.login_title.setGeometry(QtCore.QRect(110, 100, 600, 51))
         font = QtGui.QFont()
         font.setFamily("Microsoft YaHei UI")
         font.setPointSize(28)
@@ -121,14 +130,8 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.subject_a_icon.setFont(font)
-        self.subject_a_icon.setStyleSheet("QLabel {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(102, 126, 234, 255), stop:1 rgba(118, 75, 162, 255));\n"
-"    border-radius: 20px;\n"
-"    color: white;\n"
-"}")
-        self.subject_a_icon.setAlignment(QtCore.Qt.AlignCenter)
-        self.subject_a_icon.setObjectName("subject_a_icon")
+
+
         self.subject_a_title = QtWidgets.QLabel(self.subject_a_card)
         self.subject_a_title.setGeometry(QtCore.QRect(20, 20, 350, 40))
         font = QtGui.QFont()

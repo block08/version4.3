@@ -74,29 +74,57 @@ class CustomDialog(QDialog):
         button_layout.addStretch()
 
         if button_type == 'yes_no':
+            # 创建"是"按钮和其容器
+            yes_container = QVBoxLayout()
             yes_button = QPushButton("是", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
             yes_button.setFixedSize(220, 65)
             yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
-                QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 25px; }
-                QPushButton:hover { background-color: #27ae60; }
-                QPushButton:pressed { background-color: #1e8449; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
             """)
             yes_button.clicked.connect(self.accept)
-            button_layout.addWidget(yes_button)
+            
+            yes_hint = QLabel("按Y键", self)
+            yes_hint.setAlignment(Qt.AlignCenter)
+            yes_hint.setFont(QFont("Microsoft YaHei", 25))
+            yes_hint.setStyleSheet("color: #888888; border: none;")
+            
+            yes_container.addWidget(yes_button)
+            yes_container.addWidget(yes_hint)
+            yes_container.setSpacing(5)
+            
+            yes_widget = QWidget()
+            yes_widget.setLayout(yes_container)
+            button_layout.addWidget(yes_widget)
 
+            # 创建"否"按钮和其容器
+            no_container = QVBoxLayout()
             no_button = QPushButton("否", self)
             no_button.setCursor(QCursor(Qt.PointingHandCursor))
             no_button.setFixedSize(220, 65)
             no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
-                QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 25px; }
-                QPushButton:hover { background-color: #c0392b; }
-                QPushButton:pressed { background-color: #a93226; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
             """)
             no_button.clicked.connect(self.reject)
-            button_layout.addWidget(no_button)
+            
+            no_hint = QLabel("按N键", self)
+            no_hint.setAlignment(Qt.AlignCenter)
+            no_hint.setFont(QFont("Microsoft YaHei", 25))
+            no_hint.setStyleSheet("color: #888888; border: none;")
+            
+            no_container.addWidget(no_button)
+            no_container.addWidget(no_hint)
+            no_container.setSpacing(5)
+            
+            no_widget = QWidget()
+            no_widget.setLayout(no_container)
+            button_layout.addWidget(no_widget)
         else:
             ok_button = QPushButton("确定", self)
             ok_button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -113,6 +141,19 @@ class CustomDialog(QDialog):
         button_layout.addStretch()
         main_layout.addLayout(button_layout)
         main_layout.addStretch(1)
+
+    def keyPressEvent(self, event):
+        """处理键盘事件"""
+        try:
+            if event.key() == Qt.Key_Y:
+                self.accept()
+            elif event.key() == Qt.Key_N:
+                self.reject()
+            else:
+                super().keyPressEvent(event)
+        except Exception as e:
+            print(f"KeyPressEvent error: {e}")
+            super().keyPressEvent(event)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -138,12 +179,12 @@ class CustomDialog(QDialog):
         """显示登录成功确认对话框"""
         dialog = QDialog(parent)
         dialog.setWindowTitle(title)
-        dialog.setFixedSize(700, 400)
+        dialog.setFixedSize(700, 450)
         dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
 
         main_frame = QFrame(dialog)
-        main_frame.setGeometry(0, 0, 700, 400)
+        main_frame.setGeometry(0, 0, 700, 450)
         main_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
@@ -186,33 +227,76 @@ class CustomDialog(QDialog):
         button_layout = QHBoxLayout()
         button_layout.addStretch()
 
+        # 创建"进入主界面"按钮和其容器
+        enter_container = QVBoxLayout()
         enter_button = QPushButton("进入主界面")
         enter_button.setCursor(QCursor(Qt.PointingHandCursor))
         enter_button.setFixedSize(220, 65)
         enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         enter_button.setStyleSheet("""
-            QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 32px; }
-            QPushButton:hover { background-color: #27ae60; }
-            QPushButton:pressed { background-color: #1e8449; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
         """)
         enter_button.clicked.connect(dialog.accept)
-        button_layout.addWidget(enter_button)
+        
+        enter_hint = QLabel("按Y键")
+        enter_hint.setAlignment(Qt.AlignCenter)
+        enter_hint.setFont(QFont("Microsoft YaHei", 25))
+        enter_hint.setStyleSheet("color: #888888; border: none;")
+        
+        enter_container.addWidget(enter_button)
+        enter_container.addWidget(enter_hint)
+        enter_container.setSpacing(5)
+        
+        enter_widget = QWidget()
+        enter_widget.setLayout(enter_container)
+        button_layout.addWidget(enter_widget)
 
+        # 创建"取消"按钮和其容器
+        cancel_container = QVBoxLayout()
         cancel_button = QPushButton("取消")
         cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
         cancel_button.setFixedSize(220, 65)
         cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         cancel_button.setStyleSheet("""
-            QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 32px; }
-            QPushButton:hover { background-color: #c0392b; }
-            QPushButton:pressed { background-color: #a93226; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
         """)
         cancel_button.clicked.connect(dialog.reject)
-        button_layout.addWidget(cancel_button)
+        
+        cancel_hint = QLabel("按N键")
+        cancel_hint.setAlignment(Qt.AlignCenter)
+        cancel_hint.setFont(QFont("Microsoft YaHei", 25))
+        cancel_hint.setStyleSheet("color: #888888; border: none;")
+        
+        cancel_container.addWidget(cancel_button)
+        cancel_container.addWidget(cancel_hint)
+        cancel_container.setSpacing(5)
+        
+        cancel_widget = QWidget()
+        cancel_widget.setLayout(cancel_container)
+        button_layout.addWidget(cancel_widget)
 
         button_layout.addStretch()
         main_layout.addLayout(button_layout)
         main_layout.addStretch(1)
+
+        # 添加键盘事件处理
+        def keyPressEvent(event):
+            try:
+                if event.key() == Qt.Key_Y:
+                    dialog.accept()
+                elif event.key() == Qt.Key_N:
+                    dialog.reject()
+                else:
+                    QDialog.keyPressEvent(dialog, event)
+            except Exception as e:
+                print(f"KeyPressEvent error in show_login_success: {e}")
+                QDialog.keyPressEvent(dialog, event)
+        
+        dialog.keyPressEvent = keyPressEvent
 
         # 居中显示
         if parent:
@@ -232,12 +316,12 @@ class CustomDialog(QDialog):
         """显示登录成功确认对话框"""
         dialog = QDialog(parent)
         dialog.setWindowTitle(title)
-        dialog.setFixedSize(700, 400)
+        dialog.setFixedSize(700, 450)
         dialog.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
 
         main_frame = QFrame(dialog)
-        main_frame.setGeometry(0, 0, 700, 400)
+        main_frame.setGeometry(0, 0, 700, 450)
         main_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
@@ -272,33 +356,76 @@ class CustomDialog(QDialog):
         button_layout = QHBoxLayout()
         button_layout.addStretch()
 
+        # 创建"进入主界面"按钮和其容器
+        enter_container = QVBoxLayout()
         enter_button = QPushButton("进入主界面")
         enter_button.setCursor(QCursor(Qt.PointingHandCursor))
         enter_button.setFixedSize(220, 65)
         enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         enter_button.setStyleSheet("""
-            QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 32px; }
-            QPushButton:hover { background-color: #27ae60; }
-            QPushButton:pressed { background-color: #1e8449; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
         """)
         enter_button.clicked.connect(dialog.accept)
-        button_layout.addWidget(enter_button)
+        
+        enter_hint = QLabel("按Y键")
+        enter_hint.setAlignment(Qt.AlignCenter)
+        enter_hint.setFont(QFont("Microsoft YaHei", 25))
+        enter_hint.setStyleSheet("color: #888888; border: none;")
+        
+        enter_container.addWidget(enter_button)
+        enter_container.addWidget(enter_hint)
+        enter_container.setSpacing(5)
+        
+        enter_widget = QWidget()
+        enter_widget.setLayout(enter_container)
+        button_layout.addWidget(enter_widget)
 
+        # 创建"取消"按钮和其容器
+        cancel_container = QVBoxLayout()
         cancel_button = QPushButton("取消")
         cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
         cancel_button.setFixedSize(220, 65)
         cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         cancel_button.setStyleSheet("""
-            QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 32px; }
-            QPushButton:hover { background-color: #c0392b; }
-            QPushButton:pressed { background-color: #a93226; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
         """)
         cancel_button.clicked.connect(dialog.reject)
-        button_layout.addWidget(cancel_button)
+        
+        cancel_hint = QLabel("按N键")
+        cancel_hint.setAlignment(Qt.AlignCenter)
+        cancel_hint.setFont(QFont("Microsoft YaHei", 25))
+        cancel_hint.setStyleSheet("color: #888888; border: none;")
+        
+        cancel_container.addWidget(cancel_button)
+        cancel_container.addWidget(cancel_hint)
+        cancel_container.setSpacing(5)
+        
+        cancel_widget = QWidget()
+        cancel_widget.setLayout(cancel_container)
+        button_layout.addWidget(cancel_widget)
 
         button_layout.addStretch()
         main_layout.addLayout(button_layout)
         main_layout.addStretch(1)
+
+        # 添加键盘事件处理
+        def keyPressEvent(event):
+            try:
+                if event.key() == Qt.Key_Y:
+                    dialog.accept()
+                elif event.key() == Qt.Key_N:
+                    dialog.reject()
+                else:
+                    QDialog.keyPressEvent(dialog, event)
+            except Exception as e:
+                print(f"KeyPressEvent error in show_login_success1: {e}")
+                QDialog.keyPressEvent(dialog, event)
+        
+        dialog.keyPressEvent = keyPressEvent
 
         # 居中显示
         if parent:
@@ -325,8 +452,8 @@ class EllipseUserButton(QPushButton):
         self.mark = mark
         self.subject_type = subject_type
         self.selected = False
-        self.setFixedSize(130, 60)
-        self.setFont(QFont("Microsoft YaHei", 20, QFont.Bold))
+        self.setFixedSize(160, 80)
+        self.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         self.update_style()
         self.clicked.connect(self.toggle_selection)
 
@@ -369,7 +496,11 @@ class LoginWindow(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        # 添加全屏显示并动态调整组件大小
+        self.showFullScreen()
+        self.adjust_components_for_fullscreen()
         self.interface_win = Interfacewindow()
+        self.interface_win.hide()  # 确保创建后不显示，直到登录完成
         self.login_handler = LoginInfoHandler()
         self.selected_subject_a = None
         self.selected_subject_b = None
@@ -386,6 +517,106 @@ class LoginWindow(QMainWindow):
         self.m_Position = QtCore.QPoint()
         self._closing = False  # 添加关闭标志
         self._transitioning = False  # 添加正常切换标志
+
+    def adjust_components_for_fullscreen(self):
+        """动态调整组件大小以适应全屏显示"""
+        # 获取屏幕尺寸
+        screen = QApplication.desktop().screenGeometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
+
+        # 计算缩放比例
+        original_width = 1400
+        original_height = 900
+        scale_x = screen_width / original_width
+        scale_y = screen_height / original_height
+
+        # 调整主容器大小和位置
+        container_width = int(1200 * scale_x)
+        container_height = int(700 * scale_y)
+        container_x = int((screen_width - container_width) / 2)
+        container_y = int((screen_height - container_height) / 2)
+
+        self.ui.main_container.setGeometry(QtCore.QRect(container_x, container_y, container_width, container_height))
+
+        # 调整左面板
+        left_panel_width = int(600 * scale_x * 0.85)  # 稍微调整比例
+        left_panel_height = container_height
+        self.ui.left_panel.setGeometry(QtCore.QRect(0, 0, left_panel_width, left_panel_height))
+        self.ui.left_overlay.setGeometry(QtCore.QRect(0, 0, left_panel_width, left_panel_height))
+
+        # 调整右面板
+        right_panel_width = container_width - left_panel_width
+        right_panel_height = container_height
+        self.ui.right_panel.setGeometry(QtCore.QRect(left_panel_width, 0, right_panel_width, right_panel_height))
+
+        # 调整右面板内的组件
+        # 标题
+        title_y = int(100 * scale_y)
+        title_width = int(600 * scale_x * 0.9)
+        title_x = int((right_panel_width - title_width) / 2)
+        self.ui.login_title.setGeometry(QtCore.QRect(title_x, title_y, title_width, int(51 * scale_y)))
+
+        # 任务选择卡片
+        card_width = int(481 * scale_x * 0.9)
+        card_height = int(160 * scale_y)
+        card_x = int((right_panel_width - card_width) / 2)
+        card_y = int(180 * scale_y)
+        self.ui.task_selection_card.setGeometry(QtCore.QRect(card_x, card_y, card_width, card_height))
+
+        # 调整任务选择卡片内部组件
+        self.ui.task_selection_title.setGeometry(QtCore.QRect(20, 20, int(350 * scale_x * 0.9), int(40 * scale_y)))
+        self.ui.task_button_container.setGeometry(QtCore.QRect(20, int(65 * scale_y), int(441 * scale_x * 0.9), int(85 * scale_y)))
+
+        # 被试选择卡片
+        subject_card_y = int(360 * scale_y)
+        self.ui.subject_a_card.setGeometry(QtCore.QRect(card_x, subject_card_y, card_width, card_height))
+
+        # 调整被试卡片内部组件
+        self.ui.subject_a_icon.setGeometry(QtCore.QRect(-100, 20, int(80 * scale_x), int(40 * scale_y)))
+        self.ui.subject_a_title.setGeometry(QtCore.QRect(20, 20, int(350 * scale_x * 0.9), int(40 * scale_y)))
+        self.ui.subject_a_ellipse_container.setGeometry(QtCore.QRect(20, int(65 * scale_y), int(441 * scale_x * 0.9), int(85 * scale_y)))
+
+        # 登录按钮
+        button_width = int(300 * scale_x)
+        button_height = int(60 * scale_y)
+        button_x = int((right_panel_width - button_width) / 2)
+        button_y = int(580 * scale_y)
+        self.ui.final_login_button.setGeometry(QtCore.QRect(button_x, button_y, button_width, button_height))
+
+        # 调整右上角按钮框架
+        frame_width = int(112 * scale_x)
+        frame_height = int(78 * scale_y)
+        frame_x = right_panel_width - frame_width
+        self.ui.frame_5.setGeometry(QtCore.QRect(frame_x, 0, frame_width, frame_height))
+
+        # 更新字体大小
+        self.update_font_sizes(scale_x, scale_y)
+
+    def update_font_sizes(self, scale_x, scale_y):
+        """根据缩放比例更新字体大小"""
+        # 获取平均缩放比例
+        avg_scale = (scale_x + scale_y) / 2
+        
+        # 更新标题字体
+        title_font = self.ui.login_title.font()
+        title_font.setPointSize(int(28 * avg_scale))
+        self.ui.login_title.setFont(title_font)
+        
+        # 更新任务选择标题字体
+        task_title_font = self.ui.task_selection_title.font()
+        task_title_font.setPointSize(int(20 * avg_scale))
+        self.ui.task_selection_title.setFont(task_title_font)
+        
+        # 更新被试标题字体
+        subject_title_font = self.ui.subject_a_title.font()
+        subject_title_font.setPointSize(int(20 * avg_scale))
+        self.ui.subject_a_title.setFont(subject_title_font)
+        
+        # 更新登录按钮字体
+        button_font = self.ui.final_login_button.font()
+        button_font.setPointSize(int(20 * avg_scale))
+        self.ui.final_login_button.setFont(button_font)
 
     def setup_connections(self):
         self.ui.final_login_button.clicked.connect(self.final_login)
@@ -407,8 +638,8 @@ class LoginWindow(QMainWindow):
 
         for task in tasks:
             button = QPushButton(task)
-            button.setFixedSize(130, 60)
-            button.setFont(QFont("Microsoft YaHei", 20, QFont.Bold))
+            button.setFixedSize(160, 80)
+            button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             # 3. & 4. 修改样式表，包括圆角和选中时的颜色
             button.setStyleSheet("""
                             QPushButton {
@@ -613,7 +844,9 @@ class LoginWindow(QMainWindow):
         """切换到主实验界面"""
         self._transitioning = True  # 标记为正常切换
         self.close()
-        self.interface_win.show()
+        # 强制设置全屏显示
+        self.interface_win.showFullScreen()
+        self.interface_win.setWindowState(Qt.WindowFullScreen)
 
     def close_application(self):
         """处理关闭按钮点击事件"""

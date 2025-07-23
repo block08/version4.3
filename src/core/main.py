@@ -170,7 +170,7 @@ def show_confirm_dialog(screen, title, message):
 
         # 绘制消息
         message_surface = message_font.render(message, True, text_color)
-        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 200))
+        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
         screen.blit(message_surface, message_rect)
 
         # 绘制按钮
@@ -362,7 +362,7 @@ class Game:
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 10
+        countdown_time = 120
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -761,7 +761,7 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 1, 100
+        speed_min, speed_max = 0, 100
         speed_step = 10
 
         # 按钮状态用于长按功能
@@ -922,14 +922,18 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
+            minus_disabled = speed_value <= speed_min
+            minus_color = (200, 200, 200) if minus_disabled else (255, 255, 255)
+            minus_border_color = (180, 180, 180) if minus_disabled else (100, 100, 100)
+            minus_text_color = (180, 180, 180) if minus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
-            minus_text = button_font.render("-", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, minus_border_color, minus_button_rect, 2, border_radius=5)
+            minus_text = button_font.render("-", True, minus_text_color)
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
 
-            # 绘制数值显示
+            # --- 数值显示 ---
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
@@ -937,11 +941,15 @@ class Game:
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
-            # 绘制加速按钮
-            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
+            # --- 加速按钮 ---
+            plus_disabled = speed_value >= speed_max
+            plus_color = (200, 200, 200) if plus_disabled else (255, 255, 255)
+            plus_border_color = (180, 180, 180) if plus_disabled else (100, 100, 100)
+            plus_text_color = (180, 180, 180) if plus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
-            plus_text = button_font.render("+", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, plus_border_color, plus_button_rect, 2, border_radius=5)
+            plus_text = button_font.render("+", True, plus_text_color)
             plus_text_rect = plus_text.get_rect(center=plus_button_rect.center)
             self.screen.blit(plus_text, plus_text_rect)
 
@@ -1098,7 +1106,7 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 1, 100
+        speed_min, speed_max = 0, 100
         speed_step = 10
 
         # 按钮状态用于长按功能
@@ -1266,14 +1274,18 @@ class Game:
             self.screen.blit(speed_text, speed_rect)
 
             # 绘制减速按钮
-            minus_color = (0, 0, 0) if speed_value <= speed_min else (150, 150, 150)
+            minus_disabled = speed_value <= speed_min
+            minus_color = (200, 200, 200) if minus_disabled else (255, 255, 255)
+            minus_border_color = (180, 180, 180) if minus_disabled else (100, 100, 100)
+            minus_text_color = (180, 180, 180) if minus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, minus_color, minus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), minus_button_rect, 2, border_radius=5)
-            minus_text = button_font.render("-", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, minus_border_color, minus_button_rect, 2, border_radius=5)
+            minus_text = button_font.render("-", True, minus_text_color)
             minus_text_rect = minus_text.get_rect(center=minus_button_rect.center)
             self.screen.blit(minus_text, minus_text_rect)
 
-            # 绘制数值显示
+            # --- 数值显示 ---
             pygame.draw.rect(self.screen, (240, 240, 240), value_display_rect, border_radius=3)
             pygame.draw.rect(self.screen, (100, 100, 100), value_display_rect, 2, border_radius=3)
             speed_level = speed_value_to_level(speed_value)
@@ -1281,11 +1293,15 @@ class Game:
             value_text_rect = value_text.get_rect(center=value_display_rect.center)
             self.screen.blit(value_text, value_text_rect)
 
-            # 绘制加速按钮
-            plus_color = (0, 0, 0) if speed_value >= speed_max else (150, 150, 150)
+            # --- 加速按钮 ---
+            plus_disabled = speed_value >= speed_max
+            plus_color = (200, 200, 200) if plus_disabled else (255, 255, 255)
+            plus_border_color = (180, 180, 180) if plus_disabled else (100, 100, 100)
+            plus_text_color = (180, 180, 180) if plus_disabled else (0, 0, 0)
+
             pygame.draw.rect(self.screen, plus_color, plus_button_rect, border_radius=5)
-            pygame.draw.rect(self.screen, (100, 100, 100), plus_button_rect, 2, border_radius=5)
-            plus_text = button_font.render("+", True, (0, 0, 0))
+            pygame.draw.rect(self.screen, plus_border_color, plus_button_rect, 2, border_radius=5)
+            plus_text = button_font.render("+", True, plus_text_color)
             plus_text_rect = plus_text.get_rect(center=plus_button_rect.center)
             self.screen.blit(plus_text, plus_text_rect)
 
@@ -1430,7 +1446,7 @@ class Game:
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 10
+        countdown_time = 120
         paused = False
         pause_start_time = 0
         total_pause_time = 0

@@ -16,7 +16,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QFont, QCursor
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox, QDialog, QStyle, QFrame,
-                             QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton)
+                             QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QWidget)
 
 from src.tests import ABtest
 from src.tests import ACtest
@@ -68,14 +68,14 @@ class CustomDialog(QDialog):
         main_layout.addStretch(1)
 
         # --- 修改为 QGridLayout 来实现特殊对齐 ---
-        content_layout = QGridLayout() # <-- 修改：使用网格布局
+        content_layout = QGridLayout()  # <-- 修改：使用网格布局
         content_layout.setSpacing(20)
 
         # 文字标签
         text_label = QLabel(text, self)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setAlignment(Qt.AlignCenter)  # <-- 修改：让文字在自己的控件内也居中
         text_label.setMinimumWidth(500)  # 设置最小宽度确保文字有足够空间
         text_label.setStyleSheet("border: none; color: black; padding: 10px;")
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
@@ -98,29 +98,57 @@ class CustomDialog(QDialog):
         button_layout.addStretch()
 
         if button_type == 'yes_no':
+            # 创建"是"按钮和其容器
+            yes_container = QVBoxLayout()
             yes_button = QPushButton("是", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
             yes_button.setFixedSize(220, 65)
             yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
-                QPushButton { background-color: #2ecc71; color: white; border: none; border-radius: 25px; }
-                QPushButton:hover { background-color: #27ae60; }
-                QPushButton:pressed { background-color: #1e8449; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
             """)
             yes_button.clicked.connect(self.accept)
-            button_layout.addWidget(yes_button)
+            
+            yes_hint = QLabel("按Y键", self)
+            yes_hint.setAlignment(Qt.AlignCenter)
+            yes_hint.setFont(QFont("Microsoft YaHei", 25))
+            yes_hint.setStyleSheet("color: #888888; border: none;")
+            
+            yes_container.addWidget(yes_button)
+            yes_container.addWidget(yes_hint)
+            yes_container.setSpacing(5)
+            
+            yes_widget = QWidget()
+            yes_widget.setLayout(yes_container)
+            button_layout.addWidget(yes_widget)
 
+            # 创建"否"按钮和其容器
+            no_container = QVBoxLayout()
             no_button = QPushButton("否", self)
             no_button.setCursor(QCursor(Qt.PointingHandCursor))
             no_button.setFixedSize(220, 65)
             no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
-                QPushButton { background-color: #e74c3c; color: white; border: none; border-radius: 25px; }
-                QPushButton:hover { background-color: #c0392b; }
-                QPushButton:pressed { background-color: #a93226; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
+                QPushButton:pressed { background-color: #e0e0e0; }
             """)
             no_button.clicked.connect(self.reject)
-            button_layout.addWidget(no_button)
+            
+            no_hint = QLabel("按N键", self)
+            no_hint.setAlignment(Qt.AlignCenter)
+            no_hint.setFont(QFont("Microsoft YaHei", 25))
+            no_hint.setStyleSheet("color: #888888; border: none;")
+            
+            no_container.addWidget(no_button)
+            no_container.addWidget(no_hint)
+            no_container.setSpacing(5)
+            
+            no_widget = QWidget()
+            no_widget.setLayout(no_container)
+            button_layout.addWidget(no_widget)
         else:  # 默认为 'ok'
             ok_button = QPushButton("确定", self)
             ok_button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -138,14 +166,27 @@ class CustomDialog(QDialog):
         main_layout.addLayout(button_layout)
         main_layout.addStretch(1)
 
+    def keyPressEvent(self, event):
+        """处理键盘事件"""
+        try:
+            if event.key() == Qt.Key_Y:
+                self.accept()
+            elif event.key() == Qt.Key_N:
+                self.reject()
+            else:
+                super().keyPressEvent(event)
+        except Exception as e:
+            print(f"KeyPressEvent error: {e}")
+            super().keyPressEvent(event)
+
     def showEvent(self, event):
         """重写 showEvent 以在显示时调整窗口位置到父窗口正中心。"""
         super().showEvent(event)
         if self.parent():
             parent_rect = self.parent().geometry()
             parent_center = parent_rect.center()
-            x = parent_center.x() - self.width() // 2 +200
-            y = parent_center.y() - self.height() // 2 -100
+            x = parent_center.x() - self.width() // 2
+            y = parent_center.y() - self.height() // 2
             self.move(x, y)
 
     @staticmethod
@@ -184,6 +225,8 @@ class Interfacewindow(QMainWindow):
         super().__init__()
         self.ui = InterfaceUI.Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # 不在构造函数中显示窗口，等待登录完成后再显示
 
         # 初始化线程管理
         self.current_game_thread = None
@@ -316,7 +359,7 @@ class Interfacewindow(QMainWindow):
         # 设置初始状态
         self.ui.label_current_port.setText("未检测")
         self.ui.label_status_text.setText("端口未连接")
-        
+
         # 启动自动检测定时器
         self.auto_detect_timer = QTimer()
         self.auto_detect_timer.timeout.connect(self.auto_detect_and_connect)
@@ -559,7 +602,7 @@ class Interfacewindow(QMainWindow):
             print(f"启动练习模块时出错: {e}")
 
     def go_main(self):
-        """开始主实验/游戏。"""
+        """开始主实验。"""
         game_function = None
 
         # 检查端口连接状态
@@ -609,7 +652,6 @@ class Interfacewindow(QMainWindow):
         if game_function:
             threading.Thread(target=lambda: game_function().run(), daemon=True).start()
 
-
     def auto_detect_and_connect(self):
         """自动检测端口并连接"""
         try:
@@ -621,10 +663,10 @@ class Interfacewindow(QMainWindow):
                 else:
                     # 端口失连，重置状态
                     self.reset_connection_status()
-            
+
             # 查找CH340端口
             ch340_port = self.find_ch340_port()
-            
+
             if ch340_port:
                 # 检查端口是否可连接
                 if check_serial_connection(ch340_port):
@@ -636,7 +678,7 @@ class Interfacewindow(QMainWindow):
             else:
                 # 没有检测到端口
                 self.set_no_port_detected_status()
-                
+
         except Exception as e:
             print(f"自动检测端口时出错: {e}")
 
@@ -644,7 +686,7 @@ class Interfacewindow(QMainWindow):
         """手动连接端口（当自动检测失败时）"""
         try:
             ch340_port = self.find_ch340_port()
-            
+
             if ch340_port:
                 if check_serial_connection(ch340_port):
                     self.set_connected_status(ch340_port)
@@ -822,12 +864,42 @@ class Interfacewindow(QMainWindow):
             except ImportError:
                 QMessageBox.critical(self, "导入错误", "无法从 'login.py' 导入 LoginWindow 类。")
 
+    def confirm_close(self):
+        """带确认的关闭方法"""
+        # 正常退出时显示确认对话框
+        reply = CustomDialog.ask_question(
+            self,
+            QStyle.SP_MessageBoxQuestion,  # 使用问号图标
+            "确认退出",
+            "您确定要退出程序吗？"
+        )
+
+        # 根据用户的选择决定是否关闭
+        if reply == QDialog.Accepted:
+            # 如果用户点击"是"，则直接退出，跳过closeEvent的确认
+            print("程序已退出。")
+            # 清理资源
+            self.stop_current_game()
+            thread_manager.stop_all_threads()
+            # 标记为确认关闭，避免重复弹窗
+            self.confirmed_close = True
+            self.close()
+
     def closeEvent(self, event):
         """重写关闭事件，确保定时器被停止"""
+        # 检查是否已经确认关闭（避免重复弹窗）
+        if hasattr(self, 'confirmed_close') and self.confirmed_close:
+            # 已经确认关闭，直接接受事件
+            event.accept()
+            return
+
         # 检查是否是重新登录操作
         if hasattr(self, 'is_relogin') and self.is_relogin:
             # 如果是重新登录，直接关闭窗口，不显示退出确认
             print("重新登录，关闭当前界面。")
+            # 清理资源
+            self.stop_current_game()
+            thread_manager.stop_all_threads()
             event.accept()
             return
 
@@ -835,7 +907,7 @@ class Interfacewindow(QMainWindow):
         reply = CustomDialog.ask_question(
             self,
             QStyle.SP_MessageBoxQuestion,  # 使用问号图标
-            "",
+            "确认退出",
             "您确定要退出程序吗？"
         )
 
@@ -843,9 +915,12 @@ class Interfacewindow(QMainWindow):
         if reply == QDialog.Accepted:
             # 如果用户点击"是"，则接受关闭事件，关闭窗口
             print("程序已退出。")
+            # 清理资源
+            self.stop_current_game()
+            thread_manager.stop_all_threads()
             event.accept()
         else:
-            # 如果用户点击“否”，则忽略该事件，窗口不会关闭
+            # 如果用户点击"否"，则忽略该事件，窗口不会关闭
             event.ignore()
 
     def go_highestscore(self):
@@ -1180,12 +1255,6 @@ class Interfacewindow(QMainWindow):
 
         print(f"[游戏启动] 游戏线程启动完成: {thread.name}")
         return thread, stop_event
-
-    def closeEvent(self, event):
-        """窗口关闭时的清理操作"""
-        self.stop_current_game()
-        thread_manager.stop_all_threads()
-        super().closeEvent(event)
 
 
 if __name__ == '__main__':
