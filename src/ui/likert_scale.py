@@ -114,42 +114,63 @@ class LikertScale:
             self.surface.blit(label_text, label_rect)
 
     def _draw_question(self):
-        """绘制问题，支持用户名高亮"""
-        if self.highlight_user and self.highlight_user in self.question:
-            # 分割问题文本，提取用户名前后的部分
-            parts = self.question.split(self.highlight_user)
-            if len(parts) >= 2:
-                # 创建粗体字体用于用户名
-                bold_font = pygame.font.SysFont('SimHei', 60, bold=True)
-
-                # 渲染各部分
-                part1_text = self.font.render(parts[0], True, self.BLACK)
-                user_text = bold_font.render(self.highlight_user, True, (0, 0, 0))
-                part2_text = self.font.render(parts[1], True, self.BLACK)
-
-                # 计算总宽度以居中显示
-                total_width = part1_text.get_width() + user_text.get_width() + part2_text.get_width()
-                start_x = (self.WIDTH - total_width) // 2
-                y = 50
-
-                # 依次绘制各部分
-                self.surface.blit(part1_text, (start_x, y))
-                start_x += part1_text.get_width()
-
-                self.surface.blit(user_text, (start_x, y))
-                start_x += user_text.get_width()
-
-                self.surface.blit(part2_text, (start_x, y))
-            else:
-                # 如果分割失败，使用默认方式
-                question_text = self.font.render(self.question, True, self.BLACK)
-                question_rect = question_text.get_rect(center=(self.WIDTH // 2, 50))
-                self.surface.blit(question_text, question_rect)
+        """绘制问题，支持用户名和按键高亮"""
+        # 绿色用于按键高亮
+        GREEN_COLOR = (0, 255, 0)
+        
+        # 处理问题文本，分离需要高亮的部分
+        question = self.question
+        parts = []
+        
+        # 先处理数字键1-7的高亮
+        import re
+        # 匹配 "1 到 7" 或 "1到7" 的模式
+        pattern = r'(\d+)-(\d+)'
+        match = re.search(pattern, question)
+        
+        if match:
+            # 分割文本
+            before_match = question[:match.start()]
+            matched_text = question[match.start():match.end()]
+            after_match = question[match.end():]
+            
+            parts = [
+                (before_match, self.font, self.BLACK),
+                (matched_text, self.font, GREEN_COLOR),
+                (after_match, self.font, self.BLACK)
+            ]
         else:
-            # 没有用户名高亮，使用默认方式
-            question_text = self.font.render(self.question, True, self.BLACK)
-            question_rect = question_text.get_rect(center=(self.WIDTH // 2, 50))
-            self.surface.blit(question_text, question_rect)
+            parts = [(question, self.font, self.BLACK)]
+        
+        # 如果有用户名高亮，进一步处理
+        if self.highlight_user and self.highlight_user in question:
+            new_parts = []
+            bold_font = pygame.font.SysFont('SimHei', 60, bold=True)
+            
+            for text, font, color in parts:
+                if self.highlight_user in text:
+                    user_parts = text.split(self.highlight_user)
+                    if len(user_parts) >= 2:
+                        new_parts.append((user_parts[0], font, color))
+                        new_parts.append((self.highlight_user, bold_font, self.BLACK))
+                        new_parts.append((user_parts[1], font, color))
+                    else:
+                        new_parts.append((text, font, color))
+                else:
+                    new_parts.append((text, font, color))
+            parts = new_parts
+        
+        # 计算总宽度并居中显示
+        total_width = sum(font.size(text)[0] for text, font, color in parts if text)
+        start_x = (self.WIDTH - total_width) // 2
+        y = 50
+        
+        # 渲染所有部分
+        for text, font, color in parts:
+            if text:  # 只渲染非空文本
+                text_surface = font.render(text, True, color)
+                self.surface.blit(text_surface, (start_x, y))
+                start_x += text_surface.get_width()
 
     def _draw_selected_score(self):
         """绘制选中的分数"""

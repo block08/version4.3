@@ -5,7 +5,7 @@ import cv2
 import pygame
 import sys
 import math
-from src.core import game_function_simulation as gf
+from src.core import game_function as gf
 from src.utils import shared_data
 from src.ui.Button import Button, Button2, Button3, Button4
 from src.data.Calculate_pixel_difference import calculate_pixel_difference, calculate_pixel_difference2, \
@@ -94,7 +94,6 @@ def draw_key_box(screen, text, font, center_pos):
     screen.blit(text_surf, text_rect)
 
     return box_rect
-
 
 
 def show_confirm_dialog(screen, title, message):
@@ -321,16 +320,16 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 30
-        button_size = 40
+        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_size = 60
         button_spacing = 40
 
         # 减速按钮
-        minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
+        minus_button_rect = pygame.Rect(settings.screen_width - 275, button_y, button_size, button_size)
         # 加速按钮
-        plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
+        plus_button_rect = pygame.Rect(settings.screen_width - 130, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
+        value_display_rect = pygame.Rect(settings.screen_width - 210, button_y, 75, button_size)
 
         self.display_flowchart_instructions()
         wait = True
@@ -374,7 +373,7 @@ class Game:
 
         start_ticks = pygame.time.get_ticks()
         running = True
-        countdown_time = 1
+        countdown_time = 120
         paused = False
         pause_start_time = 0
         total_pause_time = 0
@@ -404,6 +403,9 @@ class Game:
                             if paused:
                                 total_pause_time += pygame.time.get_ticks() - pause_start_time
                                 paused = False
+                    elif event.key == pygame.K_x:  # x键跳过静息态倒计时
+                        running = False
+                        self.screen.fill(grey)
 
             # 计算实际经过的时间（不包括暂停时间）
             current_ticks = pygame.time.get_ticks()
@@ -445,6 +447,11 @@ class Game:
         # 读取id变量
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
+
+        # 自动显示第一张图片
+        t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0)
+        stats.game_score = 1  
+        first_image_shown = True
 
         while running:
             dt = self.clock.tick(60) / 1000
@@ -635,9 +642,8 @@ class Game:
                 hint_text = "按P键继续"
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
-                hint_surface = key_hint_font.render(hint_text, True, black)
-                hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                self.screen.blit(hint_surface, hint_rect)
+                self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                 (settings.screen_width // 2, 40))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -650,9 +656,8 @@ class Game:
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -661,9 +666,8 @@ class Game:
                     hint_text = "任务已完成"
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -699,7 +703,7 @@ class Game:
 
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1-7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -714,7 +718,6 @@ class Game:
                     # 处理事件
                     key_pressed = None
                     for event in pygame.event.get():
-
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
                                 pygame.quit()
@@ -741,7 +744,7 @@ class Game:
                 stats.game_score = 10
                 break
 
-        rest_instructions(self, rest_duration=1)
+        rest_instructions(self, rest_duration=2)
         # 被试1+2协作阶段
         with open('config.txt', 'w') as f:
             f.truncate(0)
@@ -782,19 +785,25 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 30
-        button_size = 40
+        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_size = 60
         button_spacing = 40
 
         # 减速按钮
-        minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
+        minus_button_rect = pygame.Rect(settings.screen_width - 275, button_y, button_size, button_size)
         # 加速按钮
-        plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
+        plus_button_rect = pygame.Rect(settings.screen_width - 130, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
+        value_display_rect = pygame.Rect(settings.screen_width - 210, button_y, 75, button_size)
 
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
+
+        # 自动显示第一张图片
+        t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11)
+        stats.game_score = 12
+        first_image_shown = True
+
         while running:
             dt = self.clock.tick(60) / 1000
 
@@ -978,9 +987,8 @@ class Game:
                 hint_text = "按P键继续"
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
-                hint_surface = key_hint_font.render(hint_text, True, black)
-                hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                self.screen.blit(hint_surface, hint_rect)
+                self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                 (settings.screen_width // 2, 40))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -993,9 +1001,8 @@ class Game:
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -1004,9 +1011,8 @@ class Game:
                     hint_text = "任务已完成"
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -1044,7 +1050,7 @@ class Game:
 
                 user1 = getattr(shared_data, 'user1_mark', '01')
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1-7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -1057,7 +1063,6 @@ class Game:
                     draw_data(self, self.screen, data, "B")
 
                     # 处理事件
-
                     key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
@@ -1086,7 +1091,7 @@ class Game:
                 stats.game_score = 21
                 break
 
-        rest_instructions(self, 1)  # 120秒休息倒计时
+        rest_instructions(self, rest_duration=2)  # 120秒休息倒计时
         stats.game_score += 1
 
         # 被试1+3协作阶段
@@ -1129,19 +1134,25 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 30
-        button_size = 40
+        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_size = 60
         button_spacing = 40
 
         # 减速按钮
-        minus_button_rect = pygame.Rect(settings.screen_width - 250, button_y, button_size, button_size)
+        minus_button_rect = pygame.Rect(settings.screen_width - 275, button_y, button_size, button_size)
         # 加速按钮
-        plus_button_rect = pygame.Rect(settings.screen_width - 140, button_y, button_size, button_size)
+        plus_button_rect = pygame.Rect(settings.screen_width - 130, button_y, button_size, button_size)
         # 数值显示区域
-        value_display_rect = pygame.Rect(settings.screen_width - 200, button_y, 55, button_size)
+        value_display_rect = pygame.Rect(settings.screen_width - 210, button_y, 75, button_size)
 
         with open(f"Behavioral_data/id.txt", "r") as file:
             id = file.read().strip()
+
+        # 自动显示第一张图片
+        t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23)
+        stats.game_score = 24
+        first_image_shown = True
+
         while running:
             dt = self.clock.tick(60) / 1000
 
@@ -1332,9 +1343,8 @@ class Game:
                 hint_text = "按P键继续"
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
-                hint_surface = key_hint_font.render(hint_text, True, black)
-                hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                self.screen.blit(hint_surface, hint_rect)
+                self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                 (settings.screen_width // 2, 40))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -1347,9 +1357,8 @@ class Game:
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -1358,9 +1367,8 @@ class Game:
                     hint_text = "任务已完成"
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
-                    hint_surface = key_hint_font.render(hint_text, True, black)
-                    hint_rect = hint_surface.get_rect(center=(settings.screen_width // 2, 40))
-                    self.screen.blit(hint_surface, hint_rect)
+                    self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
+                                                     (settings.screen_width // 2, 40))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -1398,7 +1406,7 @@ class Game:
 
 
                 # 合并显示数据和量表界面
-                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1到7评估任务难度:",
+                likert = LikertScale(screen=self.screen, question=f"请{user1}按下键盘按键1-7评估任务难度:",
                                      position=(260, 400),
                                      size=(1400, 500),
                                      highlight_user=user1)
@@ -1483,6 +1491,9 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             pygame.quit()
                             sys.exit()
+                    elif event.key == pygame.K_x:  # x键跳过静息态倒计时
+                        running = False
+                        self.screen.fill(grey)
             elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
             remaining_time = max(0, countdown_time - elapsed_time)
             if remaining_time == 0:
@@ -1496,14 +1507,62 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        return
-                    wait = False
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            wait = False
+                        else:
+                            # 如果取消，重新显示结束界面
+                            self.display_end_screen()
             self.clock.tick(60)  # 限制帧率，减少CPU使用
         pygame.quit()
         return
 
-    import pygame
+
+    def render_text_with_green_keys(self, text, font, surface, center_pos):
+        """渲染带绿色按键高亮的文本"""
+        GREEN_COLOR = (0, 255, 0)
+        BLACK_COLOR = (0, 0, 0)
+
+        # 定义需要高亮的按键
+        key_patterns = ['P', 'Esc', '空格键', '1', '2', '3', '4', '5', '6', '7']
+
+        # 简化算法：使用replace方法
+        parts = []
+        current_text = text
+
+        # 先找到所有需要高亮的位置
+        for pattern in key_patterns:
+            if pattern in current_text:
+                # 分割文本
+                split_parts = current_text.split(pattern)
+                new_parts = []
+
+                # 重建parts列表
+                for i, part in enumerate(split_parts):
+                    if i > 0:  # 在每个分割部分前添加高亮的按键
+                        new_parts.append((pattern, GREEN_COLOR))
+                    if part:  # 只添加非空部分
+                        new_parts.append((part, BLACK_COLOR))
+
+                # 合并文本用于下一次处理
+                current_text = ''.join([p[0] for p in new_parts])
+                parts = new_parts
+                break  # 找到第一个匹配就停止，避免重复处理
+
+        if not parts:
+            parts = [(text, BLACK_COLOR)]
+
+        # 计算总宽度
+        total_width = sum(font.size(part[0])[0] for part in parts if part[0])
+        start_x = center_pos[0] - total_width // 2
+        # 使用center_pos[1]作为文本中心的y坐标，需要减去字体高度的一半
+        y = center_pos[1] - font.get_height() // 2
+
+        # 渲染所有部分
+        for part_text, color in parts:
+            if part_text:
+                text_surface = font.render(part_text, True, color)
+                surface.blit(text_surface, (start_x, y))
+                start_x += text_surface.get_width()
 
     def display_flowchart_instructions(self):
         """以流程图的形式显示实验指导语"""
@@ -2285,7 +2344,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         clock.tick(60)
 
 
-def rest_instructions(self, rest_duration=1):
+def rest_instructions(self, rest_duration=2):
     """
     显示休息指导文本并进行倒计时
     rest_duration: 休息时长（秒），默认120秒（2分钟）

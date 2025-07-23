@@ -185,9 +185,64 @@ class Button4:
         else:
             self.current_color = self.button_color
 
+    def render_text_with_green_keys(self, text, font, surface, center_pos):
+        """渲染带绿色按键高亮的文本"""
+        GREEN_COLOR = (0, 255, 0)
+        BLACK_COLOR = (0, 0, 0)
+        
+        # 定义需要高亮的按键
+        key_patterns = ['P键', 'Esc键', '空格键', '1', '2', '3', '4', '5', '6', '7']
+        
+        # 简化算法：使用replace方法
+        parts = []
+        current_text = text
+        
+        # 先找到所有需要高亮的位置
+        for pattern in key_patterns:
+            if pattern in current_text:
+                # 分割文本
+                split_parts = current_text.split(pattern)
+                new_parts = []
+                
+                # 重建parts列表
+                for i, part in enumerate(split_parts):
+                    if i > 0:  # 在每个分割部分前添加高亮的按键
+                        new_parts.append((pattern, GREEN_COLOR))
+                    if part:  # 只添加非空部分
+                        new_parts.append((part, BLACK_COLOR))
+                
+                # 合并文本用于下一次处理
+                current_text = ''.join([p[0] for p in new_parts])
+                parts = new_parts
+                break  # 找到第一个匹配就停止，避免重复处理
+        
+        if not parts:
+            parts = [(text, BLACK_COLOR)]
+        
+        # 计算总宽度
+        total_width = sum(font.size(part[0])[0] for part in parts if part[0])
+        start_x = center_pos[0] - total_width // 2
+        y = center_pos[1] - font.get_height() // 2
+        
+        # 渲染所有部分
+        for part_text, color in parts:
+            if part_text:
+                text_surface = font.render(part_text, True, color)
+                surface.blit(text_surface, (start_x, y))
+                start_x += text_surface.get_width()
+
     # 绘制一个用颜色填充的按钮，再绘制文本
     def draw_button(self):
         pygame.draw.rect(self.screen, self.current_color, self.rect, border_radius=8)
-        text_surface = self.font.render(self.text, True, self.text_color)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        self.screen.blit(text_surface, text_rect)
+        
+        # 如果text为空，不绘制任何文本
+        if not self.text:
+            return
+            
+        # 检查是否需要绿色高亮按键
+        if any(key in self.text for key in ['P键', 'Esc键', '空格键', '1', '2', '3', '4', '5', '6', '7']):
+            self.render_text_with_green_keys(self.text, self.font, self.screen, self.rect.center)
+        else:
+            text_surface = self.font.render(self.text, True, self.text_color)
+            text_rect = text_surface.get_rect(center=self.rect.center)
+            self.screen.blit(text_surface, text_rect)
