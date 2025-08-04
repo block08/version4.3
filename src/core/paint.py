@@ -5,6 +5,7 @@ import time
 import os
 import random
 import math
+from src.config.config_manager import get_id_file_path
 
 # 初始化常量
 BLACK = (0, 0, 0)
@@ -28,6 +29,55 @@ class GameDrawing:
         self.timestamp = ''
         self.line_generator = LineGenerator()
 
+    def draw_dashed_lines(self, surface, color, points, width, dash_length=20, gap_length=10):
+        """绘制虚线"""
+        if len(points) < 2:
+            return
+            
+        total_length = 0
+        segment_lengths = []
+        
+        # 计算每段的长度
+        for i in range(len(points) - 1):
+            x1, y1 = points[i]
+            x2, y2 = points[i + 1]
+            length = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+            segment_lengths.append(length)
+            total_length += length
+        
+        current_pos = 0
+        draw_dash = True
+        
+        for i in range(len(points) - 1):
+            x1, y1 = points[i]
+            x2, y2 = points[i + 1]
+            
+            if segment_lengths[i] == 0:
+                continue
+                
+            # 在这一段线段上绘制虚线
+            segment_start = 0
+            while segment_start < segment_lengths[i]:
+                if draw_dash:
+                    dash_end = min(segment_start + dash_length, segment_lengths[i])
+                else:
+                    dash_end = min(segment_start + gap_length, segment_lengths[i])
+                
+                if draw_dash:
+                    # 计算虚线段的起点和终点
+                    start_ratio = segment_start / segment_lengths[i]
+                    end_ratio = dash_end / segment_lengths[i]
+                    
+                    start_x = x1 + (x2 - x1) * start_ratio
+                    start_y = y1 + (y2 - y1) * start_ratio
+                    end_x = x1 + (x2 - x1) * end_ratio
+                    end_y = y1 + (y2 - y1) * end_ratio
+                    
+                    pygame.draw.line(surface, color, (int(start_x), int(start_y)), (int(end_x), int(end_y)), width)
+                
+                segment_start = dash_end
+                draw_dash = not draw_dash
+
     def reset_generator(self):
         """重置线条生成器"""
         self.line_generator = LineGenerator()  # 创建新的生成器实例
@@ -46,7 +96,7 @@ class GameDrawing:
             print(f"Screenshot save error for score {gamescore}: {str(e)}")
             return False
 
-    def handle_case(self, self_obj, gamescore, case_num, output_dir="output_image"):
+    def handle_case(self, self_obj, gamescore, case_num, output_dir="output_image", total_pause_time=0):
         """统一处理所有case的通用函数"""
         print(f"=== DEBUG: handle_case called ===")
         print(f"gamescore: {gamescore}")
@@ -54,7 +104,7 @@ class GameDrawing:
         print(f"output_dir: {output_dir}")
         
         self.timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        self.t = pygame.time.get_ticks() / 1000
+        self.t = (pygame.time.get_ticks() - total_pause_time) / 1000
 
         self.ensure_directory_exists(output_dir)
 
@@ -95,13 +145,21 @@ class GameDrawing:
             # 清理前一个状态
             self_obj.level.clear()
 
-            # 生成新的曲线 - 使用case_num作为种子确保相同序号生成相同图片
+            # 生成新的曲线 - 使用case_num确保不同序号使用不同生成器
+            # 根据输出目录确定模式偏移
+            mode_offset = 0  # 默认subA
+            if "subAB" in output_dir:
+                mode_offset = 1
+            elif "subAC" in output_dir:
+                mode_offset = 2
+            
             random.seed(case_num * 1000 + gamescore)  # 使用固定种子
-            points, line_type = self.line_generator.generate_random_line_advanced()
+            points, line_type = self.line_generator.generate_random_line_advanced(case_num, mode_offset)
             random.seed()  # 恢复随机种子
 
-            # 绘制新曲线
-            pygame.draw.lines(self_obj.level.drawing_surface, BLACK, False, points, LINEWIDTH)
+            # 绘制新曲线（实线）
+            if len(points) > 1:
+                pygame.draw.lines(self_obj.level.drawing_surface, BLACK, False, points, LINEWIDTH)
 
             # 存储线的端点
             self_obj.level.store_line_points(case_num, [points[0], points[-1]])
@@ -133,7 +191,12 @@ class GameDrawing:
 
         return self.t, self.timestamp
 
-    def random_painting(self, number, self_obj, gamescore):
+    def update_current_timestamp(self, total_pause_time=0):
+        """更新当前时间戳，用于处理最小化等暂停事件后的时间校正"""
+        self.t = (pygame.time.get_ticks() - total_pause_time) / 1000
+        return self.t
+
+    def random_painting(self, number, self_obj, gamescore, total_pause_time=0):
         try:
             print(f"=== DEBUG: random_painting called ===")
             print(f"number (case_num): {number}")
@@ -141,22 +204,22 @@ class GameDrawing:
             
             if gamescore == 22:  # 被试B和被试A+B开始时
                 self.reset_generator()
-            with open(f"Behavioral_data/id.txt", "r") as file:
+            with open(get_id_file_path(), "r") as file:
                 id = file.read()
             if 0 <= gamescore <= 8:
                 print(f"执行被试A分支, 调用handle_case(gamescore={gamescore}, case_num={number})")
                 return self.handle_case(self_obj, gamescore, number,
-                                        f"./Behavioral_data/{id}/subA/output_image")
+                                        f"./Behavioral_data/{id}/subA/output_image", total_pause_time)
             elif 11 <= gamescore <= 18:
                 adjusted_score = gamescore - 11
                 print(f"执行被试B分支, 调用handle_case(gamescore={adjusted_score}, case_num={number})")
                 return self.handle_case(self_obj, adjusted_score, number,
-                                        f"./Behavioral_data/{id}/subAB/output_image")
+                                        f"./Behavioral_data/{id}/subAB/output_image", total_pause_time)
             elif 23 <= gamescore <= 30:
                 adjusted_score = gamescore - 23
                 print(f"执行被试AC分支, 调用handle_case(gamescore={adjusted_score}, case_num={number})")
                 return self.handle_case(self_obj, adjusted_score, number,
-                                        f"./Behavioral_data/{id}/subAC/output_image")
+                                        f"./Behavioral_data/{id}/subAC/output_image", total_pause_time)
         except Exception as e:
             print(f"Error in random_painting for score {gamescore}, number {number}: {str(e)}")
             return self.t, self.timestamp
@@ -178,8 +241,8 @@ class LineGenerator:
         self.max_attempts = 8  # 最大重试次数
         self.min_endpoint_distance = 200  # 起点和终点之间的最小距离
 
-        # 更新可用生成器列表，删除未使用的函数，添加新的曲线类型
-        self.available_generators = [
+        # 所有可用生成器列表
+        self.all_generators = [
             (self.generate_wave, "波浪线"),
             (self.generate_zigzag, "锯齿线"),
             (self.generate_sine_wave, "正弦波"),
@@ -195,9 +258,37 @@ class LineGenerator:
             # 新增的曲线类型
             (self.generate_s_curve, "S形曲线"),
             (self.generate_double_wave, "双重波浪")
-
-
         ]
+        
+        # 为本次实验随机选择8个不重复的生成器
+        # 使用实验ID作为种子，确保同一实验的三个模式（subA, subAB, subAC）使用相同的8张图
+        selection_seed = self._get_experiment_seed()
+        temp_random_state = random.getstate()
+        random.seed(selection_seed)
+        
+        # 从14个生成器中随机选择8个
+        selected_indices = random.sample(range(len(self.all_generators)), 8)
+        self.available_generators = [self.all_generators[i] for i in selected_indices]
+        
+        print(f"实验会话选择的8个生成器（种子：{selection_seed}）:")
+        for i, (func, name) in enumerate(self.available_generators):
+            print(f"  生成器{i}: {name}")
+        
+        random.setstate(temp_random_state)  # 恢复随机状态
+    
+    def _get_experiment_seed(self):
+        """获取实验种子，确保同一实验会话的一致性"""
+        try:
+            # 尝试读取实验ID作为种子基础
+            with open(get_id_file_path(), "r") as file:
+                experiment_id = file.read().strip()
+                # 将实验ID转换为数字种子
+                seed = hash(experiment_id) % 100000
+                return abs(seed)  # 确保是正数
+        except (FileNotFoundError, ValueError):
+            # 如果无法读取实验ID，使用时间戳作为备选
+            import time
+            return int(time.time()) % 10000
 
     def validate_points(self, points, name):
         """验证生成的点列表是否有效，包括起点终点距离检查"""
@@ -240,18 +331,75 @@ class LineGenerator:
                 return False
         return True
 
+    def flip_horizontal(self, points):
+        """左右反转曲线点"""
+        if not points:
+            return points
+        
+        center_x = (self.DRAW_START_X + self.DRAW_END_X) / 2
+        flipped_points = []
+        
+        for x, y in points:
+            # 计算点到中心线的距离，然后反转
+            new_x = center_x - (x - center_x)
+            flipped_points.append(self.constrain_point(new_x, y))
+        
+        return flipped_points
+
+    def flip_vertical(self, points):
+        """上下反转曲线点"""
+        if not points:
+            return points
+        
+        center_y = (self.DRAW_START_Y + self.DRAW_END_Y) / 2
+        flipped_points = []
+        
+        for x, y in points:
+            # 计算点到中心线的距离，然后反转
+            new_y = center_y - (y - center_y)
+            flipped_points.append(self.constrain_point(x, new_y))
+        
+        return flipped_points
+
+    def swap_endpoints(self, points):
+        """交换起点和终点"""
+        if not points or len(points) < 2:
+            return points
+        
+        # 反转整个点列表，实现起点终点互换
+        return list(reversed(points))
 
 
 
 
-    def generate_random_line_advanced(self):
-        """生成随机线条，包含验证和重试机制"""
+
+    def generate_random_line_advanced(self, case_num=None, mode_offset=0):
+        """生成随机线条，支持指定case_num确保不重复的生成器选择
+        
+        Args:
+            case_num: 图片编号 (1-8)
+            mode_offset: 模式偏移，用于不同模式使用不同顺序
+                        0=subA, 1=subAB, 2=subAC
+        """
         if not self.available_generators:
             print("重置所有可用线型")
             self.__init__()
 
-        generator_index = random.randrange(len(self.available_generators))
-        generator, name = self.available_generators[generator_index]
+        # 如果指定了case_num，使用固定的生成器选择策略确保不重复
+        if case_num is not None:
+            # 应用模式偏移，让不同模式使用不同的图片顺序
+            # 但仍然使用相同的8个生成器
+            adjusted_case = ((case_num - 1) + mode_offset) % len(self.available_generators)
+            generator_index = adjusted_case
+            generator, name = self.available_generators[generator_index]
+            
+            mode_names = {0: "subA", 1: "subAB", 2: "subAC"}
+            mode_name = mode_names.get(mode_offset, f"mode{mode_offset}")
+            print(f"{mode_name} Case {case_num}: 使用生成器 {generator_index} - {name}")
+        else:
+            # 原有的随机选择逻辑（用于向后兼容）
+            generator_index = random.randrange(len(self.available_generators))
+            generator, name = self.available_generators[generator_index]
 
         for attempt in range(self.max_attempts):
             try:
@@ -262,19 +410,75 @@ class LineGenerator:
                     print(f"第 {attempt + 1} 次尝试生成 {name} 失败，重试...")
                     continue
 
-                # 直接返回原始曲线，不应用任何变换
-                return points, name
+                # 基于case_num应用固定变换（确保相同case_num总是得到相同结果）
+                transform_applied = ""
+                if case_num is not None:
+                    # 使用case_num决定变换类型，确保可重现性
+                    transform_seed = case_num * 123  # 固定种子
+                    temp_random_state = random.getstate()
+                    random.seed(transform_seed)
+                    
+                    if random.random() < 0.5:  # 50%概率应用变换
+                        transform_type = random.choice(['horizontal', 'vertical', 'swap'])
+                        
+                        if transform_type == 'horizontal':
+                            points = self.flip_horizontal(points)
+                            transform_applied = " (左右反转)"
+                        elif transform_type == 'vertical':
+                            points = self.flip_vertical(points)
+                            transform_applied = " (上下反转)"
+                        elif transform_type == 'swap':
+                            points = self.swap_endpoints(points)
+                            transform_applied = " (起点终点互换)"
+                    
+                    random.setstate(temp_random_state)  # 恢复随机状态
+                else:
+                    # 原有的随机变换逻辑
+                    if random.random() < 0.4:
+                        transform_type = random.choice(['horizontal', 'vertical', 'swap'])
+                        
+                        if transform_type == 'horizontal':
+                            points = self.flip_horizontal(points)
+                            transform_applied = " (左右反转)"
+                        elif transform_type == 'vertical':
+                            points = self.flip_vertical(points)
+                            transform_applied = " (上下反转)"
+                        elif transform_type == 'swap':
+                            points = self.swap_endpoints(points)
+                            transform_applied = " (起点终点互换)"
+                
+                # 变换后再次验证点的有效性
+                if not self.validate_points(points, name + transform_applied):
+                    print(f"第 {attempt + 1} 次尝试生成 {name}{transform_applied} 变换后验证失败，重试...")
+                    continue
+
+                return points, name + transform_applied
 
             except Exception as e:
                 print(f"生成 {name} 时发生错误: {str(e)}")
 
+        # 如果指定了case_num但生成失败，尝试下一个生成器
+        if case_num is not None:
+            print(f"Case {case_num}: 无法生成 {name}，尝试下一个生成器")
+            backup_index = (generator_index + 1) % len(self.available_generators)
+            backup_generator, backup_name = self.available_generators[backup_index]
+            print(f"Case {case_num}: 备用生成器 {backup_index} - {backup_name}")
+            
+            for attempt in range(self.max_attempts):
+                try:
+                    points = backup_generator()
+                    if self.validate_points(points, backup_name):
+                        return points, backup_name
+                except Exception as e:
+                    print(f"备用生成器 {backup_name} 错误: {str(e)}")
+        
         # 移除后备方案，直接重新选择一个不同的生成器
         print(f"无法生成 {name}，尝试其他线型")
         if self.available_generators:  # 如果还有其他可用生成器
-            return self.generate_random_line_advanced()
+            return self.generate_random_line_advanced(case_num)
         else:  # 如果没有其他可用生成器，重置并再试一次
             self.__init__()
-            return self.generate_random_line_advanced()
+            return self.generate_random_line_advanced(case_num)
 
     def constrain_point(self, x, y):
         """确保点在绘制范围内"""
@@ -890,6 +1094,56 @@ class LineGenerator:
         return points
 
 
+def draw_dashed_lines_static(surface, color, points, width, dash_length=20, gap_length=10):
+    """静态方法：绘制虚线"""
+    if len(points) < 2:
+        return
+        
+    total_length = 0
+    segment_lengths = []
+    
+    # 计算每段的长度
+    for i in range(len(points) - 1):
+        x1, y1 = points[i]
+        x2, y2 = points[i + 1]
+        length = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        segment_lengths.append(length)
+        total_length += length
+    
+    current_pos = 0
+    draw_dash = True
+    
+    for i in range(len(points) - 1):
+        x1, y1 = points[i]
+        x2, y2 = points[i + 1]
+        
+        if segment_lengths[i] == 0:
+            continue
+            
+        # 在这一段线段上绘制虚线
+        segment_start = 0
+        while segment_start < segment_lengths[i]:
+            if draw_dash:
+                dash_end = min(segment_start + dash_length, segment_lengths[i])
+            else:
+                dash_end = min(segment_start + gap_length, segment_lengths[i])
+            
+            if draw_dash:
+                # 计算虚线段的起点和终点
+                start_ratio = segment_start / segment_lengths[i]
+                end_ratio = dash_end / segment_lengths[i]
+                
+                start_x = x1 + (x2 - x1) * start_ratio
+                start_y = y1 + (y2 - y1) * start_ratio
+                end_x = x1 + (x2 - x1) * end_ratio
+                end_y = y1 + (y2 - y1) * end_ratio
+                
+                pygame.draw.line(surface, color, (int(start_x), int(start_y)), (int(end_x), int(end_y)), width)
+            
+            segment_start = dash_end
+            draw_dash = not draw_dash
+
+
 def test_curve_generator():
     """测试曲线生成器，直观显示各种曲线类型"""
     pygame.init()
@@ -959,7 +1213,7 @@ def test_curve_generator():
         # 绘制边界框
         pygame.draw.rect(screen, BLACK, (DRAW_START_X, DRAW_START_Y, DRAW_WIDTH, DRAW_HEIGHT), 1)
 
-        # 绘制曲线
+        # 绘制曲线（实线）
         if points and len(points) > 1:
             pygame.draw.lines(screen, BLACK, False, points, LINEWIDTH)
 

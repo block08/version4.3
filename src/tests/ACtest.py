@@ -161,7 +161,9 @@ class Game:
         TOTAL_IMAGES = 3
 
         # ------------------- 文件与目录设置 -------------------
-        id_file_path = f"{ROOT_DATA_FOLDER}/id.txt"
+        # 添加配置管理器导入并获取ID文件路径
+        from src.config.config_manager import get_id_file_path
+        id_file_path = get_id_file_path()
         try:
             os.makedirs(ROOT_DATA_FOLDER, exist_ok=True)
             if not os.path.exists(id_file_path):
@@ -202,6 +204,7 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): pygame.quit(); sys.exit()
@@ -225,9 +228,9 @@ class Game:
         stats.game_score = 24
 
         # ------------------- 游戏主循环 -------------------
+        screenshot_taken = False  # 标记是否已经截图
         while running:
             dt = self.clock.tick(60) / 1000
-            self.screen.fill(grey)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
@@ -257,6 +260,7 @@ class Game:
                     if is_next_trigger and not paused:
                         current_img_idx = stats.game_score - 24
                         if current_img_idx < TOTAL_IMAGES - 1:
+                            # 先截取当前绘制完成的画面（在屏幕清空之前）
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/post_screenshot{current_img_idx}.png")
                             time_records[current_img_idx + 1], timestamps[
@@ -265,6 +269,7 @@ class Game:
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/pre_screenshot{current_img_idx + 1}.png")
                             stats.game_score += 1
+                            screenshot_taken = True  # 标记已截图，避免重复清空屏幕
                         elif current_img_idx == TOTAL_IMAGES - 1:
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/post_screenshot{current_img_idx}.png")
@@ -272,6 +277,12 @@ class Game:
                             stats.game_score += 1
 
                         if event.key == pygame.K_SPACE: self.level.reset_endpoint_reached()
+
+            # 只有在没有截图的情况下才清空屏幕
+            if not screenshot_taken:
+                self.screen.fill(grey)
+            else:
+                screenshot_taken = False  # 重置标记
 
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
@@ -474,8 +485,8 @@ class Game:
 
         # --- Section 1: 标题与角色 ---
         title_map = {
-            'A': f"{user1}单人绘图任务指导语", 'B': f"{user2}单人绘图任务指导语", 'C': f"{user3}单人绘图任务指导语",
-            'AB': f"{user1}和{user2}合作绘图任务指导语", 'AC': f"{user1}和{user3}合作绘图任务指导语"
+            'A': f"单人绘图任务指导语", 'B': f"单人绘图任务指导语", 'C': f"单人绘图任务指导语",
+            'AB': f"合作绘图任务指导语", 'AC': f"合作绘图任务指导语"
         }
         title_text = title_map.get(subject, "绘图任务指导语")
         title_surf = title_font.render(title_text, True, TEXT_COLOR)
@@ -483,9 +494,9 @@ class Game:
         y_pos += title_surf.get_height()
 
         role_map = {
-            'A': f"请{user1}绘图，{user2}和{user3}休息", 'B': f"请{user2}绘图，{user1}和{user3}休息",
-            'C': f"请{user3}绘图，{user1}和{user2}休息",
-            'AB': f"请{user1}和{user2}绘图，{user3}休息", 'AC': f"请{user1}和{user3}绘图，{user2}休息"
+            'A': f"请{user1}绘图，辅助航天员休息", 'B': f"请{user2}绘图，辅助航天员休息",
+            'C': f"请{user3}绘图，辅助航天员休息",
+            'AB': f"请{user1}和辅助航天员绘图", 'AC': f"请{user1}和辅助航天员绘图"
         }
         role_text = role_map.get(subject, "")
         role_surf = subtitle_font.render(role_text, True, TEXT_COLOR)
@@ -496,9 +507,9 @@ class Game:
         pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
         y_pos += 40
 
-        user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和{user2}", 'AC': f"{user1}和{user3}"}.get(
+        user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和辅助航天员", 'AC': f"{user1}和辅助航天员"}.get(
             subject, "")
-        full_desc_text = f"{user_text}航天员需控制键盘，沿黑色轨迹从绿色起点移动至红色终点。"
+        full_desc_text = f"{user_text}航天员需控制键盘，从绿色起点沿黑色轨迹移动至红色终点。"
         desc_surf = body_font.render(full_desc_text, True, TEXT_COLOR)
         self.screen.blit(desc_surf, desc_surf.get_rect(center=(screen_w / 2, y_pos)))
         y_pos += desc_surf.get_height() + 40
@@ -598,17 +609,17 @@ class Game:
         if subject == 'A':
             key_highlight_words = ['W', 'A', 'S', 'D']
             instruction_parts_list.append(
-                re.split(r'(W|A|S|D)', f"请{user1}按键：W键控制上, A键控制左, S键控制下, D键控制右。"))
+                re.split(r'(W|A|S|D)', f"请{user1}航天员：W键控制上, A键控制左, S键控制下, D键控制右。"))
         elif subject in ['B', 'C']:
             key_highlight_words = ['↑', '←', '↓', '→']
             user_mark = user2 if subject == 'B' else user3
             instruction_parts_list.append(
-                re.split(r'(↑|←|↓|→)', f"请{user_mark}按键：↑键控制上, ←键控制左, ↓键控制下, →键控制右。"))
+                re.split(r'(↑|←|↓|→)', f"请{user_mark}航天员：↑键控制上, ←键控制左, ↓键控制下, →键控制右。"))
         elif subject in ['AB', 'AC']:
             key_highlight_words = ['A', 'D', '↑', '↓']
             partner_mark = user2 if subject == 'AB' else user3
-            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右；")
-            line2_parts = re.split(r'(↑|↓)', f"请{partner_mark}使用↑键控制上, ↓键控制下。")
+            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右")
+            line2_parts = re.split(r'(↑|↓)', f"　　　　　请{partner_mark}使用↑键控制上, ↓键控制下")
             instruction_parts_list.append(line1_parts)
             instruction_parts_list.append(line2_parts)
 
@@ -642,7 +653,6 @@ class Game:
             current_x += part.get_width() + 8
 
         pygame.display.update()
-
     def display_end_screen(self, is_training=False):
         """显示标准化的结束画面"""
         BG_COLOR, TEXT_COLOR, ACCENT_COLOR = (230, 230, 230), (0, 0, 0), (0, 255, 0)

@@ -231,6 +231,7 @@ class Interfacewindow(QMainWindow):
         # 初始化线程管理
         self.current_game_thread = None
         self.current_stop_event = None
+        self.is_game_running = False  # 游戏运行状态标志
 
         # 初始化导航按钮状态管理
         self.init_navigation_system()
@@ -359,11 +360,55 @@ class Interfacewindow(QMainWindow):
         # 设置初始状态
         self.ui.label_current_port.setText("未检测")
         self.ui.label_status_text.setText("端口未连接")
+        
+        # 动态创建COM状态标签
+        self.create_com_status_label()
 
         # 启动自动检测定时器
         self.auto_detect_timer = QTimer()
         self.auto_detect_timer.timeout.connect(self.auto_detect_and_connect)
         self.auto_detect_timer.start(2000)  # 每2秒检测一次
+
+    def create_com_status_label(self):
+        """动态创建COM状态标签"""
+        try:
+            # 创建COM状态标签
+            self.label_com_status = QLabel("COM未连接")
+            self.label_com_status.setMinimumSize(200, 50)
+            self.label_com_status.setFont(QFont("微软雅黑", 36, QFont.Bold))
+            self.label_com_status.setStyleSheet("""
+                QLabel{
+                    border: none;
+                    color: rgb(0, 0, 0);
+                    font: bold 36pt "微软雅黑";
+                    padding-right: 10px;
+                }
+            """)
+            self.label_com_status.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            
+            # 找到重新登录按钮的布局
+            relogin_button = self.ui.pushButton_relogin
+            parent_layout = relogin_button.parent().layout()
+            
+            if parent_layout:
+                # 获取重新登录按钮在布局中的位置
+                button_index = -1
+                for i in range(parent_layout.count()):
+                    if parent_layout.itemAt(i).widget() == relogin_button:
+                        button_index = i
+                        break
+                
+                if button_index >= 0:
+                    # 在重新登录按钮前插入COM状态标签
+                    parent_layout.insertWidget(button_index, self.label_com_status)
+                    print("COM状态标签已成功添加到界面")
+                else:
+                    print("未找到重新登录按钮的位置")
+            else:
+                print("未找到重新登录按钮的父布局")
+                
+        except Exception as e:
+            print(f"创建COM状态标签时出错: {e}")
 
     def find_ch340_port(self):
         """查找USB-SERIAL CH340设备"""
@@ -374,7 +419,7 @@ class Interfacewindow(QMainWindow):
             for port in ports:
                 # 检查设备描述中是否包含CH340相关信息
                 port_description = port.description.upper()
-                if any(keyword in port_description for keyword in ['CH340', 'USB-SERIAL', 'USB SERIAL']):
+                if any(keyword in port_description for keyword in ['CH340', 'USB-SERIAL CH340']):
                     ch340_port = port.device
                     break
 
@@ -431,20 +476,9 @@ class Interfacewindow(QMainWindow):
     def update_practice_button_texts(self, user1, user2, user3):
         """更新练习按钮的文本。"""
         try:
-            if user1:
-                self.ui.pushButton_4.setText(f"{user1}单独绘图")
-            else:
-                self.ui.pushButton_4.setText("人员①绘图练习模块")
-
-            if user1 and user2:
-                self.ui.pushButton_9.setText(f"{user1}和{user2}合作绘图")
-            else:
-                self.ui.pushButton_9.setText("人员①&人员②绘图练习模块")
-
-            if user1 and user3:
-                self.ui.pushButton_10.setText(f"{user1}和{user3}合作绘图")
-            else:
-                self.ui.pushButton_10.setText("人员①&人员③绘图练习模块")
+            # 保持按钮原有的固定文字，不根据用户名动态修改
+            self.ui.pushButton_4.setText("单独绘图")
+            self.ui.pushButton_9.setText("合作绘图")
         except Exception as e:
             print(f"更新练习按钮文本时出错: {e}")
 
@@ -460,9 +494,7 @@ class Interfacewindow(QMainWindow):
         self.ui.pushButton_relogin.clicked.connect(self.relogin)
         self.ui.data_check.clicked.connect(self.open_data_folder)
         self.ui.pushButton_4.clicked.connect(self.start_practice_1)
-
         self.ui.pushButton_9.clicked.connect(self.start_practice_4)
-        self.ui.pushButton_10.clicked.connect(self.start_practice_5)
 
         # 连接宏观指导语按钮
         self.ui.pushButton_macro_guidance.clicked.connect(self.go_home)
@@ -470,6 +502,13 @@ class Interfacewindow(QMainWindow):
     def start_practice_1(self):
         """启动1的练习模块。"""
         print(f"[练习启动] 开始启动练习模块1")
+        
+        # 检查是否有游戏正在运行
+        if self.is_game_running:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+            return
+            
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
             print(f"[练习启动] 获取用户1标记: {user1_mark}")
@@ -551,6 +590,12 @@ class Interfacewindow(QMainWindow):
 
     def start_practice_4(self):
         """启动人员①&人员②的练习模块。"""
+        # 检查是否有游戏正在运行
+        if self.is_game_running:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+            return
+            
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
             user2_mark = getattr(shared_data, 'user2_mark', '02')
@@ -577,6 +622,12 @@ class Interfacewindow(QMainWindow):
 
     def start_practice_5(self):
         """启动人员①&人员③的练习模块。"""
+        # 检查是否有游戏正在运行
+        if self.is_game_running:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+            return
+            
         try:
             user1_mark = getattr(shared_data, 'user1_mark', '01')
             user3_mark = getattr(shared_data, 'user3_mark', '03')
@@ -603,6 +654,12 @@ class Interfacewindow(QMainWindow):
 
     def go_main(self):
         """开始主实验。"""
+        # 检查是否有游戏正在运行
+        if self.is_game_running:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                    "有实验正在进行中，请等待当前实验结束后再开始新的实验。")
+            return
+            
         game_function = None
 
         # 检查端口连接状态
@@ -650,7 +707,18 @@ class Interfacewindow(QMainWindow):
                     game_function = main.Game
 
         if game_function:
-            threading.Thread(target=lambda: game_function().run(), daemon=True).start()
+            # 设置游戏运行状态
+            self.is_game_running = True
+            
+            def run_experiment():
+                try:
+                    game_function().run()
+                finally:
+                    # 实验结束后清除运行状态
+                    self.is_game_running = False
+                    print("[正式实验] 实验结束，清除运行状态")
+            
+            threading.Thread(target=run_experiment, daemon=True).start()
 
     def auto_detect_and_connect(self):
         """自动检测端口并连接"""
@@ -750,10 +818,22 @@ class Interfacewindow(QMainWindow):
         self.ui.label_status_text.setStyleSheet("""
             QLabel {
                 border: none;
-                color: rgb(46, 204, 113);
+                color: rgb(0, 0, 0);
                 font: 24pt "微软雅黑";
             }
         """)
+
+        # 更新COM状态标签
+        if hasattr(self, 'label_com_status'):
+            self.label_com_status.setText(f"{port}已连接")
+            self.label_com_status.setStyleSheet("""
+                QLabel{
+                    border: none;
+                    color: rgb(0, 0, 0);
+                    font: bold 36pt "微软雅黑";
+                    padding-right: 10px;
+                }
+            """)
 
         # 禁用连接按钮
         self.ui.pushButton_auto_connect.setEnabled(False)
@@ -762,7 +842,12 @@ class Interfacewindow(QMainWindow):
         # 设置共享数据
         shared_data.global_flag = 1
         shared_data.global_port = port
+        # 强制重新加载配置文件以获取最新的波特率设置
+        serial_config.load_config()
         shared_data.global_baudrate = serial_config.get_baudrate()
+        
+        # 自动发送marker8确认连接
+        self.send_marker8(port)
 
     def set_detected_but_not_connected_status(self, port):
         """设置检测到但无法连接状态"""
@@ -790,7 +875,7 @@ class Interfacewindow(QMainWindow):
         self.ui.label_status_text.setStyleSheet("""
             QLabel {
                 border: none;
-                color: rgb(255, 140, 0);
+                color: rgb(0, 0, 0);
                 font: 24pt "微软雅黑";
             }
         """)
@@ -825,10 +910,22 @@ class Interfacewindow(QMainWindow):
         self.ui.label_status_text.setStyleSheet("""
             QLabel {
                 border: none;
-                color: rgb(255, 0, 0);
+                color: rgb(0, 0, 0);
                 font: 24pt "微软雅黑";
             }
         """)
+
+        # 更新COM状态标签
+        if hasattr(self, 'label_com_status'):
+            self.label_com_status.setText("COM未连接")
+            self.label_com_status.setStyleSheet("""
+                QLabel{
+                    border: none;
+                    color: rgb(0, 0, 0);
+                    font: bold 36pt "微软雅黑";
+                    padding-right: 10px;
+                }
+            """)
 
         # 启用连接按钮
         self.ui.pushButton_auto_connect.setEnabled(True)
@@ -1218,6 +1315,9 @@ class Interfacewindow(QMainWindow):
             self.current_game_thread.join(timeout=3)
             if self.current_game_thread.is_alive():
                 print("警告：游戏线程未能在3秒内停止")
+        
+        # 清除游戏运行状态
+        self.is_game_running = False
 
     def start_game_thread(self, game_class):
         """安全启动游戏线程"""
@@ -1227,6 +1327,9 @@ class Interfacewindow(QMainWindow):
         print(f"[游戏启动] 停止当前游戏")
         self.stop_current_game()
 
+        # 设置游戏运行状态
+        self.is_game_running = True
+
         # 检查游戏类的构造函数是否支持stop_event参数
         import inspect
         sig = inspect.signature(game_class.__init__)
@@ -1235,18 +1338,27 @@ class Interfacewindow(QMainWindow):
         if 'stop_event' in sig.parameters:
             # 支持stop_event参数的游戏类（如main.py中的Game类）
             print(f"[游戏启动] 游戏类支持stop_event参数")
-            target_func = lambda: game_class(stop_event=None).run()
+            original_target = lambda: game_class(stop_event=None).run()
         else:
             # 不支持stop_event参数的游戏类（如测试文件中的Game类）
             print(f"[游戏启动] 游戏类不支持stop_event参数")
-            target_func = lambda: game_class().run()
+            original_target = lambda: game_class().run()
 
-        print(f"[游戏启动] 目标函数准备完成: {target_func}")
+        # 包装target函数以在结束后清除游戏运行状态
+        def wrapped_target():
+            try:
+                original_target()
+            finally:
+                # 游戏结束后清除运行状态
+                self.is_game_running = False
+                print(f"[游戏启动] 游戏结束，清除运行状态")
+
+        print(f"[游戏启动] 目标函数准备完成")
 
         # 启动新游戏
         print(f"[游戏启动] 调用线程管理器启动线程")
         thread, stop_event = thread_manager.start_thread(
-            target=target_func,
+            target=wrapped_target,
             timeout=60
         )
 

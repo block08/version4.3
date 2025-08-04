@@ -616,9 +616,9 @@ QPushButton:pressed{
               <widget class="QFrame" name="frame_11">
                <property name="geometry">
                 <rect>
-                 <x>220</x>
+                 <x>50</x>
                  <y>180</y>
-                 <width>701</width>
+                 <width>1000</width>
                  <height>550</height>
                 </rect>
                </property>
@@ -628,30 +628,38 @@ QPushButton:pressed{
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
                </property>
-               <widget class="QPushButton" name="pushButton_4">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>20</y>
-                  <width>581</width>
-                  <height>80</height>
-                 </rect>
+               <layout class="QHBoxLayout" name="horizontalLayout_practice">
+                <property name="spacing">
+                 <number>30</number>
                 </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+                <property name="leftMargin">
+                 <number>20</number>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
+                <property name="topMargin">
+                 <number>20</number>
+                </property>
+                <property name="rightMargin">
+                 <number>20</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>20</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="pushButton_4">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     background-color: rgb(128, 128, 128);
     color: rgb(34, 92, 102);
-    font: 28pt &quot;微软雅黑&quot;;
-    padding: 10px 24px;
-    margin: 2px;
+    font: 50pt &quot;微软雅黑&quot;;
+    padding: 20px;
 }
 QPushButton:hover{
     background-color: rgb(34, 92, 102);
@@ -661,35 +669,28 @@ QPushButton:pressed{
     background-color: rgb(17, 48, 53);
     color: rgb(255, 255, 255);
 }</string>
-                </property>
-                <property name="text">
-                 <string>人员①绘图练习模块</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButton_5">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>110</y>
-                  <width>581</width>
-                  <height>80</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
+                  </property>
+                  <property name="text">
+                   <string>单人绘图</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_9">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton{
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     background-color: rgb(128, 128, 128);
     color: rgb(34, 92, 102);
-    font: 28pt &quot;微软雅黑&quot;;
-    padding: 10px 24px;
-    margin: 2px;
+    font: 50pt &quot;微软雅黑&quot;;
+    padding: 20px;
 }
 QPushButton:hover{
     background-color: rgb(34, 92, 102);
@@ -699,125 +700,13 @@ QPushButton:pressed{
     background-color: rgb(17, 48, 53);
     color: rgb(255, 255, 255);
 }</string>
-                </property>
-                <property name="text">
-                 <string>人员②绘图练习模块</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButton_6">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>200</y>
-                  <width>581</width>
-                  <height>80</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-    border: none;
-    border-radius: 10px;
-    background-color: rgb(128, 128, 128);
-    color: rgb(34, 92, 102);
-    font: 28pt &quot;微软雅黑&quot;;
-    padding: 10px 24px;
-    margin: 2px;
-}
-QPushButton:hover{
-    background-color: rgb(34, 92, 102);
-    color: rgb(255, 255, 255);
-}
-QPushButton:pressed{
-    background-color: rgb(17, 48, 53);
-    color: rgb(255, 255, 255);
-}</string>
-                </property>
-                <property name="text">
-                 <string>人员③绘图练习模块</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButton_9">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>290</y>
-                  <width>581</width>
-                  <height>80</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-    border: none;
-    border-radius: 10px;
-    background-color: rgb(128, 128, 128);
-    color: rgb(34, 92, 102);
-    font: 28pt &quot;微软雅黑&quot;;
-    padding: 10px 24px;
-    margin: 2px;
-}
-QPushButton:hover{
-    background-color: rgb(34, 92, 102);
-    color: rgb(255, 255, 255);
-}
-QPushButton:pressed{
-    background-color: rgb(17, 48, 53);
-    color: rgb(255, 255, 255);
-}</string>
-                </property>
-                <property name="text">
-                 <string>人员①&amp;人员②绘图练习模块</string>
-                </property>
-               </widget>
-               <widget class="QPushButton" name="pushButton_10">
-                <property name="geometry">
-                 <rect>
-                  <x>20</x>
-                  <y>380</y>
-                  <width>581</width>
-                  <height>80</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QPushButton{
-    border: none;
-    border-radius: 10px;
-    background-color: rgb(128, 128, 128);
-    color: rgb(34, 92, 102);
-    font: 28pt &quot;微软雅黑&quot;;
-    padding: 10px 24px;
-    margin: 2px;
-}
-QPushButton:hover{
-    background-color: rgb(34, 92, 102);
-    color: rgb(255, 255, 255);
-}
-QPushButton:pressed{
-    background-color: rgb(17, 48, 53);
-    color: rgb(255, 255, 255);
-}</string>
-                </property>
-                <property name="text">
-                 <string>人员①&amp;人员③绘图练习模块</string>
-                </property>
-               </widget>
+                  </property>
+                  <property name="text">
+                   <string>合作绘图</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </widget>
              <widget class="QWidget" name="page_main">

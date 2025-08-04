@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import pygame

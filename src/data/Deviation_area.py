@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 import cv2
 import numpy as np
 from pathlib import Path
@@ -84,7 +85,7 @@ def write_result(pixel_count, output_path):
     """独立的结果写入函数"""
     try:
         # 读取ID
-        with open("Behavioral_data/id.txt", "r") as file:
+        with open(get_id_file_path(), "r") as file:
             id = file.read().strip()
 
         # 构建完整路径

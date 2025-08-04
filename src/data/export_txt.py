@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 # -*- coding: utf-8 -*-
 import sqlite3
 import csv

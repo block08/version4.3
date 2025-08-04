@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
@@ -40,11 +41,12 @@ def calculate_pixel_difference(origin_image, image1, image2, t1, t2, timestamp, 
     # 计算百分比 (重合像素/总像素)
     overlap_percentage = (overlap_pixels / total_pixels * 100) if total_pixels > 0 else 0
 
-    # 计算时间差（减去暂停时间）
-    time_diff = (t2 - t1) - (total_pause_time / 1000)
+    # 计算纯绘图时间（减去平均分配的暂停时间）
+    raw_time = t2 - t1
+    time_diff = raw_time
 
     # 7. 保存结果
-    with open(f"Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     with open(f"./Behavioral_data/{id}/subA/data/数据.txt", "a", encoding="utf-8") as f:
         f.write(
@@ -93,11 +95,12 @@ def calculate_pixel_difference2(origin_image, image1, image2, t1, t2, timestamp,
     # 计算百分比 (重合像素/总像素)
     overlap_percentage = (overlap_pixels / total_pixels * 100) if total_pixels > 0 else 0
 
-    # 计算时间差（减去暂停时间）
-    time_diff = (t2 - t1) - (total_pause_time / 1000)
+    # 计算纯绘图时间（减去平均分配的暂停时间）
+    raw_time = t2 - t1
+    time_diff = raw_time
 
     # 7. 保存结果
-    with open(f"Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     with open(f"./Behavioral_data/{id}/subAB/data/数据.txt", "a", encoding="utf-8") as f:
         f.write(
@@ -143,11 +146,12 @@ def calculate_pixel_difference3(origin_image, image1, image2, t1, t2, timestamp,
     # 计算百分比 (重合像素/总像素)
     overlap_percentage = (overlap_pixels / total_pixels * 100) if total_pixels > 0 else 0
 
-    # 计算时间差（减去暂停时间）
-    time_diff = (t2 - t1) - (total_pause_time / 1000)
+    # 计算纯绘图时间（减去平均分配的暂停时间）
+    raw_time = t2 - t1
+    time_diff = raw_time
 
     # 7. 保存结果
-    with open(f"Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     with open(f"./Behavioral_data/{id}/subAC/data/数据.txt", "a", encoding="utf-8") as f:
         f.write(

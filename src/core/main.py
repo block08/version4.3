@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import time
@@ -49,11 +50,11 @@ def read_speed_value():
         return 50
 
 
-def handle_image_navigation(game_drawing, numbers, current_index, self, action="next"):
+def handle_image_navigation(game_drawing, numbers, current_index, self, total_pause_time=0, action="next"):
     """统一处理图片导航逻辑，确保图片按固定顺序显示"""
     serial_marker(bytes([0x01]))
     if current_index < len(numbers):
-        return game_drawing.random_painting(numbers[current_index], self, current_index)
+        return game_drawing.random_painting(numbers[current_index], self, current_index, total_pause_time)
     return None, None
 
 
@@ -96,6 +97,106 @@ def draw_key_box(screen, text, font, center_pos):
 
     return box_rect
 
+
+def show_minimize_dialog(screen, message):
+    """
+    显示最小化恢复对话框，只有一个确认按钮
+    """
+    # 保存当前屏幕内容
+    original_screen = screen.copy()
+
+    # 对话框尺寸和位置（与show_confirm_dialog保持一致）
+    screen_width = screen.get_width()
+    screen_height = screen.get_height()
+    dialog_width = 800
+    dialog_height = 450  # 增加高度
+    dialog_x = (screen_width - dialog_width) // 2
+    dialog_y = (screen_height - dialog_height) // 2
+    dialog_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
+
+    # 颜色定义（匹配show_confirm_dialog样式）
+    bg_color = (255, 255, 255)  # 白色背景
+    border_color = (85, 85, 85)  # 灰色边框
+    text_color = (0, 0, 0)  # 黑色文字
+    button_color = (255, 255, 255)  # 白色按钮背景
+    button_border = (204, 204, 204)  # 浅灰色按钮边框
+    button_hover = (240, 240, 240)  # 浅灰色悬停背景
+    button_border_hover = (153, 153, 153)  # 深灰色悬停边框
+    button_text_color = (0, 0, 0)  # 黑色按钮文字
+    hint_text_color = (136, 136, 136)  # 灰色提示文字
+
+    # 字体设置（与show_confirm_dialog保持一致）
+    try:
+        message_font = pygame.font.Font(get_font_path(), 50)
+        button_font = pygame.font.Font(get_font_path(), 50)
+        hint_font = pygame.font.Font(get_font_path(), 35)
+    except:
+        message_font = pygame.font.Font(None, 50)
+        button_font = pygame.font.Font(None, 50)
+        hint_font = pygame.font.Font(None, 35)
+
+    # 按钮设置（与show_confirm_dialog保持一致）
+    button_width = 220
+    button_height = 65
+    button_x = dialog_x + (dialog_width - button_width) // 2
+    button_y = dialog_y + dialog_height - 120  # 上移为提示文字留空间
+    confirm_button = pygame.Rect(button_x, button_y, button_width, button_height)
+
+    # 悬停状态
+    button_hover_state = False
+    clock = pygame.time.Clock()
+
+    while True:
+        # 事件处理
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_y:  # Y键确认
+                    return
+            elif event.type == pygame.MOUSEMOTION:
+                mouse_pos = pygame.mouse.get_pos()
+                button_hover_state = confirm_button.collidepoint(mouse_pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # 左键点击
+                    mouse_pos = pygame.mouse.get_pos()
+                    if confirm_button.collidepoint(mouse_pos):
+                        return
+
+        # 绘制半透明背景
+        overlay = pygame.Surface((screen_width, screen_height))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        screen.blit(original_screen, (0, 0))
+        screen.blit(overlay, (0, 0))
+
+        # 绘制对话框背景和边框（匹配show_confirm_dialog样式）
+        pygame.draw.rect(screen, bg_color, dialog_rect, border_radius=20)
+        pygame.draw.rect(screen, border_color, dialog_rect, 2, border_radius=20)
+
+        # 绘制消息文本（与show_confirm_dialog保持一致的位置）
+        message_surface = message_font.render(message, True, text_color)
+        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
+        screen.blit(message_surface, message_rect)
+
+        # 绘制确认按钮（匹配show_confirm_dialog样式）
+        current_button_color = button_hover if button_hover_state else button_color
+        current_border_color = button_border_hover if button_hover_state else button_border
+
+        # 绘制按钮背景（圆角矩形）
+        pygame.draw.rect(screen, current_button_color, confirm_button, border_radius=25)
+        pygame.draw.rect(screen, current_border_color, confirm_button, 2, border_radius=25)
+
+        # 绘制按钮文字
+        button_text = button_font.render("确定", True, button_text_color)
+        button_text_rect = button_text.get_rect(center=confirm_button.center)
+        screen.blit(button_text, button_text_rect)
+
+        # 绘制Y键提示
+        hint_text = hint_font.render("按Y键", True, hint_text_color)
+        hint_rect = hint_text.get_rect(center=(dialog_x + dialog_width // 2, button_y + button_height + 30))
+        screen.blit(hint_text, hint_rect)
+
+        pygame.display.flip()
+        clock.tick(60)
 
 def show_confirm_dialog(screen, title, message):
     """
@@ -258,6 +359,8 @@ class Game:
         # 初始化
         pygame.init()
         self.stop_event = stop_event
+        # 添加初始化状态标志，避免启动时触发VIDEOEXPOSE弹窗
+        self.is_initial_startup = True
         # 初始化速度为1级别（对应速度值50）
         with open('scroll_value.txt', 'w') as f:
             f.write('50')
@@ -351,6 +454,16 @@ class Game:
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 如果是初始启动，跳过弹窗直接重绘界面
+                    if self.is_initial_startup:
+                        self.is_initial_startup = False
+                        self.display_flowchart_instructions()
+                    else:
+                        # 窗口被最小化后恢复，显示简化确认对话框
+                        show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                        # 重绘流程图指导语界面
+                        self.display_flowchart_instructions()
             self.clock.tick(60)  # 限制帧率，减少CPU使用
         self.display_meditation_instructions()
         wait = True
@@ -367,6 +480,10 @@ class Game:
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，触发暂停确认
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    self.display_meditation_instructions()
             self.clock.tick(60)  # 限制帧率，减少CPU使用
 
         numbers1 = random.sample(range(1, 9), 8)
@@ -375,7 +492,7 @@ class Game:
         pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
         pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
         pygame.display.update()
-
+        serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
         running = True
         countdown_time = 120
@@ -393,6 +510,24 @@ class Game:
                     running = False
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 重绘静息态界面（绿色十字）
+                    self.screen.fill(grey)
+                    pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
+                    pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+                    pygame.display.update()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         # 暂停计时器
@@ -432,6 +567,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，触发暂停确认
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    # 重绘任务指导语界面
+                    self.display_task_instructions_formatted(subject='A')
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
@@ -450,11 +590,12 @@ class Game:
         current_image_index = 0  # 当前图片索引
 
         # 读取id变量
-        with open(f"Behavioral_data/id.txt", "r") as file:
+        with open(get_id_file_path(), "r") as file:
             id = file.read().strip()
 
         # 自动显示第一张图片
-        t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0)
+        serial_marker(bytes([0x01]))  # 发送第一张图片的marker
+        t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0, total_pause_time)
         stats.game_score = 1
         first_image_shown = True
 
@@ -464,7 +605,7 @@ class Game:
             # 确保背景正确刷新
             self.screen.fill(grey)
 
-            user_button2 = Button3(settings, self.screen, f"航天员:{user1}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"航天员：{user1}", 10, 20)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -475,7 +616,41 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 更新当前图片的时间戳以反映最小化暂停时间
+                    if first_image_shown and 1 <= stats.game_score <= 8:
+                        updated_time = game_drawing.update_current_timestamp(total_pause_time)
+                        # 根据当前图片更新对应的时间变量
+                        if stats.game_score == 1:
+                            t1 = updated_time
+                        elif stats.game_score == 2:
+                            t2 = updated_time
+                        elif stats.game_score == 3:
+                            t3 = updated_time
+                        elif stats.game_score == 4:
+                            t4 = updated_time
+                        elif stats.game_score == 5:
+                            t5 = updated_time
+                        elif stats.game_score == 6:
+                            t6 = updated_time
+                        elif stats.game_score == 7:
+                            t7 = updated_time
+                        elif stats.game_score == 8:
+                            t8 = updated_time
+                    # 重绘A阶段绘图界面
                     self.screen.fill(grey)
+                    # 界面会在循环末尾重绘
                 elif event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                                       speed_value, speed_step, button_states)
@@ -521,19 +696,26 @@ class Game:
 
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers1[2], self, 2)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers1[2], self, 2,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers1[3], self, 3)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers1[3], self, 3,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers1[4], self, 4)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers1[4], self, 4,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers1[5], self, 5)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers1[5], self, 5,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers1[6], self, 6)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers1[6], self, 6,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers1[7], self, 7)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers1[7], self, 7,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                                 self.level.reset_endpoint_reached()
                         elif stats.game_score == 8:
@@ -551,7 +733,7 @@ class Game:
                         if not first_image_shown:
                             # 显示第一张图
                             serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0)
+                            t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0, total_pause_time)
                             stats.game_score = 1
                             first_image_shown = True
                         elif stats.game_score < 8:
@@ -568,19 +750,26 @@ class Game:
 
                                 serial_marker(bytes([0x01]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers1[2], self, 2)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers1[2], self, 2,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers1[3], self, 3)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers1[3], self, 3,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers1[4], self, 4)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers1[4], self, 4,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers1[5], self, 5)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers1[5], self, 5,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers1[6], self, 6)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers1[6], self, 6,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers1[7], self, 7)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers1[7], self, 7,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                         elif stats.game_score == 8:
                             # 确保绘制内容已经显示到屏幕上
@@ -699,7 +888,7 @@ class Game:
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
                 dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3, timestamp4,
                             timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time)
-                with open(f"Behavioral_data/id.txt", "r") as file:
+                with open(get_id_file_path(), "r") as file:
                     id = file.read()
                 with open(f"./Behavioral_data/{id}/subA/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
@@ -725,11 +914,18 @@ class Game:
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
-                                pygame.quit()
-                                sys.exit()
+                                # 二次确认退出
+                                if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
+                                    pygame.quit()
+                                    sys.exit()
                             else:
                                 key_pressed = event.key
-
+                        elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                            # 窗口被最小化后恢复，触发暂停确认
+                            show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                            # 重绘量表界面
+                            self.screen.fill(grey)
+                            draw_data(self, self.screen, data, "A")
                     # 更新量表
                     score = likert.update(mouse_pos=pygame.mouse.get_pos(),
                                           key_pressed=key_pressed)
@@ -741,7 +937,7 @@ class Game:
 
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file:
+                    with open(get_id_file_path(), "r") as file:
                         id = file.read()
                     with open(f"./Behavioral_data/{id}/subA/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
@@ -801,11 +997,12 @@ class Game:
         # 数值显示区域
         value_display_rect = pygame.Rect(settings.screen_width - 210, button_y, 75, button_size)
 
-        with open(f"Behavioral_data/id.txt", "r") as file:
+        with open(get_id_file_path(), "r") as file:
             id = file.read().strip()
 
         # 自动显示第一张图片
-        t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11)
+        serial_marker(bytes([0x02]))  # 发送第一张图片的marker
+        t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11, total_pause_time)
         stats.game_score = 12
         first_image_shown = True
 
@@ -816,7 +1013,7 @@ class Game:
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"航天员:{user1}和{user2}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"航天员：{user1}和{user2}", 10, 20)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -825,7 +1022,42 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 更新当前图片的时间戳以反映最小化暂停时间
+                    if first_image_shown and 12 <= stats.game_score <= 19:
+                        updated_time = game_drawing.update_current_timestamp(total_pause_time)
+                        # 根据当前图片更新对应的时间变量
+                        if stats.game_score == 12:
+                            t1 = updated_time
+                        elif stats.game_score == 13:
+                            t2 = updated_time
+                        elif stats.game_score == 14:
+                            t3 = updated_time
+                        elif stats.game_score == 15:
+                            t4 = updated_time
+                        elif stats.game_score == 16:
+                            t5 = updated_time
+                        elif stats.game_score == 17:
+                            t6 = updated_time
+                        elif stats.game_score == 18:
+                            t7 = updated_time
+                        elif stats.game_score == 19:
+                            t8 = updated_time
+                    # 重绘AB协作绘图界面
+                    self.screen.fill(grey)
+                    # 界面会在循环末尾重绘
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
@@ -851,7 +1083,7 @@ class Game:
                         if not first_image_shown:
                             # 显示第一张图
                             serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11)
+                            t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11, total_pause_time)
                             stats.game_score = 12
                             first_image_shown = True
                         elif stats.game_score < 19 and self.level.is_endpoint_reached():
@@ -866,21 +1098,28 @@ class Game:
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
 
-                                serial_marker(bytes([0x01]))
+                                serial_marker(bytes([0x02]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 13)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 13,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers2[3], self, 14)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers2[3], self, 14,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers2[4], self, 15)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers2[4], self, 15,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers2[5], self, 16)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers2[5], self, 16,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers2[6], self, 17)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers2[6], self, 17,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers2[7], self, 18)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers2[7], self, 18,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                                 self.level.reset_endpoint_reached()
                         elif stats.game_score == 19:
@@ -897,7 +1136,7 @@ class Game:
                         if not first_image_shown:
                             # 显示第一张图
                             serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11)
+                            t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11, total_pause_time)
                             stats.game_score = 12
                             first_image_shown = True
                         elif stats.game_score < 19:
@@ -912,21 +1151,28 @@ class Game:
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
 
-                                serial_marker(bytes([0x01]))
+                                serial_marker(bytes([0x02]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 13)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 13,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers2[3], self, 14)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers2[3], self, 14,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers2[4], self, 15)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers2[4], self, 15,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers2[5], self, 16)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers2[5], self, 16,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers2[6], self, 17)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers2[6], self, 17,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers2[7], self, 18)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers2[7], self, 18,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                         elif stats.game_score == 19:
                             # 确保绘制内容已经显示到屏幕上
@@ -1046,7 +1292,7 @@ class Game:
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
                 dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3, timestamp4,
                              timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time)
-                with open(f"Behavioral_data/id.txt", "r") as file:
+                with open(get_id_file_path(), "r") as file:
                     id = file.read()
                 with open(f"./Behavioral_data/{id}/subAB/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
@@ -1072,11 +1318,18 @@ class Game:
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
-                                pygame.quit()
-                                sys.exit()
+                                # 二次确认退出
+                                if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
+                                    pygame.quit()
+                                    sys.exit()
                             else:
                                 key_pressed = event.key
-
+                        elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                            # 窗口被最小化后恢复，触发暂停确认
+                            show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                            # 重绘量表界面
+                            self.screen.fill(grey)
+                            draw_data(self, self.screen, data, "B")
                     # 更新量表
                     score = likert.update(mouse_pos=pygame.mouse.get_pos(),
                                           key_pressed=key_pressed)
@@ -1088,7 +1341,7 @@ class Game:
 
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file:
+                    with open(get_id_file_path(), "r") as file:
                         id = file.read()
                     with open(f"./Behavioral_data/{id}/subAB/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
@@ -1111,6 +1364,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，触发暂停确认
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    # 重绘AC任务指导语界面
+                    self.display_task_instructions_formatted(subject='AC')
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
@@ -1150,11 +1408,12 @@ class Game:
         # 数值显示区域
         value_display_rect = pygame.Rect(settings.screen_width - 210, button_y, 75, button_size)
 
-        with open(f"Behavioral_data/id.txt", "r") as file:
+        with open(get_id_file_path(), "r") as file:
             id = file.read().strip()
 
         # 自动显示第一张图片
-        t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23)
+        serial_marker(bytes([0x03]))  # 发送第一张图片的marker
+        t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23, total_pause_time)
         stats.game_score = 24
         first_image_shown = True
 
@@ -1165,7 +1424,7 @@ class Game:
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"航天员:{user1}和{user3}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"航天员：{user1}和{user3}", 10, 20)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1177,8 +1436,41 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 更新当前图片的时间戳以反映最小化暂停时间
+                    if first_image_shown and 24 <= stats.game_score <= 31:
+                        updated_time = game_drawing.update_current_timestamp(total_pause_time)
+                        # 根据当前图片更新对应的时间变量
+                        if stats.game_score == 24:
+                            t1 = updated_time
+                        elif stats.game_score == 25:
+                            t2 = updated_time
+                        elif stats.game_score == 26:
+                            t3 = updated_time
+                        elif stats.game_score == 27:
+                            t4 = updated_time
+                        elif stats.game_score == 28:
+                            t5 = updated_time
+                        elif stats.game_score == 29:
+                            t6 = updated_time
+                        elif stats.game_score == 30:
+                            t7 = updated_time
+                        elif stats.game_score == 31:
+                            t8 = updated_time
+                    # 重绘AC协作绘图界面
                     self.screen.fill(grey)
-
+                    # 界面会在循环末尾重绘
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
@@ -1204,7 +1496,7 @@ class Game:
                         if not first_image_shown:
                             # 显示第一张图
                             serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23)
+                            t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23, total_pause_time)
                             stats.game_score = 24
                             first_image_shown = True
                         elif stats.game_score < 31 and self.level.is_endpoint_reached():
@@ -1215,26 +1507,33 @@ class Game:
                                 pygame.display.update()
 
                                 # 保存当前绘制内容为post_screenshot
-                                with open(f"Behavioral_data/id.txt", "r") as file:
+                                with open(get_id_file_path(), "r") as file:
                                     id = file.read().strip()
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
 
-                                serial_marker(bytes([0x01]))
+                                serial_marker(bytes([0x03]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers3[2], self, 25)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers3[2], self, 25,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers3[3], self, 26)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers3[3], self, 26,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers3[4], self, 27)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers3[4], self, 27,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers3[5], self, 28)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers3[5], self, 28,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers3[6], self, 29)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers3[6], self, 29,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers3[7], self, 30)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers3[7], self, 30,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                                 self.level.reset_endpoint_reached()
                         elif stats.game_score == 31:
@@ -1252,7 +1551,7 @@ class Game:
                         if not first_image_shown:
                             # 显示第一张图
                             serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23)
+                            t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23, total_pause_time)
                             stats.game_score = 24
                             first_image_shown = True
                         elif stats.game_score < 31:
@@ -1263,26 +1562,33 @@ class Game:
                                 pygame.display.update()
 
                                 # 保存当前绘制内容为post_screenshot
-                                with open(f"Behavioral_data/id.txt", "r") as file:
+                                with open(get_id_file_path(), "r") as file:
                                     id = file.read().strip()
                                 post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot{current_image_index - 1}.png"
                                 pygame.image.save(self.screen, post_screenshot_path)
 
-                                serial_marker(bytes([0x01]))
+                                serial_marker(bytes([0x03]))
                                 if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24)
+                                    t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24,
+                                                                                  total_pause_time)
                                 elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers3[2], self, 25)
+                                    t3, timestamp3 = game_drawing.random_painting(numbers3[2], self, 25,
+                                                                                  total_pause_time)
                                 elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers3[3], self, 26)
+                                    t4, timestamp4 = game_drawing.random_painting(numbers3[3], self, 26,
+                                                                                  total_pause_time)
                                 elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers3[4], self, 27)
+                                    t5, timestamp5 = game_drawing.random_painting(numbers3[4], self, 27,
+                                                                                  total_pause_time)
                                 elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers3[5], self, 28)
+                                    t6, timestamp6 = game_drawing.random_painting(numbers3[5], self, 28,
+                                                                                  total_pause_time)
                                 elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers3[6], self, 29)
+                                    t7, timestamp7 = game_drawing.random_painting(numbers3[6], self, 29,
+                                                                                  total_pause_time)
                                 elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers3[7], self, 30)
+                                    t8, timestamp8 = game_drawing.random_painting(numbers3[7], self, 30,
+                                                                                  total_pause_time)
                                 stats.game_score += 1
                         elif stats.game_score == 31:
                             # 确保绘制内容已经显示到屏幕上
@@ -1402,7 +1708,7 @@ class Game:
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
                 dataloading3(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3, timestamp4,
                              timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time)
-                with open(f"Behavioral_data/id.txt", "r") as file:
+                with open(get_id_file_path(), "r") as file:
                     id = file.read()
                 with open(f"./Behavioral_data/{id}/subAC/data/数据.txt", "r", encoding="utf-8") as f:
                     lines = f.readlines()
@@ -1428,11 +1734,18 @@ class Game:
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
-                                pygame.quit()
-                                sys.exit()
+                                # 二次确认退出
+                                if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
+                                    pygame.quit()
+                                    sys.exit()
                             else:
                                 key_pressed = event.key
-
+                        elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                            # 窗口被最小化后恢复，触发暂停确认
+                            show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                            # 重绘量表界面
+                            self.screen.fill(grey)
+                            draw_data(self, self.screen, data, "AB")
                     # 更新量表
                     score = likert.update(mouse_pos=pygame.mouse.get_pos(),
                                           key_pressed=key_pressed)
@@ -1444,7 +1757,7 @@ class Game:
 
                 # 保存量表结果
                 if score is not None:
-                    with open(f"Behavioral_data/id.txt", "r") as file:
+                    with open(get_id_file_path(), "r") as file:
                         id = file.read()
                     with open(f"./Behavioral_data/{id}/subAC/likert_scale/量表.txt", "w") as f:
                         f.write(str(score))
@@ -1463,6 +1776,10 @@ class Game:
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
+                    elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                        # 窗口被最小化后恢复，触发暂停确认
+                        show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                        self.display_meditation_instructions()
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -1491,6 +1808,24 @@ class Game:
                     running = False
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 重绘静息态界面（绿色十字）
+                    self.screen.fill(grey)
+                    pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
+                    pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+                    pygame.display.update()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
@@ -1516,6 +1851,14 @@ class Game:
                     else:
                         # 如果取消，重新显示结束界面
                         self.display_end_screen()
+                elif event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，触发暂停确认
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    # 重绘结束界面
+                    self.display_end_screen()
             self.clock.tick(60)  # 限制帧率，减少CPU使用
         pygame.quit()
         return
@@ -1524,7 +1867,7 @@ class Game:
 
     def render_text_with_green_keys(self, text, font, surface, center_pos):
         """渲染带绿色按键高亮的文本"""
-        GREEN_COLOR = (0, 255, 0)
+        GREEN_COLOR = (50, 128, 50)
         BLACK_COLOR = (0, 0, 0)
 
         # 定义需要高亮的按键
@@ -1619,9 +1962,9 @@ class Game:
         # The core change is in this data structure to reflect the new experimental flow.
         flow_steps = [
             {"header": "第一部分", "main": f"{user1}静息任务", "sub": "（2分钟）"},
-            {"header": "第二部分", "main": f"{user1}单独绘图", "sub": "（7分钟）"},
-            {"header": "第三部分", "main": f"{user1}&{user2}合作绘图", "sub": "（7分钟）"},
-            {"header": "第四部分", "main": f"{user1}&{user3}合作绘图", "sub": "（7分钟）"},
+            {"header": "第二部分", "main": f"{user1}单独绘图", "sub": "（约7分钟）"},
+            {"header": "第三部分", "main": f"{user1}&{user2}合作绘图", "sub": "（约7分钟）"},
+            {"header": "第四部分", "main": f"{user1}&{user3}合作绘图", "sub": "（约7分钟）"},
             {"header": "第五部分", "main": f"{user1}静息任务", "sub": "（2分钟）"}
         ]
 
@@ -1813,7 +2156,7 @@ class Game:
 
         user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和{user2}", 'AC': f"{user1}和{user3}"}.get(
             subject, "")
-        full_desc_text = f"{user_text}航天员需控制键盘，沿黑色轨迹从绿色起点移动至红色终点。"
+        full_desc_text = f"{user_text}航天员需控制键盘，从绿色起点沿黑色轨迹移动至红色终点。"
         desc_surf = body_font.render(full_desc_text, True, TEXT_COLOR)
         self.screen.blit(desc_surf, desc_surf.get_rect(center=(screen_w / 2, y_pos)))
         y_pos += desc_surf.get_height() + 40
@@ -1922,8 +2265,8 @@ class Game:
         elif subject in ['AB', 'AC']:
             key_highlight_words = ['A', 'D', '↑', '↓']
             partner_mark = user2 if subject == 'AB' else user3
-            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右；")
-            line2_parts = re.split(r'(↑|↓)', f"请{partner_mark}使用↑键控制上, ↓键控制下。")
+            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右")
+            line2_parts = re.split(r'(↑|↓)', f"　　　　　请{partner_mark}使用↑键控制上, ↓键控制下")
             instruction_parts_list.append(line1_parts)
             instruction_parts_list.append(line2_parts)
 
@@ -2123,7 +2466,7 @@ def draw_data(self, screen, data, subject_type=None):
 
 def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
                 timestamp4, timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time=0):
-    with open("Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subA/output_image"
 
@@ -2184,7 +2527,7 @@ def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, time
 def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
                  timestamp4, timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time=0):
     # 读取ID
-    with open("Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subAB/output_image"
 
@@ -2247,7 +2590,7 @@ def dataloading2(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, tim
 def dataloading3(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
                  timestamp4, timestamp5, timestamp6, timestamp7, timestamp8, total_pause_time=0):
     # 读取ID
-    with open("Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     base_path = f"./Behavioral_data/{id}/subAC/output_image"
 
@@ -2423,6 +2766,20 @@ def rest_instructions(self, rest_duration=30):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                # 窗口被最小化后恢复，独立处理暂停时间
+                minimize_pause_start = time.time()
+                # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                if paused:
+                    total_pause_time += minimize_pause_start - pause_start_time
+                show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                minimize_pause_end = time.time()
+                # 累加最小化暂停时间
+                total_pause_time += minimize_pause_end - minimize_pause_start
+                # 如果之前是P键暂停状态，重新开始计时
+                if paused:
+                    pause_start_time = minimize_pause_end
+                pass
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     # 暂停计时器

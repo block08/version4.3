@@ -1,6 +1,7 @@
 # login_info_handler.py
 import os
 import time
+from src.config.config_manager import get_id_file_path
 
 
 class LoginInfoHandler:
@@ -86,7 +87,7 @@ class LoginInfoHandler:
                     f"标识: {self.subject3_info['mark']}\n")
 
         # 更新id.txt文件
-        with open(os.path.join(base_path, "id.txt"), "w") as f:
+        with open(get_id_file_path(), "w") as f:
             f.write(folder_name)
 
         return full_path

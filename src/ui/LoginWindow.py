@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 import datetime
 import sys
+import os
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QRect, QTimer
-from PyQt5.QtGui import QFont, QPixmap, QCursor
+from PyQt5.QtGui import QFont, QPixmap, QCursor, QIcon
 from PyQt5.QtWidgets import (QApplication, QMainWindow,
                              QPushButton, QVBoxLayout, QWidget, QHBoxLayout,
                              QLabel, QFrame, QGridLayout, QDialog, QStyle)
@@ -56,14 +57,13 @@ class CustomDialog(QDialog):
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
 
-        # 图标标签
-        icon_label = QLabel(self)
-        icon_pixmap = self.style().standardIcon(icon_type).pixmap(64, 64)
-        icon_label.setPixmap(icon_pixmap)
-        icon_label.setFixedSize(64, 64)
-        icon_label.setStyleSheet("border: none;")
-        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
-        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        # 图标标签 - 移除图标显示
+        # icon_label = QLabel(self)
+        # icon_pixmap = self.style().standardIcon(icon_type).pixmap(64, 64)
+        # icon_label.setPixmap(icon_pixmap)
+        # icon_label.setFixedSize(64, 64)
+        # icon_label.setStyleSheet("border: none;")
+        # content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
         # --- 修改区域结束 ---
 
 
@@ -211,14 +211,13 @@ class CustomDialog(QDialog):
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
 
-        # 图标标签
-        icon_label = QLabel()
-        icon_label.setFixedSize(80, 80)
-        icon_pixmap = dialog.style().standardIcon(icon_type).pixmap(80, 80)
-        icon_label.setPixmap(icon_pixmap)
-        icon_label.setStyleSheet("border: none;")
-        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
-        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
+        # 图标标签 - 移除图标显示
+        # icon_label = QLabel()
+        # icon_label.setFixedSize(80, 80)
+        # icon_pixmap = dialog.style().standardIcon(icon_type).pixmap(80, 80)
+        # icon_label.setPixmap(icon_pixmap)
+        # icon_label.setStyleSheet("border: none;")
+        # content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
         # --- 修改区域结束 ---
 
         main_layout.addLayout(content_layout)
@@ -494,6 +493,10 @@ class LoginWindow(QMainWindow):
         from src.ui.login import Ui_MainWindow
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # 设置窗口图标
+        self.set_window_icon()
+        
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         # 添加全屏显示并动态调整组件大小
@@ -517,6 +520,28 @@ class LoginWindow(QMainWindow):
         self.m_Position = QtCore.QPoint()
         self._closing = False  # 添加关闭标志
         self._transitioning = False  # 添加正常切换标志
+
+    def set_window_icon(self):
+        """设置窗口图标，包含错误处理"""
+        icon_paths = [
+            'icons/EEG_paint.ico',
+            'icons/EEG_paint.jpg',
+            '../icons/EEG_paint.ico',
+            '../../icons/EEG_paint.ico'
+        ]
+        
+        for icon_path in icon_paths:
+            try:
+                if os.path.exists(icon_path):
+                    self.setWindowIcon(QIcon(icon_path))
+                    print(f"LoginWindow: 成功设置窗口图标: {icon_path}")
+                    return True
+            except Exception as e:
+                print(f"LoginWindow: 设置图标 {icon_path} 失败: {e}")
+                continue
+        
+        print("LoginWindow: 警告: 未找到可用的图标文件，使用默认图标")
+        return False
 
     def adjust_components_for_fullscreen(self):
         """动态调整组件大小以适应全屏显示"""
@@ -988,8 +1013,9 @@ if __name__ == '__main__':
     sys.path.insert(0, project_root)
 
     ti = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    behavioral_data_path = os.path.join(project_root, 'Behavioral_data', 'name.txt')
-    with open(behavioral_data_path, "w") as file:
+    # 确保能找到配置文件路径
+    from src.config.config_manager import get_name_file_path
+    with open(get_name_file_path(), "w") as file:
         file.write(ti)
     app = QApplication(sys.argv)
     win = LoginWindow()

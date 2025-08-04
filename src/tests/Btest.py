@@ -153,7 +153,9 @@ class Game:
         paused, pause_start_time, total_pause_time = False, 0, 0
         first_image_shown, running = False, True
 
-        id_file_path = f"{ROOT_DATA_FOLDER}/id.txt"
+        # 添加配置管理器导入并获取ID文件路径
+        from src.config.config_manager import get_id_file_path
+        id_file_path = get_id_file_path()
         try:
             if not os.path.exists(id_file_path):
                 with open(id_file_path, "w") as file: file.write("training_001")

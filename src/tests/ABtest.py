@@ -56,7 +56,105 @@ def draw_key_box(screen, text, font, center_pos):
     pygame.draw.rect(screen, KEY_BORDER_COLOR, box_rect, 2, border_radius=5)
     screen.blit(text_surf, text_surf.get_rect(center=box_rect.center))
 
+def show_minimize_dialog(screen, message):
+    """
+    显示最小化恢复对话框，只有一个确认按钮
+    """
+    # 保存当前屏幕内容
+    original_screen = screen.copy()
 
+    # 对话框尺寸和位置（与show_confirm_dialog保持一致）
+    screen_width = screen.get_width()
+    screen_height = screen.get_height()
+    dialog_width = 800
+    dialog_height = 450  # 增加高度
+    dialog_x = (screen_width - dialog_width) // 2
+    dialog_y = (screen_height - dialog_height) // 2
+    dialog_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
+
+    # 颜色定义（匹配show_confirm_dialog样式）
+    bg_color = (255, 255, 255)  # 白色背景
+    border_color = (85, 85, 85)  # 灰色边框
+    text_color = (0, 0, 0)  # 黑色文字
+    button_color = (255, 255, 255)  # 白色按钮背景
+    button_border = (204, 204, 204)  # 浅灰色按钮边框
+    button_hover = (240, 240, 240)  # 浅灰色悬停背景
+    button_border_hover = (153, 153, 153)  # 深灰色悬停边框
+    button_text_color = (0, 0, 0)  # 黑色按钮文字
+    hint_text_color = (136, 136, 136)  # 灰色提示文字
+
+    # 字体设置（与show_confirm_dialog保持一致）
+    try:
+        message_font = pygame.font.Font(get_font_path(), 50)
+        button_font = pygame.font.Font(get_font_path(), 50)
+        hint_font = pygame.font.Font(get_font_path(), 35)
+    except:
+        message_font = pygame.font.Font(None, 50)
+        button_font = pygame.font.Font(None, 50)
+        hint_font = pygame.font.Font(None, 35)
+
+    # 按钮设置（与show_confirm_dialog保持一致）
+    button_width = 220
+    button_height = 65
+    button_x = dialog_x + (dialog_width - button_width) // 2
+    button_y = dialog_y + dialog_height - 120  # 上移为提示文字留空间
+    confirm_button = pygame.Rect(button_x, button_y, button_width, button_height)
+
+    # 悬停状态
+    button_hover_state = False
+    clock = pygame.time.Clock()
+
+    while True:
+        # 事件处理
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_y:  # Y键确认
+                    return
+            elif event.type == pygame.MOUSEMOTION:
+                mouse_pos = pygame.mouse.get_pos()
+                button_hover_state = confirm_button.collidepoint(mouse_pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # 左键点击
+                    mouse_pos = pygame.mouse.get_pos()
+                    if confirm_button.collidepoint(mouse_pos):
+                        return
+
+        # 绘制半透明背景
+        overlay = pygame.Surface((screen_width, screen_height))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        screen.blit(original_screen, (0, 0))
+        screen.blit(overlay, (0, 0))
+
+        # 绘制对话框背景和边框（匹配show_confirm_dialog样式）
+        pygame.draw.rect(screen, bg_color, dialog_rect, border_radius=20)
+        pygame.draw.rect(screen, border_color, dialog_rect, 2, border_radius=20)
+
+        # 绘制消息文本（与show_confirm_dialog保持一致的位置）
+        message_surface = message_font.render(message, True, text_color)
+        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
+        screen.blit(message_surface, message_rect)
+
+        # 绘制确认按钮（匹配show_confirm_dialog样式）
+        current_button_color = button_hover if button_hover_state else button_color
+        current_border_color = button_border_hover if button_hover_state else button_border
+
+        # 绘制按钮背景（圆角矩形）
+        pygame.draw.rect(screen, current_button_color, confirm_button, border_radius=25)
+        pygame.draw.rect(screen, current_border_color, confirm_button, 2, border_radius=25)
+
+        # 绘制按钮文字
+        button_text = button_font.render("确定", True, button_text_color)
+        button_text_rect = button_text.get_rect(center=confirm_button.center)
+        screen.blit(button_text, button_text_rect)
+
+        # 绘制Y键提示
+        hint_text = hint_font.render("按Y键", True, hint_text_color)
+        hint_rect = hint_text.get_rect(center=(dialog_x + dialog_width // 2, button_y + button_height + 30))
+        screen.blit(hint_text, hint_rect)
+
+        pygame.display.flip()
+        clock.tick(60)
 def show_confirm_dialog(screen, title, message):
     """显示一个标准化的确认对话框，返回 True (确认) 或 False (取消)"""
     original_screen = screen.copy()
@@ -136,6 +234,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.level = Level()
         self.screen.fill(grey)
+        # 添加初始化状态标志，避免启动时触发VIDEOEXPOSE弹窗
+        self.is_initial_startup = True
 
     def render_text_with_green_keys(self, text, font, surface, center_pos):
         """渲染带有高亮按键提示的文本"""
@@ -163,7 +263,9 @@ class Game:
         TOTAL_IMAGES = 3  # 训练任务总图片数
 
         # ------------------- 文件与目录设置 -------------------
-        id_file_path = f"{ROOT_DATA_FOLDER}/id.txt"
+        # 添加配置管理器导入并获取ID文件路径
+        from src.config.config_manager import get_id_file_path
+        id_file_path = get_id_file_path()
         try:
             os.makedirs(ROOT_DATA_FOLDER, exist_ok=True)
             if not os.path.exists(id_file_path):
@@ -206,6 +308,16 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 如果是初始启动，跳过弹窗直接重绘界面
+                    if self.is_initial_startup:
+                        self.is_initial_startup = False
+                        self.display_task_instructions_formatted(subject='AB')
+                    else:
+                        # 窗口被最小化后恢复，显示简化确认对话框
+                        show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                        # 重绘流程图指导语界面
+                        self.display_task_instructions_formatted(subject='AB')
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): pygame.quit(); sys.exit()
@@ -224,18 +336,44 @@ class Game:
         pygame.image.save(self.screen, f"{output_image_folder}/post_screenshot-1.png")
 
         # 【关键】自动显示第一张图片，无需按键
-        time_records[0], timestamps[0] = game_drawing.random_painting(numbers[0], self, 11)  # 合作模式从索引11开始
+        time_records[0], timestamps[0] = game_drawing.random_painting(numbers[0], self, 11, total_pause_time)  # 合作模式从索引11开始
         pygame.image.save(self.screen, f"{output_image_folder}/pre_screenshot0.png")
         stats.game_score = 24  # 更新分数为进行中
 
         # ------------------- 游戏主循环 -------------------
+        screenshot_taken = False  # 标记是否已经截图
         while running:
             dt = self.clock.tick(60) / 1000
-            self.screen.fill(grey)
 
             # 事件处理
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+                elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
+                    # 窗口被最小化后恢复，独立处理暂停时间
+                    minimize_pause_start = pygame.time.get_ticks()
+                    # 如果当前已经是P键暂停状态，先记录P键暂停的时间
+                    if paused:
+                        total_pause_time += minimize_pause_start - pause_start_time
+                    show_minimize_dialog(self.screen, "检测到最小化，点击继续")
+                    minimize_pause_end = pygame.time.get_ticks()
+                    # 累加最小化暂停时间
+                    total_pause_time += minimize_pause_end - minimize_pause_start
+                    # 如果之前是P键暂停状态，重新开始计时
+                    if paused:
+                        pause_start_time = minimize_pause_end
+                    # 更新当前图片的时间戳以反映最小化暂停时间
+                    if 24 <= stats.game_score <= 26:
+                        updated_time = game_drawing.update_current_timestamp(total_pause_time)
+                        # 根据当前图片更新对应的时间变量
+                        if stats.game_score == 24:
+                            time_records[0] = updated_time
+                        elif stats.game_score == 25:
+                            time_records[1] = updated_time
+                        elif stats.game_score == 26:
+                            time_records[2] = updated_time
+                    # 重绘AB协作绘图界面
+                    self.screen.fill(grey)
+                    # 界面会在循环末尾重绘
                 if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
                     speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                                       speed_value, speed_step, button_states)
@@ -265,15 +403,17 @@ class Game:
                         current_img_idx = stats.game_score - 24
 
                         if current_img_idx < TOTAL_IMAGES - 1:  # 处理第1张和第2张图完成时
+                            # 先截取当前绘制完成的画面（在屏幕清空之前）
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/post_screenshot{current_img_idx}.png")
                             # 绘图索引也需要增加
                             time_records[current_img_idx + 1], timestamps[
                                 current_img_idx + 1] = game_drawing.random_painting(numbers[current_img_idx + 1], self,
-                                                                                    11 + current_img_idx + 1)
+                                                                                    11 + current_img_idx + 1, total_pause_time)
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/pre_screenshot{current_img_idx + 1}.png")
                             stats.game_score += 1
+                            screenshot_taken = True  # 标记已截图，避免重复清空屏幕
                         elif current_img_idx == TOTAL_IMAGES - 1:  # 处理最后一张图完成时
                             pygame.image.save(self.screen,
                                               f"{output_image_folder}/post_screenshot{current_img_idx}.png")
@@ -281,6 +421,12 @@ class Game:
                             stats.game_score += 1  # 结束任务, 分数变为27
 
                         if event.key == pygame.K_SPACE: self.level.reset_endpoint_reached()
+
+            # 只有在没有截图的情况下才清空屏幕
+            if not screenshot_taken:
+                self.screen.fill(grey)
+            else:
+                screenshot_taken = False  # 重置标记
 
             # 持续检查长按调整速度
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
@@ -292,8 +438,7 @@ class Game:
             else:
                 self.level.draw(self.screen, stats)
 
-            # ------------------- 绘制UI元素 -------------------
-            Button3(settings, self.screen, f"航天员：{user_id1} & {user_id2}", 10, 20).draw_button()
+            Button3(settings, self.screen, f"航天员:{user_id1}和辅助航天员", 100, 20).draw_button()
 
             # 绘制速度控制模块
             speed_font = pygame.font.Font(get_font_path(), 50);
@@ -355,7 +500,7 @@ class Game:
                 self.level.clear()
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
 
-                dataloading_1(time_records, timestamps, ROOT_DATA_FOLDER, id, PARTICIPANT_ID_FOLDER, TOTAL_IMAGES)
+                dataloading_1(time_records, timestamps, ROOT_DATA_FOLDER, id, PARTICIPANT_ID_FOLDER, TOTAL_IMAGES, total_pause_time)
 
                 data_path = f"{data_folder}/数据.txt"
                 try:
@@ -489,8 +634,8 @@ class Game:
 
         # --- Section 1: 标题与角色 ---
         title_map = {
-            'A': f"{user1}单人绘图任务指导语", 'B': f"{user2}单人绘图任务指导语", 'C': f"{user3}单人绘图任务指导语",
-            'AB': f"{user1}和{user2}合作绘图任务指导语", 'AC': f"{user1}和{user3}合作绘图任务指导语"
+            'A': f"单人绘图任务指导语", 'B': f"单人绘图任务指导语", 'C': f"单人绘图任务指导语",
+            'AB': f"合作绘图任务指导语", 'AC': f"合作绘图任务指导语"
         }
         title_text = title_map.get(subject, "绘图任务指导语")
         title_surf = title_font.render(title_text, True, TEXT_COLOR)
@@ -498,9 +643,9 @@ class Game:
         y_pos += title_surf.get_height()
 
         role_map = {
-            'A': f"请{user1}绘图，{user2}和{user3}休息", 'B': f"请{user2}绘图，{user1}和{user3}休息",
-            'C': f"请{user3}绘图，{user1}和{user2}休息",
-            'AB': f"请{user1}和{user2}绘图，{user3}休息", 'AC': f"请{user1}和{user3}绘图，{user2}休息"
+            'A': f"请{user1}绘图，辅助航天员休息", 'B': f"请{user2}绘图，辅助航天员休息",
+            'C': f"请{user3}绘图，辅助航天员休息",
+            'AB': f"请{user1}和辅助航天员绘图", 'AC': f"请{user1}和辅助航天员绘图"
         }
         role_text = role_map.get(subject, "")
         role_surf = subtitle_font.render(role_text, True, TEXT_COLOR)
@@ -511,9 +656,9 @@ class Game:
         pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
         y_pos += 40
 
-        user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和{user2}", 'AC': f"{user1}和{user3}"}.get(
+        user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和辅助", 'AC': f"{user1}和辅助"}.get(
             subject, "")
-        full_desc_text = f"{user_text}航天员需控制键盘，沿黑色轨迹从绿色起点移动至红色终点。"
+        full_desc_text = f"{user_text}航天员需控制键盘，从绿色起点沿黑色轨迹移动至红色终点。"
         desc_surf = body_font.render(full_desc_text, True, TEXT_COLOR)
         self.screen.blit(desc_surf, desc_surf.get_rect(center=(screen_w / 2, y_pos)))
         y_pos += desc_surf.get_height() + 40
@@ -622,8 +767,8 @@ class Game:
         elif subject in ['AB', 'AC']:
             key_highlight_words = ['A', 'D', '↑', '↓']
             partner_mark = user2 if subject == 'AB' else user3
-            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右；")
-            line2_parts = re.split(r'(↑|↓)', f"请{partner_mark}使用↑键控制上, ↓键控制下。")
+            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右")
+            line2_parts = re.split(r'(↑|↓)', f"　　　　　           请辅助航天员使用↑键控制上, ↓键控制下")
             instruction_parts_list.append(line1_parts)
             instruction_parts_list.append(line2_parts)
 
@@ -657,7 +802,6 @@ class Game:
             current_x += part.get_width() + 8
 
         pygame.display.update()
-
 
     def display_end_screen(self, is_training=False):
         """显示标准化的结束画面"""
@@ -715,17 +859,29 @@ def draw_data(self, screen, data):
         screen.blit(text_surface, text_surface.get_rect(center=(screen.get_width() / 2, 200 + i * 100)))
 
 
-def dataloading_1(time_records, timestamps, root_folder, id, participant_folder, total_images):
+def dataloading_1(time_records, timestamps, root_folder, id, participant_folder, total_images, total_pause_time=0):
     """统一的数据加载和计算函数"""
     base_path = f"./{root_folder}/{id}/{participant_folder}/output_image"
     data_file_path = f"./{root_folder}/{id}/{participant_folder}/data/数据.txt"
     if os.path.exists(data_file_path): os.remove(data_file_path)
+    
+    # 检查基准图像是否存在
+    reference_path = f"{base_path}/post_screenshot-1.png"
+    if not os.path.exists(reference_path):
+        print(f"Warning: Reference image not found: {reference_path}")
+        return
+    
+    image = cv2.imread(reference_path)
+    if image is None:
+        print(f"Warning: Could not read reference image: {reference_path}")
+        return
+    
     for i in range(total_images):
         pre_img = cv2.imread(f"{base_path}/pre_screenshot{i}.png")
         post_img = cv2.imread(f"{base_path}/post_screenshot{i}.png")
         if pre_img is not None and post_img is not None:
-            calculate_pixel_difference_test(pre_img, post_img, time_records[i], time_records[i + 1], timestamps[i],
-                                            root_folder, id, participant_folder)
+            calculate_pixel_difference_test(image, pre_img, post_img, time_records[i], time_records[i + 1], timestamps[i],
+                                            root_folder, id, participant_folder, total_pause_time)
 
 
 def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
@@ -743,7 +899,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         clock.tick(60)
 
 
-def calculate_pixel_difference_test(image1, image2, t1, t2, timestamp, root_folder, id, participant_folder):
+def calculate_pixel_difference_test(origin_image, image1, image2, t1, t2, timestamp, root_folder, id, participant_folder, total_pause_time=0):
     """像素差异计算函数"""
     x, y, width, height = 0, 50, 1920, 920
     image1_cropped = image1[y:y + height, x:x + width]
@@ -758,11 +914,12 @@ def calculate_pixel_difference_test(image1, image2, t1, t2, timestamp, root_fold
     total_pixels = np.sum(black_mask)
     overlap_pixels = np.sum(overlap_mask)
     overlap_percentage = (overlap_pixels / total_pixels * 100) if total_pixels > 0 else 0
+    # 计算纯绘图时间（t1,t2已经在paint.py中减去了暂停时间）
     time_diff = abs(t2 - t1) if t1 and t2 else 0
     output_path = f"./{root_folder}/{id}/{participant_folder}/data/数据.txt"
     with open(output_path, "a", encoding="utf-8") as f:
         f.write(
-            f"有效像素: {overlap_pixels}, 总像素: {total_pixels}, 百分比：{overlap_percentage:.2f}%, 绘图时长：{time_diff:.2f}\n")
+            f"有效像素: {overlap_pixels}   总像素: {total_pixels}   百分比：{overlap_percentage:.2f}%   绘图时长：{time_diff} \n")
 
 
 if __name__ == '__main__':

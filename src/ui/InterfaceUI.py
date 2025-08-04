@@ -49,7 +49,7 @@ class Ui_MainWindow(object):
         self.frame_2 = QtWidgets.QFrame(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
         self.frame_2.setSizePolicy(sizePolicy)
         self.frame_2.setStyleSheet("background-color: rgb(248, 249, 250);\n"
@@ -83,7 +83,7 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.pushButton.setFont(font)
         self.pushButton.setStyleSheet("border:none;\n"
-                                      "font: 20pt \"微软雅黑\";")
+                                      "font: 30pt \"微软雅黑\";")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons/地球.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton.setIcon(icon)
@@ -316,14 +316,14 @@ class Ui_MainWindow(object):
 
         # 输入法提醒标签（移到最上面）
         self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
-        self.label_input_method_reminder.setMinimumHeight(60)
-        self.label_input_method_reminder.setMaximumHeight(80)
+        self.label_input_method_reminder.setMinimumHeight(80)
+        self.label_input_method_reminder.setMaximumHeight(100)
         self.label_input_method_reminder.setStyleSheet("QLabel{\n"
                                                        "    border: 2px solid rgb(255, 165, 0);\n"
                                                        "    border-radius: 10px;\n"
                                                        "    background-color: rgb(255, 248, 220);\n"
                                                        "    color: rgb(255, 140, 0);\n"
-                                                       "    font: bold 28pt \"微软雅黑\";\n"
+                                                       "    font: bold 36pt \"微软雅黑\";\n"
                                                        "    padding: 15px;\n"
                                                        "}")
         self.label_input_method_reminder.setAlignment(QtCore.Qt.AlignCenter)
@@ -332,8 +332,8 @@ class Ui_MainWindow(object):
 
         # 实验介绍内容框
         self.frame_introduction = QtWidgets.QFrame(self.page_home)
-        self.frame_introduction.setMinimumHeight(600)
-        self.frame_introduction.setMaximumHeight(700)
+        self.frame_introduction.setMinimumHeight(800)
+        self.frame_introduction.setMaximumHeight(900)
         self.frame_introduction.setStyleSheet("""
             QFrame {
                 background-color: rgb(252, 253, 254);
@@ -353,7 +353,7 @@ class Ui_MainWindow(object):
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
         self.label_intro_content.setStyleSheet("""
             QLabel {
-                font: 24pt "微软雅黑";
+                font: 36pt "微软雅黑";
                 color: rgb(51, 51, 51);
                 border: none;
                 line-height: 1.6;
@@ -380,11 +380,13 @@ class Ui_MainWindow(object):
         
         # 为 page_exercise 添加布局
         exercise_layout = QtWidgets.QVBoxLayout(self.page_exercise)
-        exercise_layout.setContentsMargins(50, 40, 50, 40)
-        exercise_layout.setSpacing(30)
+        exercise_layout.setContentsMargins(50, 20, 50, 20)
+        exercise_layout.setSpacing(20)
         
         self.label_2 = QtWidgets.QLabel(self.page_exercise)
-        self.label_2.setStyleSheet("font-size: 50px")
+        self.label_2.setMinimumHeight(80)
+        self.label_2.setMaximumHeight(100)
+        self.label_2.setStyleSheet("font-size: 44px")
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         exercise_layout.addWidget(self.label_2)
@@ -401,10 +403,15 @@ class Ui_MainWindow(object):
         
         # 为 frame_11 添加布局
         frame11_layout = QtWidgets.QVBoxLayout(self.frame_11)
-        frame11_layout.setContentsMargins(20, 30, 20, 30)
-        frame11_layout.setSpacing(100)
+        frame11_layout.setContentsMargins(40, 40, 40, 40)
+        frame11_layout.setSpacing(0)
+        # 添加上部填充空间
+        top_spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        frame11_layout.addItem(top_spacer)
+        
         self.pushButton_4 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_4.setMinimumHeight(80)
+        self.pushButton_4.setMinimumHeight(180)
+        self.pushButton_4.setMaximumHeight(220)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -412,26 +419,32 @@ class Ui_MainWindow(object):
         self.pushButton_4.setSizePolicy(sizePolicy)
         self.pushButton_4.setStyleSheet("QPushButton{\n"
                                         "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 2px solid rgb(51, 51, 51);\n"
+                                        "    border: 3px solid rgb(51, 51, 51);\n"
                                         "    color: rgb(51, 51, 51);\n"
-                                        "    font: 30pt \"微软雅黑\";\n"
-                                        "    border-radius: 8px;\n"
-                                        "    padding: 10px;\n"
+                                        "    font: 36pt \"微软雅黑\";\n"
+                                        "    border-radius: 15px;\n"
+                                        "    padding: 20px;\n"
                                         "}\n"
                                         "QPushButton:hover{\n"
-                                        "    background-color: rgb(245, 245, 245);\n"
-                                        "    border: 2px solid rgb(34, 34, 34);\n"
+                                        "    background-color: rgb(230, 240, 255);\n"
+                                        "    border: 3px solid rgb(34, 34, 34);\n"
+                                        "    color: rgb(34, 34, 34);\n"
                                         "}\n"
                                         "QPushButton:pressed{\n"
-                                        "    background-color: rgb(230, 230, 230);\n"
+                                        "    background-color: rgb(210, 225, 255);\n"
                                         "    padding-left:3px;\n"
                                         "    padding-top:3px;\n"
                                         "}")
         self.pushButton_4.setObjectName("pushButton_4")
         frame11_layout.addWidget(self.pushButton_4)
         
+        # 添加中间的大空间
+        middle_spacer = QtWidgets.QSpacerItem(20, 80, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        frame11_layout.addItem(middle_spacer)
+        
         self.pushButton_9 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_9.setMinimumHeight(80)
+        self.pushButton_9.setMinimumHeight(180)
+        self.pushButton_9.setMaximumHeight(220)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -439,54 +452,28 @@ class Ui_MainWindow(object):
         self.pushButton_9.setSizePolicy(sizePolicy)
         self.pushButton_9.setStyleSheet("QPushButton{\n"
                                         "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 2px solid rgb(51, 51, 51);\n"
+                                        "    border: 3px solid rgb(51, 51, 51);\n"
                                         "    color: rgb(51, 51, 51);\n"
-                                        "    font: 30pt \"微软雅黑\";\n"
-                                        "    border-radius: 8px;\n"
-                                        "    padding: 10px;\n"
+                                        "    font: 36pt \"微软雅黑\";\n"
+                                        "    border-radius: 15px;\n"
+                                        "    padding: 20px;\n"
                                         "}\n"
                                         "QPushButton:hover{\n"
-                                        "    background-color: rgb(245, 245, 245);\n"
-                                        "    border: 2px solid rgb(34, 34, 34);\n"
+                                        "    background-color: rgb(230, 240, 255);\n"
+                                        "    border: 3px solid rgb(34, 34, 34);\n"
+                                        "    color: rgb(34, 34, 34);\n"
                                         "}\n"
                                         "QPushButton:pressed{\n"
-                                        "    background-color: rgb(230, 230, 230);\n"
+                                        "    background-color: rgb(210, 225, 255);\n"
                                         "    padding-left:3px;\n"
                                         "    padding-top:3px;\n"
                                         "}")
         self.pushButton_9.setObjectName("pushButton_9")
         frame11_layout.addWidget(self.pushButton_9)
         
-        self.pushButton_10 = QtWidgets.QPushButton(self.frame_11)
-        self.pushButton_10.setMinimumHeight(80)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_10.sizePolicy().hasHeightForWidth())
-        self.pushButton_10.setSizePolicy(sizePolicy)
-        self.pushButton_10.setStyleSheet("QPushButton{\n"
-                                         "background-color: rgb(255, 255, 255);\n"
-                                         "    border: 2px solid rgb(51, 51, 51);\n"
-                                         "    color: rgb(51, 51, 51);\n"
-                                         "    font: 30pt \"微软雅黑\";\n"
-                                         "    border-radius: 8px;\n"
-                                         "    padding: 10px;\n"
-                                         "}\n"
-                                         "QPushButton:hover{\n"
-                                         "    background-color: rgb(245, 245, 245);\n"
-                                         "    border: 2px solid rgb(34, 34, 34);\n"
-                                         "}\n"
-                                         "QPushButton:pressed{\n"
-                                         "    background-color: rgb(230, 230, 230);\n"
-                                         "    padding-left:3px;\n"
-                                         "    padding-top:3px;\n"
-                                         "}")
-        self.pushButton_10.setObjectName("pushButton_10")
-        frame11_layout.addWidget(self.pushButton_10)
-        
-        # 添加伸缩项目填充剩余空间
-        spacerItem_exercise = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        frame11_layout.addItem(spacerItem_exercise)
+        # 添加底部空间
+        bottom_spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        frame11_layout.addItem(bottom_spacer)
         
         exercise_layout.addWidget(self.frame_11)
         self.stackedWidget.addWidget(self.page_exercise)
@@ -1004,7 +991,7 @@ class Ui_MainWindow(object):
         self.label_status_text.setStyleSheet("""
             QLabel {
                 border: none;
-                color: rgb(255, 0, 0);
+                color: rgb(0, 0, 0);
                 font: 24pt "微软雅黑";
             }
         """)
@@ -1085,32 +1072,31 @@ class Ui_MainWindow(object):
         self.label_intro_content.setText(_translate("MainWindow",
                                                                                                 "<html><head/><body style='line-height: 1.8;'>"
                                                                                                 "<div style='text-align: center; margin-bottom: 30px;'>"
-                                                                                                "<p style='font-size: 30pt; font-weight: bold; color: #2c3e50; margin: 15px 0;'>实验说明</p>"
+                                                                                                "<p style='font-size: 42pt; font-weight: bold; color: #2c3e50; margin: 15px 0;'>实验说明</p>"
                                                                                                 "</div>"
                                                                                                 "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>配合要求：被测航天员需与两位辅助航天员依次配合完成绘图任务</p>"
+                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>配合要求：被测航天员需与两位辅助航天员依次配合完成绘图任务</p>"
                                                                                                 "</div>"
                                                                                                 "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>操作方式：点击左侧【练习试次】或【正式实验】按钮开始</p>"
+                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>操作方式：点击左侧【练习试次】或【正式实验】按钮开始</p>"
                                                                                                 "</div>"
                                                                                                 "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>实验流程：</p>"
-                                                                                                "<p style='font-size: 20pt; margin: 10px 0 10px 35px; color: #000000;'>1. 练习试次 - 需完成3张图片绘制（熟练后可直接进入正式实验）</p>"
-                                                                                                "<p style='font-size: 20pt; margin: 10px 0 10px 35px; color: #000000;'>2. 正式实验 - 依次完成三个阶段的绘图任务</p>"
+                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>实验流程：</p>"
+                                                                                                "<p style='font-size: 28pt; margin: 10px 0 10px 35px; color: #000000;'>1. 练习试次 - 需完成3张图片绘制（熟练后可直接进入正式实验）</p>"
+                                                                                                "<p style='font-size: 28pt; margin: 10px 0 10px 35px; color: #000000;'>2. 正式实验 - 依次完成三个阶段的绘图任务</p>"
                                                                                                 "</div>"
                                                                                                 "<div style='text-align: left; margin-left: 70px; margin-bottom: 20px;'>"
-                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段一：被测航天员单独绘图（8张图片）</p>"
-                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段二：被测航天员与辅助航天员A合作（8张图片）</p>"
-                                                                                                "<p style='font-size: 19pt; margin: 8px 0; color: #000000;'>阶段三：被测航天员与辅助航天员B合作（8张图片）</p>"
+                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段一：被测航天员单独绘图（8张图片）</p>"
+                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段二：被测航天员与辅助航天员A合作（8张图片）</p>"
+                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段三：被测航天员与辅助航天员B合作（8张图片）</p>"
                                                                                                 "</div>"
                                                                                                 "<div style='text-align: left; margin-top: 20px;'>"
-                                                                                                "<p style='font-size: 22pt; margin: 12px 0; font-weight: bold; color: #000000;'>温馨提示：实验中每个阶段都有详细的指导语</p>"
+                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>温馨提示：实验中每个阶段都有详细的指导语</p>"
                                                                                                 "</div>"
                                                                                                 "</body></html>"))
         self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
         self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
         self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
-        self.pushButton_10.setText(_translate("MainWindow", "人员①&人员③绘图练习模块"))
         self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))
         self.title_label.setText(_translate("MainWindow", "单人准确度排行榜"))
         self.first_rank_label.setStyleSheet("QLabel { image: url(:/image/1.png); }")

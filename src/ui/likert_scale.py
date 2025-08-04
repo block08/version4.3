@@ -22,7 +22,7 @@ class LikertScale:
         self.WHITE = (211, 211, 211)
         self.BLACK = (0, 0, 0)
         self.GRAY = (211, 211, 211)
-        self.BLUE = (0, 123, 255)
+        self.BLUE = (50, 128, 50)
 
         # 创建量表的surface
         self.surface = pygame.Surface((self.WIDTH, self.HEIGHT))
@@ -116,7 +116,7 @@ class LikertScale:
     def _draw_question(self):
         """绘制问题，支持用户名和按键高亮"""
         # 绿色用于按键高亮
-        GREEN_COLOR = (0, 255, 0)
+        GREEN_COLOR = (50, 128, 50)
         
         # 处理问题文本，分离需要高亮的部分
         question = self.question
@@ -257,7 +257,7 @@ class LikertScale:
         # 绘制到主屏幕
         self.screen.blit(self.surface, self.position)
 
-        # 检查是否满足3秒延时条件
+        # 检查是否满足2秒延时条件
         if self.selected_score is not None and self.key_press_time:
             if time.time() - self.key_press_time >= 2.0:
                 return self.selected_score

@@ -1,3 +1,4 @@
+from src.config.config_manager import get_id_file_path
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys
@@ -25,21 +26,44 @@ value = 0  # 滚轮数值
 import os  # 导入一个专门处理文件路径的工具
 
 # --- 精确地找到声音文件的完整路径 ---
-try:
-    # 获取当前这个python脚本文件所在的文件夹的完整路径
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+def get_resource_path(relative_path):
+    """获取资源文件的绝对路径，支持打包后的环境"""
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller打包后的临时路径
+        return os.path.join(sys._MEIPASS, relative_path)
+    # 开发环境下的路径
+    return os.path.join(os.path.abspath("."), relative_path)
 
-    sound_path = os.path.join(script_dir, '..', '..', 'sound', 'click.wav')
+try:
+    # 设置音频驱动为DirectSound，避免WASAPI问题
+    os.environ['SDL_AUDIODRIVER'] = 'directsound'
+    
+    # 使用新的资源路径获取方式
+    sound_path = get_resource_path('sound/click.wav')
+    
+    # 如果在新路径找不到，尝试旧的相对路径方式作为备用
     if not os.path.exists(sound_path):
-        sound_path = os.path.join(script_dir, 'sound', 'click.wav')
-    pygame.mixer.init()
-    click_sound = pygame.mixer.Sound(sound_path)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        sound_path = os.path.join(script_dir, '..', '..', 'sound', 'click.wav')
+        if not os.path.exists(sound_path):
+            sound_path = os.path.join(script_dir, 'sound', 'click.wav')
+    
+    # 检查音频文件是否存在
+    if os.path.exists(sound_path):
+        # 预初始化音频系统，设置合适的参数
+        pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
+        pygame.mixer.init()
+        click_sound = pygame.mixer.Sound(sound_path)
+
+    else:
+        print(f"警告：找不到音频文件 {sound_path}，将禁用声音功能")
+        click_sound = None
 
 except Exception as e:
-    print(f"加载声音文件时出错: {e}")
-    print(f"尝试加载的路径是: {sound_path}")
-    # 如果找不到文件，最好让程序停下来，这样能立刻发现问题
-    sys.exit()
+    print(f"音频初始化失败: {e}")
+    print(f"尝试加载的路径是: {sound_path if 'sound_path' in locals() else '未知路径'}")
+    print("程序将在无声音模式下继续运行")
+    click_sound = None
 
 game_drawing = GameDrawing()
 
@@ -54,7 +78,7 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
     current_time = pygame.time.get_ticks()
 
 
-    with open(f"Behavioral_data/id.txt", "r") as file:
+    with open(get_id_file_path(), "r") as file:
         id = file.read()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -90,10 +114,18 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
                         f.write('50')
         # 使用新的按钮事件处理方法
         if button1.handle_event(event, current_time):
-            click_sound.play()
+            try:
+                if click_sound is not None:
+                    click_sound.play()
+            except:
+                pass  # 静默处理音频播放错误
             paused = not paused
         if button2.handle_event(event, current_time):
-            click_sound.play()
+            try:
+                if click_sound is not None:
+                    click_sound.play()
+            except:
+                pass  # 静默处理音频播放错误
             stats.game_active = True
             if stats.game_active:
                 if stats.game_score == 0:
