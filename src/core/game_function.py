@@ -1,4 +1,4 @@
-from src.config.config_manager import get_id_file_path
+from src.config.config_manager import get_id_file_path, get_base_dir
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys
@@ -28,11 +28,19 @@ import os  # 导入一个专门处理文件路径的工具
 # --- 精确地找到声音文件的完整路径 ---
 def get_resource_path(relative_path):
     """获取资源文件的绝对路径，支持打包后的环境"""
-    if hasattr(sys, '_MEIPASS'):
-        # PyInstaller打包后的临时路径
-        return os.path.join(sys._MEIPASS, relative_path)
-    # 开发环境下的路径
-    return os.path.join(os.path.abspath("."), relative_path)
+    base_dir = get_base_dir()
+    full_path = os.path.join(base_dir, relative_path)
+    
+    # 如果文件不存在，尝试其他路径
+    if not os.path.exists(full_path):
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller打包后的临时路径
+            full_path = os.path.join(sys._MEIPASS, relative_path)
+        if not os.path.exists(full_path):
+            # 最后尝试当前目录
+            full_path = os.path.join(os.path.abspath("."), relative_path)
+    
+    return full_path
 
 try:
     # 设置音频驱动为DirectSound，避免WASAPI问题
@@ -40,13 +48,6 @@ try:
     
     # 使用新的资源路径获取方式
     sound_path = get_resource_path('sound/click.wav')
-    
-    # 如果在新路径找不到，尝试旧的相对路径方式作为备用
-    if not os.path.exists(sound_path):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        sound_path = os.path.join(script_dir, '..', '..', 'sound', 'click.wav')
-        if not os.path.exists(sound_path):
-            sound_path = os.path.join(script_dir, 'sound', 'click.wav')
     
     # 检查音频文件是否存在
     if os.path.exists(sound_path):

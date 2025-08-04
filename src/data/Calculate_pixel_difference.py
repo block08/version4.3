@@ -1,7 +1,8 @@
-from src.config.config_manager import get_id_file_path
+from src.config.config_manager import get_id_file_path, get_base_dir
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
+import os
 
 
 def save_cropped_image(frame, x, y, width, height, filename):
@@ -48,7 +49,8 @@ def calculate_pixel_difference(origin_image, image1, image2, t1, t2, timestamp, 
     # 7. 保存结果
     with open(get_id_file_path(), "r") as file:
         id = file.read()
-    with open(f"./Behavioral_data/{id}/subA/data/数据.txt", "a", encoding="utf-8") as f:
+    behavioral_data_path = os.path.join(get_base_dir(), "Behavioral_data", id, "subA", "data", "数据.txt")
+    with open(behavioral_data_path, "a", encoding="utf-8") as f:
         f.write(
             f"有效像素: {overlap_pixels}   总像素: {total_pixels}   "
             f"百分比：{overlap_percentage:.2f}%   绘图时长：{time_diff} \n")
@@ -102,7 +104,8 @@ def calculate_pixel_difference2(origin_image, image1, image2, t1, t2, timestamp,
     # 7. 保存结果
     with open(get_id_file_path(), "r") as file:
         id = file.read()
-    with open(f"./Behavioral_data/{id}/subAB/data/数据.txt", "a", encoding="utf-8") as f:
+    behavioral_data_path = os.path.join(get_base_dir(), "Behavioral_data", id, "subAB", "data", "数据.txt")
+    with open(behavioral_data_path, "a", encoding="utf-8") as f:
         f.write(
             f"有效像素: {overlap_pixels}   总像素: {total_pixels}   "
             f"百分比：{overlap_percentage:.2f}%   绘图时长：{time_diff} \n")
@@ -153,7 +156,8 @@ def calculate_pixel_difference3(origin_image, image1, image2, t1, t2, timestamp,
     # 7. 保存结果
     with open(get_id_file_path(), "r") as file:
         id = file.read()
-    with open(f"./Behavioral_data/{id}/subAC/data/数据.txt", "a", encoding="utf-8") as f:
+    behavioral_data_path = os.path.join(get_base_dir(), "Behavioral_data", id, "subAC", "data", "数据.txt")
+    with open(behavioral_data_path, "a", encoding="utf-8") as f:
         f.write(
             f"有效像素: {overlap_pixels}   总像素: {total_pixels}   "
             f"百分比：{overlap_percentage:.2f}%   绘图时长：{time_diff} \n")

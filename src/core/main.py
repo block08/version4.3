@@ -1,4 +1,4 @@
-from src.config.config_manager import get_id_file_path
+from src.config.config_manager import get_id_file_path, get_base_dir
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import time
@@ -36,17 +36,23 @@ def speed_value_to_level(value):
     return int(value)
 
 
+
 def read_speed_value():
     """读取scroll_value.txt中的速度值，如果文件不存在或值无效则返回默认值50"""
     try:
-        with open('scroll_value.txt', 'r') as f:
+        scroll_file_path = os.path.join(get_base_dir(), 'scroll_value.txt')
+        with open(scroll_file_path, 'r') as f:
             speed_value = int(f.read().strip())
             # 确保速度值在合理范围内
             return max(1, min(100, speed_value))
     except (FileNotFoundError, ValueError):
         # 如果文件不存在或值无效，创建默认文件并返回默认值
-        with open('scroll_value.txt', 'w') as f:
-            f.write('50')
+        scroll_file_path = os.path.join(get_base_dir(), 'scroll_value.txt')
+        try:
+            with open(scroll_file_path, 'w') as f:
+                f.write('50')
+        except Exception as e:
+            print(f"无法创建配置文件 {scroll_file_path}: {e}")
         return 50
 
 
