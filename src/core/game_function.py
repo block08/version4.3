@@ -6,6 +6,7 @@ import pygame
 from src.data.handle_slider_event import handle_slider_event
 from src.hardware.serial_marker import serial_marker
 from src.core.paint import GameDrawing
+from src.utils.resource_cleanup import safe_pygame_quit
 
 
 grey = (128, 128, 128)
@@ -83,12 +84,13 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
         id = file.read()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            safe_pygame_quit()
         elif event.type == pygame.KEYDOWN:
+            # 屏蔽Windows键
+            if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                continue  # 忽略Windows键
             if event.key == pygame.K_ESCAPE:  # 检测ESC键
-                pygame.quit()
-                sys.exit()
+                safe_pygame_quit()
             elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
                 try:
                     with open('scroll_value.txt', 'r') as f:

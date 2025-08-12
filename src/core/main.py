@@ -24,6 +24,7 @@ import os
 from datetime import datetime
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
+from src.utils.resource_cleanup import safe_pygame_quit
 import re
 
 def speed_level_to_value(level):
@@ -66,10 +67,11 @@ def handle_image_navigation(game_drawing, numbers, current_index, self, total_pa
 
 # 绘图参数
 dots_time = []
-green = (50, 128, 50)
+green = (0, 0, 255)
 black = (0, 0, 0)
 grey = (230, 230, 230)
 RED = (255, 0, 0)
+green1 = (50,128,50)
 
 # 存储三组被试数据的全局变量
 experiment_data = {
@@ -126,10 +128,10 @@ def show_minimize_dialog(screen, message):
     text_color = (0, 0, 0)  # 黑色文字
     button_color = (255, 255, 255)  # 白色按钮背景
     button_border = (204, 204, 204)  # 浅灰色按钮边框
-    button_hover = (240, 240, 240)  # 浅灰色悬停背景
-    button_border_hover = (153, 153, 153)  # 深灰色悬停边框
+    button_hover = (31, 71, 136)  # 深蓝色悬停背景
+    button_border_hover = (31, 71, 136)  # 深蓝色悬停边框
     button_text_color = (0, 0, 0)  # 黑色按钮文字
-    hint_text_color = (136, 136, 136)  # 灰色提示文字
+    hint_text_color = (0, 0, 0)  # 黑色提示文字
 
     # 字体设置（与show_confirm_dialog保持一致）
     try:
@@ -156,11 +158,20 @@ def show_minimize_dialog(screen, message):
         # 事件处理
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_y:  # Y键确认
+                # 屏蔽Windows键 - 增强版（包含原始键值）
+                if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or 
+                    event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
+                    continue
+                if event.key == pygame.K_f:
                     return
             elif event.type == pygame.MOUSEMOTION:
                 mouse_pos = pygame.mouse.get_pos()
                 button_hover_state = confirm_button.collidepoint(mouse_pos)
+                # 设置鼠标光标
+                if button_hover_state:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                else:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # 左键点击
                     mouse_pos = pygame.mouse.get_pos()
@@ -192,17 +203,18 @@ def show_minimize_dialog(screen, message):
         pygame.draw.rect(screen, current_border_color, confirm_button, 2, border_radius=25)
 
         # 绘制按钮文字
-        button_text = button_font.render("确定", True, button_text_color)
+        current_text_color = (255, 255, 255) if button_hover_state else button_text_color
+        button_text = button_font.render("确定", True, current_text_color)
         button_text_rect = button_text.get_rect(center=confirm_button.center)
         screen.blit(button_text, button_text_rect)
 
         # 绘制Y键提示
-        hint_text = hint_font.render("按Y键", True, hint_text_color)
+        hint_text = hint_font.render("按F键", True, hint_text_color)
         hint_rect = hint_text.get_rect(center=(dialog_x + dialog_width // 2, button_y + button_height + 30))
         screen.blit(hint_text, hint_rect)
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(50)
 
 def show_confirm_dialog(screen, title, message):
     """
@@ -227,10 +239,10 @@ def show_confirm_dialog(screen, title, message):
     text_color = (0, 0, 0)  # 黑色文字
     button_color = (255, 255, 255)  # 白色按钮背景
     button_border = (204, 204, 204)  # 浅灰色按钮边框
-    button_hover = (240, 240, 240)  # 浅灰色悬停背景
-    button_border_hover = (153, 153, 153)  # 深灰色悬停边框
+    button_hover = (31, 71, 136)  # 深蓝色悬停背景
+    button_border_hover = (31, 71, 136)  # 深蓝色悬停边框
     button_text_color = (0, 0, 0)  # 黑色按钮文字
-    hint_text_color = (136, 136, 136)  # 灰色提示文字
+    hint_text_color = (0, 0, 0)
 
     # 字体设置
     try:
@@ -295,20 +307,22 @@ def show_confirm_dialog(screen, title, message):
         pygame.draw.rect(screen, no_border_color, no_button, 2, border_radius=25)
 
         # 绘制按钮文字
-        yes_text = button_font.render("是", True, button_text_color)
+        yes_text_color = (255, 255, 255) if yes_hover else button_text_color
+        no_text_color = (255, 255, 255) if no_hover else button_text_color
+        yes_text = button_font.render("是", True, yes_text_color)
         yes_text_rect = yes_text.get_rect(center=yes_button.center)
         screen.blit(yes_text, yes_text_rect)
 
-        no_text = button_font.render("否", True, button_text_color)
+        no_text = button_font.render("否", True, no_text_color)
         no_text_rect = no_text.get_rect(center=no_button.center)
         screen.blit(no_text, no_text_rect)
 
         # 绘制按钮下方的提示文字
-        yes_hint = pygame.font.Font(get_font_path(), 35).render("按Y键", True, hint_text_color)
+        yes_hint = pygame.font.Font(get_font_path(), 35).render("按F键", True, hint_text_color)
         yes_hint_rect = yes_hint.get_rect(center=(yes_button.centerx, yes_button.bottom + 25))
         screen.blit(yes_hint, yes_hint_rect)
 
-        no_hint = pygame.font.Font(get_font_path(), 35).render("按N键", True, hint_text_color)
+        no_hint = pygame.font.Font(get_font_path(), 35).render("按J键", True, hint_text_color)
         no_hint_rect = no_hint.get_rect(center=(no_button.centerx, no_button.bottom + 25))
         screen.blit(no_hint, no_hint_rect)
 
@@ -326,6 +340,11 @@ def show_confirm_dialog(screen, title, message):
                 mouse_pos = pygame.mouse.get_pos()
                 yes_hover = yes_button.collidepoint(mouse_pos)
                 no_hover = no_button.collidepoint(mouse_pos)
+                # 设置鼠标光标
+                if yes_hover or no_hover:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                else:
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # 左键
@@ -342,12 +361,16 @@ def show_confirm_dialog(screen, title, message):
                         return False
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN or event.key == pygame.K_y:
+                # 屏蔽Windows键 - 增强版（包含原始键值）
+                if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or 
+                    event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
+                    continue
+                if event.key == pygame.K_RETURN or event.key == pygame.K_f:
                     # 恢复原始屏幕内容并刷新显示
                     screen.blit(original_screen, (0, 0))
                     pygame.display.flip()
                     return True
-                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_n:
+                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_j:
                     # 恢复原始屏幕内容并刷新显示
                     screen.blit(original_screen, (0, 0))
                     pygame.display.flip()
@@ -356,7 +379,7 @@ def show_confirm_dialog(screen, title, message):
         # 绘制对话框
         draw_dialog()
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(50)
 
 
 class Game:
@@ -373,9 +396,10 @@ class Game:
         settings = Settings()
         stats = GameStats(settings)
 
-        # 设置屏幕
-        self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
-        self.font = pygame.font.Font(get_font_path(), 40)
+        # 设置屏幕 - 使用独占全屏模式尝试更好的Windows键屏蔽
+        self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), 
+                                            pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
+        self.font = pygame.font.Font(get_font_path(), 60)  # 增大字体从40到60
         pygame.display.set_caption('实验')
 
         # 设置时钟
@@ -434,7 +458,7 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_y = 30  # 调整到与暂停提示对齐的高度
         button_size = 60
         button_spacing = 40
 
@@ -450,15 +474,18 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
                 elif event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 如果是初始启动，跳过弹窗直接重绘界面
@@ -470,33 +497,36 @@ class Game:
                         show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                         # 重绘流程图指导语界面
                         self.display_flowchart_instructions()
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
         self.display_meditation_instructions()
         wait = True
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
                 elif event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，触发暂停确认
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     self.display_meditation_instructions()
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
 
         numbers1 = random.sample(range(1, 9), 8)
         self.screen.fill(grey)
         line_length = 20
-        pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
-        pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+        pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
+        pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
         pygame.display.update()
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
@@ -514,7 +544,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
@@ -531,10 +561,13 @@ class Game:
                         pause_start_time = minimize_pause_end
                     # 重绘静息态界面（绿色十字）
                     self.screen.fill(grey)
-                    pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
-                    pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+                    pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
+                    pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
                     pygame.display.update()
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         # 暂停计时器
                         if not paused:
@@ -542,7 +575,7 @@ class Game:
                             paused = True
 
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                         else:
                             # 用户选择继续，恢复计时器
@@ -564,14 +597,14 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
         # 使用新格式的指导语替换旧的指导语
         self.display_task_instructions_formatted(subject='A')
         waiting_for_space = True
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，触发暂停确认
@@ -579,13 +612,16 @@ class Game:
                     # 重绘任务指导语界面
                     self.display_task_instructions_formatted(subject='A')
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
 
         # 静息态后等待开始第一张绘图
         self.screen.fill(grey)
@@ -606,12 +642,12 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(60) / 1000
+            dt = self.clock.tick(50) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
-            user_button2 = Button3(settings, self.screen, f"航天员：{user1}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"{user1}绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -619,7 +655,7 @@ class Game:
             # 处理键盘和鼠标事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
@@ -656,15 +692,15 @@ class Game:
                             t8 = updated_time
                     # 重绘A阶段绘图界面
                     self.screen.fill(grey)
-                    # 界面会在循环末尾重绘
-                elif event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
-                    speed_value = handle_button_event(event, minus_button_rect, plus_button_rect, speed_min, speed_max,
-                                                      speed_value, speed_step, button_states)
+
 
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
@@ -843,7 +879,7 @@ class Game:
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
                 self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                 (settings.screen_width // 2, 40))
+                                                 (settings.screen_width // 2, 60))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -857,7 +893,7 @@ class Game:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -867,7 +903,7 @@ class Game:
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -919,10 +955,13 @@ class Game:
                     key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
+                            # 屏蔽Windows键
+                            if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                                continue
                             if event.key == pygame.K_ESCAPE:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
-                                    pygame.quit()
+                                    safe_pygame_quit()
                                     sys.exit()
                             else:
                                 key_pressed = event.key
@@ -937,7 +976,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(60)
+                    self.clock.tick(50)
                     if score is not None:
                         likert_running = False
 
@@ -962,16 +1001,19 @@ class Game:
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
 
         # 开始被试B，等待显示第一张图片
         self.screen.fill(grey)
@@ -992,7 +1034,7 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_y = 30  # 调整到与暂停提示对齐的高度
         button_size = 60
         button_spacing = 40
 
@@ -1013,13 +1055,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(60) / 1000
+            dt = self.clock.tick(50) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"航天员：{user1}和{user2}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user2}绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1027,7 +1069,7 @@ class Game:
             # 处理键盘和鼠标事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
                     minimize_pause_start = pygame.time.get_ticks()
@@ -1065,9 +1107,12 @@ class Game:
                     self.screen.fill(grey)
                     # 界面会在循环末尾重绘
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
@@ -1245,7 +1290,7 @@ class Game:
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
                 self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                 (settings.screen_width // 2, 40))
+                                                 (settings.screen_width // 2, 60))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -1259,7 +1304,7 @@ class Game:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -1269,7 +1314,7 @@ class Game:
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -1323,10 +1368,13 @@ class Game:
                     key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
+                            # 屏蔽Windows键
+                            if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                                continue
                             if event.key == pygame.K_ESCAPE:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
-                                    pygame.quit()
+                                    safe_pygame_quit()
                                     sys.exit()
                             else:
                                 key_pressed = event.key
@@ -1341,7 +1389,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(60)
+                    self.clock.tick(50)
                     if score is not None:
                         likert_running = False
 
@@ -1368,7 +1416,7 @@ class Game:
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，触发暂停确认
@@ -1376,13 +1424,16 @@ class Game:
                     # 重绘AC任务指导语界面
                     self.display_task_instructions_formatted(subject='AC')
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
 
         # 开始A+B协作，直接显示第一张图片
         self.screen.fill(grey)
@@ -1403,7 +1454,7 @@ class Game:
         button_states = {'minus_pressed': False, 'plus_pressed': False, 'last_change_time': 0}
 
         # 按钮位置设置
-        button_y = 10  # 调整到与暂停提示对齐的高度(40-30=10)
+        button_y = 30  # 调整到与暂停提示对齐的高度
         button_size = 60
         button_spacing = 40
 
@@ -1424,13 +1475,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(60) / 1000
+            dt = self.clock.tick(50) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"航天员：{user1}和{user3}", 10, 20)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user3}绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1439,7 +1490,7 @@ class Game:
             # 处理键盘事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
@@ -1478,9 +1529,12 @@ class Game:
                     self.screen.fill(grey)
                     # 界面会在循环末尾重绘
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
@@ -1661,7 +1715,7 @@ class Game:
                 center_button.text = "按Esc键返回主菜单"
                 # 暂停时显示右下角按钮和顶部提示
                 self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                 (settings.screen_width // 2, 40))
+                                                 (settings.screen_width // 2, 60))
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
@@ -1675,7 +1729,7 @@ class Game:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
@@ -1685,7 +1739,7 @@ class Game:
                     center_button.text = ""
                     # 完成时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
-                                                     (settings.screen_width // 2, 40))
+                                                     (settings.screen_width // 2, 60))
                     step_button2.draw_button()
                     # 完成时不显示中下方按钮
                 else:
@@ -1739,10 +1793,13 @@ class Game:
                     key_pressed = None
                     for event in pygame.event.get():
                         if event.type == pygame.KEYDOWN:
+                            # 屏蔽Windows键
+                            if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                                continue
                             if event.key == pygame.K_ESCAPE:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
-                                    pygame.quit()
+                                    safe_pygame_quit()
                                     sys.exit()
                             else:
                                 key_pressed = event.key
@@ -1757,7 +1814,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(60)
+                    self.clock.tick(50)
                     if score is not None:
                         likert_running = False
 
@@ -1775,9 +1832,12 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
@@ -1787,14 +1847,14 @@ class Game:
                         show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                         self.display_meditation_instructions()
                 elif event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
 
         self.screen.fill(grey)
         line_length = 20
-        pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
-        pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+        pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
+        pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
         pygame.display.update()
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
@@ -1812,7 +1872,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
@@ -1829,13 +1889,16 @@ class Game:
                         pause_start_time = minimize_pause_end
                     # 重绘静息态界面（绿色十字）
                     self.screen.fill(grey)
-                    pygame.draw.line(self.screen, green, (910, 540), (1010, 540), line_length)
-                    pygame.draw.line(self.screen, green, (960, 490), (960, 590), line_length)
+                    pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
+                    pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
                     pygame.display.update()
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                            pygame.quit()
+                            safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_x:  # x键跳过静息态倒计时
                         running = False
@@ -1845,35 +1908,38 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
         # 实验结束
         self.display_end_screen()
         wait = True
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                         wait = False
                     else:
                         # 如果取消，重新显示结束界面
                         self.display_end_screen()
                 elif event.type == pygame.QUIT:
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，触发暂停确认
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     # 重绘结束界面
                     self.display_end_screen()
-            self.clock.tick(60)  # 限制帧率，减少CPU使用
-        pygame.quit()
+            self.clock.tick(50)  # 限制帧率，减少CPU使用
+        safe_pygame_quit()
         return
 
     import pygame
 
     def render_text_with_green_keys(self, text, font, surface, center_pos):
         """渲染带绿色按键高亮的文本"""
-        GREEN_COLOR = (50, 128, 50)
+        GREEN_COLOR = (0, 0, 255)
         BLACK_COLOR = (0, 0, 0)
 
         # 定义需要高亮的按键
@@ -1921,10 +1987,10 @@ class Game:
     def display_flowchart_instructions(self):
         """以流程图的形式显示实验指导语"""
         # --- Colors and Fonts Initialization ---
-        BG_COLOR = (230, 230, 230)
-        BOX_COLOR = (160, 160, 160)
+        BG_COLOR = (255, 255, 255)
+        BOX_COLOR = (220, 220, 220)
         TEXT_COLOR = (0, 0, 0)
-        ARROW_COLOR = (160, 160, 160)
+        ARROW_COLOR = (0, 0, 0)
         GREEN_COLOR = green
 
         screen_width = self.screen.get_width()
@@ -1937,6 +2003,8 @@ class Game:
             sub_font = pygame.font.Font(get_font_path(), 34)  # 增大子字体
             desc_font = pygame.font.Font(get_font_path(), 48)  # 新增描述字体
             prompt_font = pygame.font.Font(get_font_path(), 68)
+            prompt_font_bold = pygame.font.Font(get_font_path(), 68)  # 加粗提示字体
+            prompt_font_bold.set_bold(True)
             key_info_font = pygame.font.Font(get_font_path(), 60)
         except IOError:
             # Fallback to default system font if 'msyh.ttc' is not found
@@ -1946,17 +2014,19 @@ class Game:
             sub_font = pygame.font.SysFont(None, 40)
             desc_font = pygame.font.SysFont(None, 40)
             prompt_font = pygame.font.SysFont(None, 50)
+            prompt_font_bold = pygame.font.SysFont(None, 50, bold=True)  # 加粗提示字体
             key_info_font = pygame.font.SysFont(None, 30)
 
         self.screen.fill(BG_COLOR)
 
         # --- Title ---
-        title_surf = title_font.render("实验流程", True, TEXT_COLOR)
-        title_rect = title_surf.get_rect(center=(screen_width / 2, 80))
+        title_font.set_bold(True)
+        title_surf = title_font.render("实验流程指导语", True, TEXT_COLOR)
+        title_rect = title_surf.get_rect(center=(screen_width / 2, 200))
         self.screen.blit(title_surf, title_rect)
 
         # --- 添加流程图描述 ---
-        desc_text = "本实验包含5个阶段，按顺序依次进行，每个阶段都有明确的时间限制和任务要求"
+        desc_text = "一共5个阶段，请按顺序依次完成，每个阶段均配备指导语"
         desc_surf = desc_font.render(desc_text, True, TEXT_COLOR)
         desc_rect = desc_surf.get_rect(center=(screen_width / 2, 340))
         self.screen.blit(desc_surf, desc_rect)
@@ -1967,16 +2037,16 @@ class Game:
         # --- Updated Flowchart Steps ---
         # The core change is in this data structure to reflect the new experimental flow.
         flow_steps = [
-            {"header": "第一部分", "main": f"{user1}静息任务", "sub": "（2分钟）"},
-            {"header": "第二部分", "main": f"{user1}单独绘图", "sub": "（约7分钟）"},
-            {"header": "第三部分", "main": f"{user1}&{user2}合作绘图", "sub": "（约7分钟）"},
-            {"header": "第四部分", "main": f"{user1}&{user3}合作绘图", "sub": "（约7分钟）"},
-            {"header": "第五部分", "main": f"{user1}静息任务", "sub": "（2分钟）"}
+            {"header": "第1阶段", "main": f"{user1}静息态", "sub": "（2分钟）"},
+            {"header": "第2阶段", "main": f"{user1}绘图", "sub": "（约7分钟）"},
+            {"header": "第3阶段", "main": f"{user1}&{user2}绘图", "sub": "（约7分钟）"},
+            {"header": "第4阶段", "main": f"{user1}&{user3}绘图", "sub": "（约7分钟）"},
+            {"header": "第5阶段", "main": f"{user1}静息态", "sub": "（2分钟）"}
         ]
 
         # --- Layout Calculations for Centering the Flowchart ---
         box_width, box_height = 340, 220  # 增大流程图方框尺寸
-        box_gap = 60  # 增大间距
+        box_gap = 30  # 减小间距让方框更靠近箭头
         total_width = len(flow_steps) * box_width + (len(flow_steps) - 1) * box_gap
         start_x = (screen_width - total_width) / 2
         y_pos = screen_height / 2 - box_height / 2 + 30  # 向下调整位置
@@ -2004,34 +2074,25 @@ class Game:
             sub_rect = sub_surf.get_rect(center=(rect.centerx, rect.bottom - 45))
             self.screen.blit(sub_surf, sub_rect)
 
-        # Draw connecting arrows (修复箭头白色小正方体问题 - 确保线条和箭头头部完美对齐)
+        # Draw connecting arrows using Unicode → symbol
         for i in range(len(box_rects) - 1):
             start_point = box_rects[i].midright
             end_point = box_rects[i + 1].midleft
-
-            # 计算箭头参数
-            arrow_size = 20
-            line_start = (start_point[0] + 15, start_point[1])
-            # 箭头线条的终点要与箭头头部的后端对齐
-            line_end = (end_point[0] - 15 - arrow_size, end_point[1])
-            arrow_tip = (end_point[0] - 15, end_point[1])  # 箭头尖端
-
-            # 绘制箭头线条 (从起点到箭头后端)
-            pygame.draw.line(self.screen, ARROW_COLOR, line_start, line_end, 6)
-
-            # 绘制箭头头部三角形 (确保与线条无缝连接)
-            arrow_points = [
-                arrow_tip,  # 箭头尖端
-                (line_end[0], line_end[1] - arrow_size // 2),  # 左上角 (与线条终点对齐)
-                (line_end[0], line_end[1] + arrow_size // 2)  # 左下角 (与线条终点对齐)
-            ]
-            pygame.draw.polygon(self.screen, ARROW_COLOR, arrow_points)
+            
+            # 计算箭头位置 (在两个方框中间)
+            arrow_x = (start_point[0] + end_point[0]) // 2
+            arrow_y = start_point[1]
+            
+            # 绘制Unicode箭头符号 (使用较小字体避免重合)
+            arrow_surf = sub_font.render("→", True, ARROW_COLOR)
+            arrow_rect = arrow_surf.get_rect(center=(arrow_x, arrow_y))
+            self.screen.blit(arrow_surf, arrow_rect)
 
         # --- Bottom Prompt and Key Information ---
         # This part remains the same but is positioned lower.
         prompt_y_center = screen_height - 150
-        prompt_parts = [("按 ", TEXT_COLOR), ("空格键", GREEN_COLOR), (" 即可开始", TEXT_COLOR)]
-        prompt_surfaces = [prompt_font.render(text, True, color) for text, color in prompt_parts]
+        prompt_parts = [("请按 ", TEXT_COLOR, prompt_font), ("空格键", GREEN_COLOR, prompt_font_bold), (" 开始实验", TEXT_COLOR, prompt_font)]
+        prompt_surfaces = [font.render(text, True, color) for text, color, font in prompt_parts]
         total_prompt_width = sum(s.get_width() for s in prompt_surfaces)
         current_x = (screen_width - total_prompt_width) / 2
         for surf in prompt_surfaces:
@@ -2040,7 +2101,7 @@ class Game:
             current_x += surf.get_width()
 
         key_info_y_bottom = screen_height - 40
-        key_info_parts = [("实验中可按 ", TEXT_COLOR), ("P", GREEN_COLOR), (" 键暂停  ;  按 ", TEXT_COLOR),
+        key_info_parts = [("实验中可按 ", TEXT_COLOR), ("P", GREEN_COLOR), (" 键暂停  ; 可按 ", TEXT_COLOR),
                           ("ESC", GREEN_COLOR), (" 键退出", TEXT_COLOR)]
         key_info_surfaces = [key_info_font.render(text, True, color) for text, color in key_info_parts]
         total_key_info_width = sum(s.get_width() for s in key_info_surfaces)
@@ -2062,8 +2123,8 @@ class Game:
         TEXT_COLOR = (33, 37, 41)
         BLACK = (0, 0, 0)
         DIVIDER_COLOR = (200, 200, 200)
-        PROMPT_GREEN_COLOR = (40, 167, 69)
-        HIGHLIGHT_COLOR = (40, 167, 69)
+        PROMPT_GREEN_COLOR = (0, 0, 255)
+        HIGHLIGHT_COLOR = (0, 0, 255)
         GREEN_ICON_COLOR = (40, 167, 69)
         RED_ICON_COLOR = (220, 53, 69)
         # 【修改3】为示意图的方块使用一个对比度更高的灰色
@@ -2079,6 +2140,8 @@ class Game:
             title_font.set_bold(True)
             subtitle_font = pygame.font.Font(font_name, 52)
             body_font = pygame.font.Font(font_name, 42)
+            body_font_bold = pygame.font.Font(font_name, 42)
+            body_font_bold.set_bold(True)
             key_font = pygame.font.Font(font_name, 22)
             key_font.set_bold(True)
             prompt_font = pygame.font.Font(font_name, 45)
@@ -2087,6 +2150,7 @@ class Game:
             title_font = pygame.font.SysFont('sans-serif', 75, bold=True)
             subtitle_font = pygame.font.SysFont('sans-serif', 55, bold=False)
             body_font = pygame.font.SysFont('sans-serif', 45, bold=False)
+            body_font_bold = pygame.font.SysFont('sans-serif', 45, bold=True)
             key_font = pygame.font.SysFont('sans-serif', 24, bold=True)
             prompt_font = pygame.font.SysFont('sans-serif', 50)
             speed_button_symbol_font = pygame.font.SysFont('sans-serif', 50)
@@ -2112,19 +2176,67 @@ class Game:
             text_surf = font.render(text, True, color_scheme['text'])
             screen.blit(text_surf, text_surf.get_rect(center=rect.center))
 
-        def draw_keyboard_layout(screen, center_x, top_y, key_font, is_highlighted):
+        def draw_keyboard_layout(screen, center_x, top_y, key_font, is_highlighted, subject):
             KEY_SIZE = 60
             GAP = 8
             highlight_color_scheme = {'face': HIGHLIGHT_COLOR, 'border': (25, 135, 84), 'text': (255, 255, 255),
                                       'shadow': (150, 150, 150)}
             default_color_scheme = {'face': (245, 245, 245), 'border': (180, 180, 180), 'text': (0, 0, 0),
                                     'shadow': (150, 150, 150)}
-            layout = {
-                'W': {'pos': (2.5, 0)}, 'S': {'pos': (2.5, 1)}, 'A': {'pos': (1.5, 1)}, 'D': {'pos': (3.5, 1)},
-                '↑': {'pos': (12, 0)}, '↓': {'pos': (12, 1)}, '←': {'pos': (11, 1)}, '→': {'pos': (13, 1)},
-            }
-            keyboard_width = 14 * (KEY_SIZE + GAP)
-            start_x = center_x - keyboard_width / 2
+
+            if subject in ['A', 'B', 'C']:  # 单人模式，只显示相应的键盘部分并居中
+                if subject == 'A':
+                    # 只显示WASD键盘
+                    layout = {
+                        'W': {'pos': (1, 0)}, 'S': {'pos': (1, 1)}, 'A': {'pos': (0, 1)}, 'D': {'pos': (2, 1)},
+                    }
+                    user_label = user1
+                else:
+                    # B和C用户显示方向键
+                    layout = {
+                        '↑': {'pos': (1, 0)}, '↓': {'pos': (1, 1)}, '←': {'pos': (0, 1)}, '→': {'pos': (2, 1)},
+                    }
+                    user_label = user2 if subject == 'B' else user3
+
+                # 计算单个键盘的边界
+                all_positions = [layout[key]['pos'] for key in layout.keys()]
+                min_x = min(pos[0] for pos in all_positions) * (KEY_SIZE + GAP)
+                max_x = max(pos[0] for pos in all_positions) * (KEY_SIZE + GAP) + KEY_SIZE
+                min_y = min(pos[1] for pos in all_positions) * (KEY_SIZE + GAP)
+                max_y = max(pos[1] for pos in all_positions) * (KEY_SIZE + GAP) + KEY_SIZE
+
+                keyboard_width = max_x - min_x
+                start_x = center_x - keyboard_width / 2
+
+            else:  # 双人模式，显示完整键盘
+                layout = {
+                    'W': {'pos': (2.5, 0)}, 'S': {'pos': (2.5, 1)}, 'A': {'pos': (1.5, 1)}, 'D': {'pos': (3.5, 1)},
+                    '↑': {'pos': (12, 0)}, '↓': {'pos': (12, 1)}, '←': {'pos': (11, 1)}, '→': {'pos': (13, 1)},
+                }
+                # 计算整个键盘布局的边界（包含WASD和方向键）
+                all_positions = [layout[key]['pos'] for key in layout.keys()]
+                min_x = min(pos[0] for pos in all_positions) * (KEY_SIZE + GAP)
+                max_x = max(pos[0] for pos in all_positions) * (KEY_SIZE + GAP) + KEY_SIZE
+                min_y = min(pos[1] for pos in all_positions) * (KEY_SIZE + GAP)
+                max_y = max(pos[1] for pos in all_positions) * (KEY_SIZE + GAP) + KEY_SIZE
+
+                keyboard_width = max_x - min_x
+                start_x = center_x - keyboard_width / 2
+
+            # 绘制键盘外围框
+            frame_padding = 25
+            overall_frame_rect = pygame.Rect(
+                start_x + min_x - frame_padding,
+                top_y + min_y - frame_padding,
+                max_x - min_x + 2 * frame_padding,
+                max_y - min_y + 2 * frame_padding
+            )
+            # 使用更深的边框颜色和更粗的线条，让它看起来像一张完整的键盘图
+            pygame.draw.rect(screen, (120, 120, 120), overall_frame_rect, 4, border_radius=15)
+            # 添加内部的浅色背景，增强键盘图的视觉效果
+            pygame.draw.rect(screen, (250, 250, 250), overall_frame_rect, border_radius=15)
+
+            # 绘制按键
             for key_name, properties in layout.items():
                 x_mult, y_mult = properties['pos']
                 key_rect = pygame.Rect(start_x + x_mult * (KEY_SIZE + GAP), top_y + y_mult * (KEY_SIZE + GAP), KEY_SIZE,
@@ -2132,63 +2244,127 @@ class Game:
                 color_scheme = highlight_color_scheme if key_name in is_highlighted else default_color_scheme
                 draw_single_key(screen, key_rect, key_name, key_font, color_scheme)
 
+            # 在键盘下方显示用户代号
+            label_y = overall_frame_rect.bottom + 15
+
+            if subject in ['A', 'B', 'C']:  # 单人模式
+                # 计算单个键盘的中心位置
+                keyboard_center_x = start_x + (min_x + max_x) / 2
+                user_surf = body_font.render(user_label, True, TEXT_COLOR)
+                user_rect = user_surf.get_rect(center=(keyboard_center_x, label_y))
+                screen.blit(user_surf, user_rect)
+
+            elif subject == 'AB':  # AB合作
+                # 左边显示user1，右边显示user2
+                left_keys = ['W', 'A', 'S', 'D']
+                right_keys = ['↑', '←', '↓', '→']
+
+                left_positions = [layout[key]['pos'] for key in left_keys]
+                left_center_x = start_x + (
+                        min(pos[0] for pos in left_positions) + max(pos[0] for pos in left_positions)) / 2 * (
+                                        KEY_SIZE + GAP) + KEY_SIZE / 2
+
+                right_positions = [layout[key]['pos'] for key in right_keys]
+                right_center_x = start_x + (
+                        min(pos[0] for pos in right_positions) + max(pos[0] for pos in right_positions)) / 2 * (
+                                         KEY_SIZE + GAP) + KEY_SIZE / 2
+
+                # 绘制user1
+                user1_surf = body_font.render(user1, True, TEXT_COLOR)
+                user1_rect = user1_surf.get_rect(center=(left_center_x, label_y))
+                screen.blit(user1_surf, user1_rect)
+
+                # 绘制user2
+                user2_surf = body_font.render(user2, True, TEXT_COLOR)
+                user2_rect = user2_surf.get_rect(center=(right_center_x, label_y))
+                screen.blit(user2_surf, user2_rect)
+
+            elif subject == 'AC':  # AC合作
+                # 左边显示user1，右边显示user3
+                left_keys = ['W', 'A', 'S', 'D']
+                right_keys = ['↑', '←', '↓', '→']
+
+                left_positions = [layout[key]['pos'] for key in left_keys]
+                left_center_x = start_x + (
+                        min(pos[0] for pos in left_positions) + max(pos[0] for pos in left_positions)) / 2 * (
+                                        KEY_SIZE + GAP) + KEY_SIZE / 2
+
+                right_positions = [layout[key]['pos'] for key in right_keys]
+                right_center_x = start_x + (
+                        min(pos[0] for pos in right_positions) + max(pos[0] for pos in right_positions)) / 2 * (
+                                         KEY_SIZE + GAP) + KEY_SIZE / 2
+
+                # 绘制user1
+                user1_surf = body_font.render(user1, True, TEXT_COLOR)
+                user1_rect = user1_surf.get_rect(center=(left_center_x, label_y))
+                screen.blit(user1_surf, user1_rect)
+
+                # 绘制user3
+                user3_surf = body_font.render(user3, True, TEXT_COLOR)
+                user3_rect = user3_surf.get_rect(center=(right_center_x, label_y))
+                screen.blit(user3_surf, user3_rect)
+
         # --- 布局开始 ---
         margin = 150
         y_pos = 100
 
         # --- Section 1: 标题与角色 ---
         title_map = {
-            'A': f"{user1}单人绘图任务指导语", 'B': f"{user2}单人绘图任务指导语", 'C': f"{user3}单人绘图任务指导语",
-            'AB': f"{user1}和{user2}合作绘图任务指导语", 'AC': f"{user1}和{user3}合作绘图任务指导语"
+            'A': f"单独绘图指导语（{user1}绘图，{user2}和{user3}休息）",
+            'B': f"{user2}单独绘图指导语（{user2}绘图，{user1}和{user3}休息）",
+            'C': f"{user3}单独绘图指导语（{user3}绘图，{user1}和{user2}休息）",
+            'AB': f"合作绘图指导语（{user1}和{user2}绘图，{user3}休息）",
+            'AC': f"合作绘图指导语（{user1}和{user3}绘图，{user2}休息）"
         }
-        title_text = title_map.get(subject, "绘图任务指导语")
+        title_text = title_map.get(subject, "绘图指导语")
         title_surf = title_font.render(title_text, True, TEXT_COLOR)
         self.screen.blit(title_surf, title_surf.get_rect(center=(screen_w / 2, y_pos)))
         y_pos += title_surf.get_height()
-
-        role_map = {
-            'A': f"请{user1}绘图，{user2}和{user3}休息", 'B': f"请{user2}绘图，{user1}和{user3}休息",
-            'C': f"请{user3}绘图，{user1}和{user2}休息",
-            'AB': f"请{user1}和{user2}绘图，{user3}休息", 'AC': f"请{user1}和{user3}绘图，{user2}休息"
-        }
-        role_text = role_map.get(subject, "")
-        role_surf = subtitle_font.render(role_text, True, TEXT_COLOR)
-        self.screen.blit(role_surf, role_surf.get_rect(center=(screen_w / 2, y_pos + 20)))
-        y_pos += role_surf.get_height() + 50
-
-        # --- Section 2: 任务流程图与速度 ---
+        # --- Section 2: 任务流程 ---
         pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
-        y_pos += 40
+        y_pos += 5  # 进一步减少分割线后的间距，让第一行紧贴
 
+        # 计算最长标题的宽度，用于对齐冒号
         user_text = {'A': user1, 'B': user2, 'C': user3, 'AB': f"{user1}和{user2}", 'AC': f"{user1}和{user3}"}.get(
             subject, "")
-        full_desc_text = f"{user_text}航天员需控制键盘，从绿色起点沿黑色轨迹移动至红色终点。"
-        desc_surf = body_font.render(full_desc_text, True, TEXT_COLOR)
-        self.screen.blit(desc_surf, desc_surf.get_rect(center=(screen_w / 2, y_pos)))
-        y_pos += desc_surf.get_height() + 40
 
+        # 测算三个可能的标题长度
+        if subject in ['A', 'B', 'C']:
+            title_part = f"请{user_text}单独绘图"
+        else:
+            title_part = f"双人合作绘图"
+
+        test_titles = [title_part, "键盘控制光标", "速度调节功能"]
+        max_title_width = max(body_font_bold.size(title)[0] for title in test_titles)
+        colon_x = margin + max_title_width  # 冒号的固定x位置（从左边margin开始）
+
+        # 绘制任务描述，让冒号对齐
+        full_desc_text = f"{title_part}：通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点"
+        title_surf = body_font_bold.render(title_part, True, TEXT_COLOR)
+        colon_surf = body_font.render("：", True, TEXT_COLOR)
+        content_surf = body_font.render("通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点", True, TEXT_COLOR)
+
+        # 绘制标题部分（右对齐到冒号位置）
+        title_x = colon_x - title_surf.get_width()
+        self.screen.blit(title_surf, (title_x, y_pos))
+        # 绘制冒号
+        self.screen.blit(colon_surf, (colon_x, y_pos))
+        # 绘制内容部分（基于整个屏幕宽度居中，但确保不与左侧标题重叠）
+        ideal_content_x = (screen_w - content_surf.get_width()) / 2
+        min_content_x = colon_x + colon_surf.get_width() + 20  # 冒号后至少留20px间距
+        content_x = max(ideal_content_x, min_content_x)
+        self.screen.blit(content_surf, (content_x, y_pos))
+        y_pos += body_font.get_height() + 50  # 增加第一行后的间距，让第一条分割线往下移
+
+        # 绘制任务流程图（无"流程示意图："标签）
         steps = ["任务起点", "沿轨迹绘图", "任务终点"]
-        diagram_label = body_font.render("流程示意图:", True, TEXT_COLOR)
-        diagram_label_gap = 20
-        box_w, box_h = 200, 90
+        box_w, box_h = 180, 80
         gap = 30
-
-        speed_label_surf = body_font.render("速度:", True, TEXT_COLOR)
-        speed_gap = 40
-        speed_button_size = 55
-        speed_value_box_w = 75
-        speed_box_gap = 10
-        speed_section_width = speed_label_surf.get_width() + speed_gap + 2 * speed_button_size + speed_value_box_w + 2 * speed_box_gap
         diagram_content_width = len(steps) * box_w + (len(steps) - 1) * gap
-        total_diagram_width = diagram_label.get_width() + diagram_label_gap + diagram_content_width + speed_gap + speed_section_width
-
-        current_x = screen_w / 2 - total_diagram_width / 2
-        self.screen.blit(diagram_label, diagram_label.get_rect(left=current_x, centery=y_pos + box_h / 2))
-        current_x += diagram_label.get_width() + diagram_label_gap
+        current_x = screen_w / 2 - diagram_content_width / 2
 
         for i, step_text in enumerate(steps):
             box_rect = pygame.Rect(current_x, y_pos, box_w, box_h)
-            # 【修改3】使用新的、对比度更高的颜色
             pygame.draw.rect(self.screen, DIAGRAM_BOX_COLOR, box_rect, border_radius=10)
             if i == 0:
                 pygame.draw.circle(self.screen, GREEN_ICON_COLOR, box_rect.center, 12)
@@ -2205,21 +2381,148 @@ class Game:
             if i < len(steps) - 1:
                 arrow_start = (box_rect.right + 5, box_rect.centery)
                 arrow_end = (box_rect.right + gap - 5, box_rect.centery)
-                # 【修改2】缩短箭头的线，使其被箭头头部完美覆盖
                 pygame.draw.line(self.screen, DIVIDER_COLOR, arrow_start, (arrow_end[0] - 10, arrow_end[1]), 4)
                 pygame.draw.polygon(self.screen, DIVIDER_COLOR,
                                     [(arrow_end[0], arrow_end[1]), (arrow_end[0] - 12, arrow_end[1] - 7),
                                      (arrow_end[0] - 12, arrow_end[1] + 7)])
             current_x += box_w + gap
 
-        speed_start_x = current_x - gap + speed_gap
-        self.screen.blit(speed_label_surf, speed_label_surf.get_rect(
-            center=(speed_start_x + speed_label_surf.get_width() / 2, y_pos + box_h / 2)))
-        speed_controls_x = speed_start_x + speed_label_surf.get_width() + speed_box_gap
-        minus_rect = pygame.Rect(speed_controls_x, y_pos + (box_h - speed_button_size) / 2, speed_button_size,
-                                 speed_button_size)
-        value_rect = pygame.Rect(minus_rect.right + speed_box_gap, minus_rect.top, speed_value_box_w, speed_button_size)
-        plus_rect = pygame.Rect(value_rect.right + speed_box_gap, minus_rect.top, speed_button_size, speed_button_size)
+        y_pos += box_h + 75  # 增加更多间距，让第二条分割线出现在01下面
+
+        # --- Section 3: 按键说明 ---
+        pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
+        y_pos += 35
+
+        instruction_parts_list = []
+        key_highlight_words = []
+
+        # 添加按键说明文字，冒号对齐
+        control_title = "键盘控制光标"
+        control_title_surf = body_font_bold.render(control_title, True, TEXT_COLOR)
+        colon_surf = body_font.render("：", True, TEXT_COLOR)
+
+        # 绘制标题部分（右对齐到冒号位置）
+        title_x = colon_x - control_title_surf.get_width()
+        self.screen.blit(control_title_surf, (title_x, y_pos))
+        # 绘制冒号
+        self.screen.blit(colon_surf, (colon_x, y_pos))
+
+        # 绘制内容部分（高亮按键）
+        if subject == 'A':
+            key_highlight_words = ['W', 'S', 'A', 'D']
+            content_text = f"{user1}控制W键向上，S键向下，A键向左，D键向右"
+        elif subject in ['B', 'C']:
+            key_highlight_words = ['↑', '↓', '←', '→']
+            user_mark = user2 if subject == 'B' else user3
+            content_text = f"{user_mark}控制↑键向上，↓键向下，←键向左，→键向右"
+        elif subject in ['AB', 'AC']:
+            key_highlight_words = ['A', 'D', '↑', '↓']
+            partner_mark = user2 if subject == 'AB' else user3
+            content_text = f"{user1}控制A键向左，D键向右； {partner_mark}控制↑键向上，↓键向下"
+
+        # 使用正则表达式分割并高亮按键
+        if subject == 'A':
+            content_parts = [p for p in re.split(r'(W|S|A|D)', content_text) if p]
+        elif subject in ['B', 'C']:
+            content_parts = [p for p in re.split(r'(↑|↓|←|→)', content_text) if p]
+        elif subject in ['AB', 'AC']:
+            content_parts = [p for p in re.split(r'(A|D|↑|↓)', content_text) if p]
+
+        content_surfaces = render_highlighted_text(content_parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR,
+                                                   key_highlight_words)
+        # 计算内容总宽度并基于整个屏幕宽度居中显示，但确保不与左侧标题重叠
+        total_content_width = sum(s.get_width() for s in content_surfaces)
+        ideal_text_x = (screen_w - total_content_width) / 2
+        min_text_x = colon_x + colon_surf.get_width() + 20  # 冒号后至少留20px间距
+        current_text_x = max(ideal_text_x, min_text_x)
+        for surf in content_surfaces:
+            self.screen.blit(surf, (current_text_x, y_pos))
+            current_text_x += surf.get_width()
+        y_pos += body_font.get_height() + 40  # 增加间距
+
+        # 绘制键盘图
+        if subject == 'A':
+            draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words, subject)
+        elif subject in ['B', 'C']:
+            draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words, subject)
+        elif subject in ['AB', 'AC']:
+            draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words, subject)
+
+        y_pos += 200  # 增加键盘图和第三条分割线之间的间距，让第三条分割线出现在01下面
+
+        # 在键盘控制光标和速度调节功能之间加一条分割线
+        pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
+        y_pos += 30  # 减少第三条分割线后的间距，让第三行往上移
+
+        # 添加速度调节功能说明，冒号对齐，高亮+和-
+        speed_title = "速度调节功能"
+        speed_title_surf = body_font_bold.render(speed_title, True, TEXT_COLOR)
+        colon_surf = body_font.render("：", True, TEXT_COLOR)
+
+        # 绘制标题部分（右对齐到冒号位置）
+        title_x = colon_x - speed_title_surf.get_width()
+        self.screen.blit(speed_title_surf, (title_x, y_pos))
+        # 绘制冒号
+        self.screen.blit(colon_surf, (colon_x, y_pos))
+
+        # 绘制内容部分（高亮+和-符号）
+        speed_content_text = "如需要调节光标移动速度，可通过键盘上的-或+键进行操作"
+        speed_highlight_words = ['+', '-']
+
+        # 分割文本并高亮+和-
+        speed_content_parts = []
+        temp_text = speed_content_text
+
+        # 处理 + 符号
+        if '+' in temp_text:
+            parts = temp_text.split('+')
+            for i, part in enumerate(parts):
+                if part:
+                    speed_content_parts.append(part)
+                if i < len(parts) - 1:
+                    speed_content_parts.append('+')
+        else:
+            speed_content_parts.append(temp_text)
+
+        # 重新组合并处理 - 符号
+        final_content_parts = []
+        for part in speed_content_parts:
+            if '-' in part and part != '-':
+                sub_parts = part.split('-')
+                for i, sub_part in enumerate(sub_parts):
+                    if sub_part:
+                        final_content_parts.append(sub_part)
+                    if i < len(sub_parts) - 1:
+                        final_content_parts.append('-')
+            else:
+                final_content_parts.append(part)
+
+        speed_content_parts = [part for part in final_content_parts if part]
+        speed_content_surfaces = render_highlighted_text(speed_content_parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR,
+                                                         speed_highlight_words)
+
+        # 计算总宽度并基于整个屏幕宽度居中显示，但确保不与左侧标题重叠
+        total_speed_content_width = sum(s.get_width() for s in speed_content_surfaces)
+        ideal_speed_x = (screen_w - total_speed_content_width) / 2
+        min_speed_x = colon_x + colon_surf.get_width() + 20  # 冒号后至少留20px间距
+        current_speed_x = max(ideal_speed_x, min_speed_x)
+        for surf in speed_content_surfaces:
+            self.screen.blit(surf, (current_speed_x, y_pos))
+            current_speed_x += surf.get_width()
+        y_pos += speed_title_surf.get_height() + 40  # 增加间距
+
+        # --- Section 4: 速度示意图 ---
+        speed_button_size = 55
+        speed_value_box_w = 75
+        speed_box_gap = 10
+
+        # 计算速度示意图的总宽度
+        speed_controls_width = 2 * speed_button_size + speed_value_box_w + 2 * speed_box_gap
+        speed_start_x = screen_w / 2 - speed_controls_width / 2
+
+        minus_rect = pygame.Rect(speed_start_x, y_pos, speed_button_size, speed_button_size)
+        value_rect = pygame.Rect(minus_rect.right + speed_box_gap, y_pos, speed_value_box_w, speed_button_size)
+        plus_rect = pygame.Rect(value_rect.right + speed_box_gap, y_pos, speed_button_size, speed_button_size)
 
         for rect, symbol in [(minus_rect, "-"), (plus_rect, "+")]:
             pygame.draw.rect(self.screen, (255, 255, 255), rect, border_radius=5)
@@ -2232,72 +2535,14 @@ class Game:
         value_surf = body_font.render("50", True, BLACK)
         self.screen.blit(value_surf, value_surf.get_rect(center=value_rect.center))
 
-        # 【修改1】修正高亮问题
-        full_hint_text = '+ 和 - 可调节速度'
-        speed_highlight_words = ['+', '-']
-        # 使用 re.split 来正确地分割字符串以进行高亮
-        speed_hint_parts = [part for part in re.split(r'(\+|-)', full_hint_text) if part]
-
-        speed_hint_surfaces = render_highlighted_text(
-            speed_hint_parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR, speed_highlight_words
-        )
-
-        total_hint_width = sum(s.get_width() for s in speed_hint_surfaces)
-        speed_module_center_x = speed_start_x + (plus_rect.right - speed_start_x) / 2
-        hint_start_x = speed_module_center_x - total_hint_width / 2
-        hint_y_pos = minus_rect.bottom + 25
-
-        for surf in speed_hint_surfaces:
-            self.screen.blit(surf, (hint_start_x, hint_y_pos))
-            hint_start_x += surf.get_width()
-
-        y_pos += box_h + 80
-
-        # --- Section 3: 按键说明 ---
-        pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
-        y_pos += 40
-
-        instruction_parts_list = []
-        key_highlight_words = []
-        if subject == 'A':
-            key_highlight_words = ['W', 'A', 'S', 'D']
-            instruction_parts_list.append(
-                re.split(r'(W|A|S|D)', f"请{user1}按键：W键控制上, A键控制左, S键控制下, D键控制右。"))
-        elif subject in ['B', 'C']:
-            key_highlight_words = ['↑', '←', '↓', '→']
-            user_mark = user2 if subject == 'B' else user3
-            instruction_parts_list.append(
-                re.split(r'(↑|←|↓|→)', f"请{user_mark}按键：↑键控制上, ←键控制左, ↓键控制下, →键控制右。"))
-        elif subject in ['AB', 'AC']:
-            key_highlight_words = ['A', 'D', '↑', '↓']
-            partner_mark = user2 if subject == 'AB' else user3
-            line1_parts = re.split(r'(A|D)', f"合作任务：请{user1}使用A键控制左, D键控制右")
-            line2_parts = re.split(r'(↑|↓)', f"　　　　　请{partner_mark}使用↑键控制上, ↓键控制下")
-            instruction_parts_list.append(line1_parts)
-            instruction_parts_list.append(line2_parts)
-
-        for parts in instruction_parts_list:
-            # 过滤掉 re.split 可能产生的空字符串
-            parts = [p for p in parts if p]
-            surfaces = render_highlighted_text(parts, body_font, TEXT_COLOR, HIGHLIGHT_COLOR, key_highlight_words)
-            total_width = sum(s.get_width() for s in surfaces)
-            current_text_x = screen_w / 2 - total_width / 2
-            for surf in surfaces:
-                self.screen.blit(surf, (current_text_x, y_pos))
-                current_text_x += surf.get_width()
-            y_pos += body_font.get_height() + 10
-        y_pos += 20
-
-        # --- Section 4: 键盘示意图 ---
-        draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words)
-        y_pos += 140
+        y_pos += speed_button_size + 30
 
         # --- Section 5: 底部提示 ---
         prompt_bar_rect = pygame.Rect(0, screen_h - 80, screen_w, 80)
         pygame.draw.rect(self.screen, (222, 226, 230), prompt_bar_rect)
-        prompt_part1 = prompt_font.render("准备好后，请按", True, TEXT_COLOR)
+        prompt_part1 = prompt_font.render("准备就绪后，请按键盘", True, TEXT_COLOR)
         prompt_part2_key = prompt_font.render("空格", True, PROMPT_GREEN_COLOR)
-        prompt_part3_suffix = prompt_font.render("键开始实验", True, TEXT_COLOR)
+        prompt_part3_suffix = prompt_font.render("键开始绘图", True, TEXT_COLOR)
         prompt_parts = [prompt_part1, prompt_part2_key, prompt_part3_suffix]
         total_prompt_width = sum(part.get_width() for part in prompt_parts) + 16
         current_x = (screen_w - total_prompt_width) / 2
@@ -2306,6 +2551,7 @@ class Game:
             current_x += part.get_width() + 8
 
         pygame.display.update()
+
 
     def display_meditation_instructions(self, title=None, instructions=None, special_words=None):
         """显示冥想指导语"""
@@ -2316,19 +2562,22 @@ class Game:
         user1 = getattr(shared_data, 'user1_mark', None)
         try:
             font_large = pygame.font.Font(get_font_path(), 78)
+            font_large_bold = pygame.font.Font(get_font_path(), 78)
+            font_large_bold.set_bold(True)
             font_medium = pygame.font.Font(get_font_path(), 65)
         except:
             font_large = pygame.font.SysFont(None, 48)
+            font_large_bold = pygame.font.SysFont(None, 48, bold=True)
             font_medium = pygame.font.SysFont(None, 40)
 
-        if title is None: title = f"航天员{user1}进行2分钟静息态"
+        if title is None: title = f"请{user1}进行2分钟静息态实验"
         if instructions is None:
             instructions = ["放松身体 保持静止", "避免思考 放松大脑", "睁开双眼 减少眨眼",
                             "双手双脚 避免交叉", "按空格键开始"]
         if special_words is None:
             special_words = {"空格键": GREEN}
 
-        title_surface = font_large.render(title, True, BLACK)
+        title_surface = font_large_bold.render(title, True, BLACK)
         title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 100))
         self.screen.blit(title_surface, title_rect)
 
@@ -2359,7 +2608,7 @@ class Game:
         BG_COLOR = (230, 230, 230)  # 与其他界面保持一致的灰色背景
         BOX_COLOR = (144, 197, 114)  # 与流程图相同的绿色框
         TEXT_COLOR = (0, 0, 0)
-        ACCENT_COLOR = (0, 255, 0)  # 绿色强调
+        ACCENT_COLOR = (0, 0, 255) # 绿色强调
         TITLE_COLOR = (0, 0, 0)
 
         screen_width = self.screen.get_width()
@@ -2415,22 +2664,7 @@ class Game:
             # Move the x-position for the next part
             current_x += surf.get_width()
 
-        # 添加装饰元素 - 简单的完成图标
-        # 在标题上方绘制一个简单的勾号
-        check_center = (screen_width / 2, 120)
-        check_size = 40
 
-        # 绘制勾号背景圆圈
-        pygame.draw.circle(self.screen, ACCENT_COLOR, check_center, check_size)
-        pygame.draw.circle(self.screen, TEXT_COLOR, check_center, check_size, 3)
-
-        # 绘制勾号
-        check_points = [
-            (check_center[0] - 15, check_center[1]),
-            (check_center[0] - 5, check_center[1] + 10),
-            (check_center[0] + 15, check_center[1] - 10)
-        ]
-        pygame.draw.lines(self.screen, TEXT_COLOR, False, check_points, 5)
 
         pygame.display.update()
 
@@ -2461,13 +2695,22 @@ def draw_data(self, screen, data, subject_type=None):
         return
 
     total_time = sum(times)
-    avg_percentage = sum(percentages) / len(percentages) if percentages else 0
-    summary_lines = [f"任务平均完成度： {avg_percentage:.2f}%", f"任务总用时： {total_time:.2f}秒"]
+    avg_percentage = (sum(percentages) / len(percentages) if percentages else 0)
+    # 手动对齐，确保冒号位置一致
+    line1 = f"任务完成度：{avg_percentage:6.2f}%"
+    line2 = f"任务总用时：{total_time:6.2f}秒"
+    summary_lines = [line1, line2]
 
+    # 创建字体对象
+    summary_font = pygame.font.Font(get_font_path(), 60)
+    
+    # 计算文字块的整体宽度，然后居中显示，文字左对齐
+    max_width = max(summary_font.size(line)[0] for line in summary_lines)
+    start_x = (screen.get_width() - max_width) // 2
+    
     for i, text in enumerate(summary_lines):
-        text_surface = self.font.render(text, True, (0, 0, 0))
-        text_rect = text_surface.get_rect(center=(screen.get_width() // 2, 200 + i * 100))
-        screen.blit(text_surface, text_rect)
+        text_surface = summary_font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (start_x, 200 + i * 100))
 
 
 def dataloading(t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3,
@@ -2678,7 +2921,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_rect = text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.screen.blit(text_surface, text_rect)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(50)
 
 
 def rest_instructions(self, rest_duration=30):
@@ -2691,25 +2934,27 @@ def rest_instructions(self, rest_duration=30):
     # 颜色定义
     BLACK = (0, 0, 0)
     GREEN = green
-    RED = (255, 100, 100)
+    RED = (0, 0, 255)
 
     # 加载字体
     try:
-        font_large = pygame.font.Font(get_font_path(), 58)
+        font_large = pygame.font.Font(get_font_path(), 72)
+        font_large.set_bold(True)  # 设置标题字体为加粗
         font_medium = pygame.font.Font(get_font_path(), 50)
         font_countdown = pygame.font.Font(get_font_path(), 72)
     except:
         # 如果没有黑体字库，使用默认字体
-        font_large = pygame.font.SysFont(None, 58)
+        font_large = pygame.font.SysFont(None, 72, bold=True)  # 设置为加粗
         font_medium = pygame.font.SysFont(None, 50)
         font_countdown = pygame.font.SysFont(None, 72)
 
     # 文本内容
-    title = "休息时间"
+    title = "休息期间指导语"
     instruction_lines = [
-        "放松身体，休息期间请不要离开座位",
-        "双眼可离开屏幕，适当放松",
-        "倒计时结束后自动开始下一阶段"
+        "请您保持身体处于放松状态，可暂时将视线从屏幕移开。",
+        "休息期间，请尽量减少肢体活动，避免剧烈运动，",
+        "以防影响电极的导电性能和数据采集质量。"
+
     ]
 
     # 倒计时循环
@@ -2741,16 +2986,51 @@ def rest_instructions(self, rest_duration=30):
 
         # 显示标题
         title_surface = font_large.render(title, True, BLACK)
-        title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 200))
+        title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 150))
         self.screen.blit(title_surface, title_rect)
 
-        # 显示指导文本
+        # 显示指导文本（自动换行，以最长行为基准居中，其他行左边界对齐）
         y_pos = 280
-        for line in instruction_lines:
-            text_surface = font_medium.render(line, True, BLACK)
-            text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, y_pos))
-            self.screen.blit(text_surface, text_rect)
-            y_pos += 60
+        line_height = 150
+        max_width = 600  # 文本块最大宽度
+
+        for paragraph in instruction_lines:
+            # 将长文本分割成多行
+            words = paragraph.split()
+            lines = []
+            current_line = ""
+
+            for word in words:
+                test_line = current_line + word + " "
+                test_surface = font_medium.render(test_line, True, BLACK)
+                if test_surface.get_width() <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:
+                        lines.append(current_line.strip())
+                        current_line = word + " "
+                    else:
+                        lines.append(word)
+                        current_line = ""
+
+            if current_line:
+                lines.append(current_line.strip())
+
+            # 找到最长的行
+            max_line_width = 0
+            for line in lines:
+                line_width = font_medium.size(line)[0]
+                if line_width > max_line_width:
+                    max_line_width = line_width
+
+            # 以最长行为基准计算左边界位置（居中）
+            start_x = (self.screen.get_width() - max_line_width) // 2
+
+            # 渲染每一行，都从同样的左边界开始
+            for line in lines:
+                text_surface = font_medium.render(line, True, BLACK)
+                self.screen.blit(text_surface, (start_x, y_pos - text_surface.get_height() // 2))
+                y_pos += line_height
 
         # 显示倒计时
         minutes = int(remaining // 60)
@@ -2764,13 +3044,13 @@ def rest_instructions(self, rest_duration=30):
         # 最后30秒变红色
         countdown_color = RED if remaining <= 30 else GREEN
         countdown_surface = font_countdown.render(countdown_text, True, countdown_color)
-        countdown_rect = countdown_surface.get_rect(center=(self.screen.get_width() // 2, 550))
+        countdown_rect = countdown_surface.get_rect(center=(self.screen.get_width() // 2, 750))
         self.screen.blit(countdown_surface, countdown_rect)
 
         # 检查退出事件
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                safe_pygame_quit()
                 sys.exit()
             elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                 # 窗口被最小化后恢复，独立处理暂停时间
@@ -2787,6 +3067,10 @@ def rest_instructions(self, rest_duration=30):
                     pause_start_time = minimize_pause_end
                 pass
             elif event.type == pygame.KEYDOWN:
+                # 屏蔽Windows键 - 增强版（包含原始键值）
+                if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or 
+                    event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
+                    continue
                 if event.key == pygame.K_ESCAPE:
                     # 暂停计时器
                     if not paused:
@@ -2794,7 +3078,7 @@ def rest_instructions(self, rest_duration=30):
                         paused = True
 
                     if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                        pygame.quit()
+                        safe_pygame_quit()
                         sys.exit()
                     else:
                         # 用户选择继续，恢复计时器
@@ -2803,8 +3087,7 @@ def rest_instructions(self, rest_duration=30):
                             paused = False
 
         pygame.display.flip()
-        clock.tick(60)
-
+        clock.tick(50)
 
 if __name__ == '__main__':
     game = Game()

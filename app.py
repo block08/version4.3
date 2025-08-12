@@ -28,6 +28,9 @@ import sys
 import ctypes
 import platform
 
+# 导入资源清理模块
+from src.utils.resource_cleanup import cleanup_all_resources
+
 def set_app_icon(app):
     """设置应用图标，包含错误处理"""
     icon_paths = [
@@ -60,15 +63,30 @@ def set_windows_taskbar_icon():
             print(f"设置Windows任务栏图标失败: {e}")
 
 if __name__ == "__main__":
-    # 启动登录界面
-    app = QApplication(sys.argv)
+    try:
+        # 启动登录界面
+        app = QApplication(sys.argv)
+        
+        # 设置Windows任务栏图标
+        set_windows_taskbar_icon()
+        
+        # 设置应用图标
+        set_app_icon(app)
+        
+        window = LoginWindow()
+        window.show()
+        
+        # 运行应用
+        result = app.exec_()
+        
+    except Exception as e:
+        print(f"应用程序运行出错: {e}")
+        result = 1
+    finally:
+        # 确保资源清理
+        try:
+            cleanup_all_resources()
+        except Exception as cleanup_error:
+            print(f"资源清理出错: {cleanup_error}")
     
-    # 设置Windows任务栏图标
-    set_windows_taskbar_icon()
-    
-    # 设置应用图标
-    set_app_icon(app)
-    
-    window = LoginWindow()
-    window.show()
-    sys.exit(app.exec_())
+    sys.exit(result)

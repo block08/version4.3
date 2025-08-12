@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
         
         # 创建主布局管理器
         main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
-        main_layout.setContentsMargins(10, 10, 10, 10)  # 进一步减少边距
+        main_layout.setContentsMargins(10, 0, 10, 0)  # 删除上下边距
         
         self.frame = QtWidgets.QFrame(self.centralwidget)
 
@@ -107,10 +107,10 @@ class Ui_MainWindow(object):
         self.pushButton_relogin.setFont(font)
         self.pushButton_relogin.setStyleSheet("QPushButton{\n"
                                    "    border:none;\n"
+                                   "    background: transparent;\n"
                                    "}\n"
                                    "QPushButton:hover{\n"
-                                   "    padding-bottom:10px\n"
-                                   "\n"
+                                   "    background-color: rgba(0, 0, 0, 0.1);\n"
                                    "}")
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/image/exit.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -127,10 +127,16 @@ class Ui_MainWindow(object):
         self.frame_5.setSizePolicy(sizePolicy)
         self.frame_5.setStyleSheet("QPushButton{\n"
                                    "    border:none;\n"
+                                   "    background: transparent;\n"
                                    "}\n"
-                                   "QPushButton:hover{\n"
-                                   "    padding-bottom:10px\n"
-                                   "\n"
+                                   "QPushButton#pushButton_relogin:hover{\n"
+                                   "    background-color: rgba(0, 0, 0, 0.1);\n"
+                                   "}\n"
+                                   "QPushButton#pushButton_3:hover{\n"
+                                   "    background-color: rgba(0, 0, 0, 0.1);\n"
+                                   "}\n"
+                                   "QPushButton#pushButton_2:hover{\n"
+                                   "    background-color: #e81123;\n"
                                    "}")
         self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -200,7 +206,8 @@ class Ui_MainWindow(object):
                                    "    color: rgb(34, 34, 34);\n"
                                    "}\n"
                                    "#frame_6 QPushButton:pressed{\n"
-                                   "    background-color: rgb(210, 225, 255);\n"
+                                   "    background-color: #1f4788;\n"
+                                   "    color: white;\n"
                                    "    padding-left:3px;\n"
                                    "    padding-top:3px;\n"
                                    "}")
@@ -247,15 +254,6 @@ class Ui_MainWindow(object):
         spacerItem3 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem3)
 
-        # 4. 数据查看
-        self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
-        self.pushButton_data = QtWidgets.QPushButton(self.frame_6)
-        self.pushButton_data.setObjectName("pushButton_data")
-        self.horizontalLayout_12.addWidget(self.pushButton_data)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
-        spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem4)
 
         # 5. 最好成绩
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
@@ -264,8 +262,18 @@ class Ui_MainWindow(object):
         self.pushButton_highestscore.setObjectName("pushButton_highestscore")
         self.horizontalLayout_10.addWidget(self.pushButton_highestscore)
         self.verticalLayout_2.addLayout(self.horizontalLayout_10)
-        spacerItem5 = QtWidgets.QSpacerItem(20, 70, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem5)
+
+        # 6. 数据查看
+        self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
+        self.pushButton_data = QtWidgets.QPushButton(self.frame_6)
+        self.pushButton_data.setObjectName("pushButton_data")
+        self.horizontalLayout_12.addWidget(self.pushButton_data)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
+        spacerItem6 = QtWidgets.QSpacerItem(20, 70, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem6)
 
         # 6. 端口设置 - 已注释，功能保留
         # self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
@@ -307,7 +315,7 @@ class Ui_MainWindow(object):
         self.page_home = QtWidgets.QWidget()
         self.page_home.setObjectName("page_home")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.page_home)
-        self.verticalLayout_4.setContentsMargins(50, 20, 50, 20)
+        self.verticalLayout_4.setContentsMargins(50, 0, 50, 0)
         self.verticalLayout_4.setSpacing(15)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
 
@@ -316,13 +324,13 @@ class Ui_MainWindow(object):
 
         # 输入法提醒标签（移到最上面）
         self.label_input_method_reminder = QtWidgets.QLabel(self.page_home)
-        self.label_input_method_reminder.setMinimumHeight(80)
-        self.label_input_method_reminder.setMaximumHeight(100)
+        self.label_input_method_reminder.setMinimumHeight(120)
+        self.label_input_method_reminder.setMaximumHeight(120)
         self.label_input_method_reminder.setStyleSheet("QLabel{\n"
-                                                       "    border: 2px solid rgb(255, 165, 0);\n"
+                                                       "    border: 2px solid rgb(0, 0, 0);\n"
                                                        "    border-radius: 10px;\n"
-                                                       "    background-color: rgb(255, 248, 220);\n"
-                                                       "    color: rgb(255, 140, 0);\n"
+                                                       "    background-color: rgb(240, 240, 240);\n"
+                                                       "    color: rgb(0, 0, 0);\n"
                                                        "    font: bold 36pt \"微软雅黑\";\n"
                                                        "    padding: 15px;\n"
                                                        "}")
@@ -347,7 +355,7 @@ class Ui_MainWindow(object):
         
         # 给介绍框添加布局
         intro_layout = QtWidgets.QVBoxLayout(self.frame_introduction)
-        intro_layout.setContentsMargins(30, 15, 30, 15)
+        intro_layout.setContentsMargins(30, 0, 30, 0)
         
         # 实验介绍内容
         self.label_intro_content = QtWidgets.QLabel(self.frame_introduction)
@@ -380,13 +388,17 @@ class Ui_MainWindow(object):
         
         # 为 page_exercise 添加布局
         exercise_layout = QtWidgets.QVBoxLayout(self.page_exercise)
-        exercise_layout.setContentsMargins(50, 20, 50, 20)
+        exercise_layout.setContentsMargins(50, 0, 50, 0)
         exercise_layout.setSpacing(20)
         
+        # 在顶部添加间距推送label_2往下
+        top_spacer_exercise = QtWidgets.QSpacerItem(20, 80, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        exercise_layout.addItem(top_spacer_exercise)
+        
         self.label_2 = QtWidgets.QLabel(self.page_exercise)
-        self.label_2.setMinimumHeight(80)
-        self.label_2.setMaximumHeight(100)
-        self.label_2.setStyleSheet("font-size: 44px")
+        self.label_2.setMinimumHeight(100)
+        self.label_2.setMaximumHeight(120)
+        self.label_2.setStyleSheet("font: bold 60pt '微软雅黑'; color: rgb(51, 51, 51);")
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         exercise_layout.addWidget(self.label_2)
@@ -418,22 +430,28 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.pushButton_4.sizePolicy().hasHeightForWidth())
         self.pushButton_4.setSizePolicy(sizePolicy)
         self.pushButton_4.setStyleSheet("QPushButton{\n"
-                                        "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 3px solid rgb(51, 51, 51);\n"
+                                        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffffff, stop:1 #f0f0f0);\n"
+                                        "    border: 2px solid #d0d0d0;\n"
                                         "    color: rgb(51, 51, 51);\n"
-                                        "    font: 36pt \"微软雅黑\";\n"
-                                        "    border-radius: 15px;\n"
+                                        "    font: bold 60pt \"微软雅黑\";\n"
+                                        "    border-radius: 30px;\n"
                                         "    padding: 20px;\n"
+                                        "    text-align: center;\n"
+                                        "    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);\n"
                                         "}\n"
                                         "QPushButton:hover{\n"
-                                        "    background-color: rgb(230, 240, 255);\n"
-                                        "    border: 3px solid rgb(34, 34, 34);\n"
-                                        "    color: rgb(34, 34, 34);\n"
+                                        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d2540, stop:1 #1f4788);\n"
+                                        "    border: 2px solid #0d2540;\n"
+                                        "    color: white;\n"
+                                        "    transform: translateY(-2px);\n"
+                                        "    box-shadow: 0px 6px 12px rgba(0,0,0,0.3);\n"
                                         "}\n"
                                         "QPushButton:pressed{\n"
-                                        "    background-color: rgb(210, 225, 255);\n"
-                                        "    padding-left:3px;\n"
-                                        "    padding-top:3px;\n"
+                                        "    background: #1f4788;\n"
+                                        "    border: 2px solid #1f4788;\n"
+                                        "    color: white;\n"
+                                        "    transform: translateY(2px);\n"
+                                        "    box-shadow: 0px 2px 4px rgba(0,0,0,0.2);\n"
                                         "}")
         self.pushButton_4.setObjectName("pushButton_4")
         frame11_layout.addWidget(self.pushButton_4)
@@ -451,22 +469,28 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.pushButton_9.sizePolicy().hasHeightForWidth())
         self.pushButton_9.setSizePolicy(sizePolicy)
         self.pushButton_9.setStyleSheet("QPushButton{\n"
-                                        "background-color: rgb(255, 255, 255);\n"
-                                        "    border: 3px solid rgb(51, 51, 51);\n"
+                                        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffffff, stop:1 #f0f0f0);\n"
+                                        "    border: 2px solid #d0d0d0;\n"
                                         "    color: rgb(51, 51, 51);\n"
-                                        "    font: 36pt \"微软雅黑\";\n"
-                                        "    border-radius: 15px;\n"
+                                        "    font: bold 60pt \"微软雅黑\";\n"
+                                        "    border-radius: 30px;\n"
                                         "    padding: 20px;\n"
+                                        "    text-align: center;\n"
+                                        "    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);\n"
                                         "}\n"
                                         "QPushButton:hover{\n"
-                                        "    background-color: rgb(230, 240, 255);\n"
-                                        "    border: 3px solid rgb(34, 34, 34);\n"
-                                        "    color: rgb(34, 34, 34);\n"
+                                        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0d2540, stop:1 #1f4788);\n"
+                                        "    border: 2px solid #0d2540;\n"
+                                        "    color: white;\n"
+                                        "    transform: translateY(-2px);\n"
+                                        "    box-shadow: 0px 6px 12px rgba(0,0,0,0.3);\n"
                                         "}\n"
                                         "QPushButton:pressed{\n"
-                                        "    background-color: rgb(210, 225, 255);\n"
-                                        "    padding-left:3px;\n"
-                                        "    padding-top:3px;\n"
+                                        "    background: #1f4788;\n"
+                                        "    border: 2px solid #1f4788;\n"
+                                        "    color: white;\n"
+                                        "    transform: translateY(2px);\n"
+                                        "    box-shadow: 0px 2px 4px rgba(0,0,0,0.2);\n"
                                         "}")
         self.pushButton_9.setObjectName("pushButton_9")
         frame11_layout.addWidget(self.pushButton_9)
@@ -482,50 +506,28 @@ class Ui_MainWindow(object):
         
         # 为 page_main 添加布局
         main_layout = QtWidgets.QVBoxLayout(self.page_main)
-        main_layout.setContentsMargins(50, 50, 50, 50)
+        main_layout.setContentsMargins(50, 0, 50, 0)
         main_layout.setSpacing(30)
         
-        # 添加上方空白
+        # 添加垂直居中的空白
         spacerItem_top = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         main_layout.addItem(spacerItem_top)
         
+        # 正式实验页面标题
         self.label_3 = QtWidgets.QLabel(self.page_main)
-        self.label_3.setStyleSheet("font-size: 50px")
+        self.label_3.setStyleSheet("""
+            QLabel {
+                font: bold 80pt "微软雅黑";
+                color: rgb(51, 51, 51);
+                border: none;
+                text-align: center;
+            }
+        """)
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
         main_layout.addWidget(self.label_3)
         
-        self.run_main_test = QtWidgets.QPushButton(self.page_main)
-        self.run_main_test.setMinimumSize(QtCore.QSize(160, 160))
-        self.run_main_test.setMaximumSize(QtCore.QSize(200, 200))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.run_main_test.sizePolicy().hasHeightForWidth())
-        self.run_main_test.setSizePolicy(sizePolicy)
-        self.run_main_test.setStyleSheet("QPushButton{\n"
-                                         "    border:none;\n"
-                                         "}\n"
-                                         "\n"
-                                         "QPushButton:hover{\n"
-                                         "    padding-bottom:20px\n"
-                                         "\n"
-                                         "}")
-        self.run_main_test.setText("")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/icons/icons/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.run_main_test.setIcon(icon4)
-        self.run_main_test.setIconSize(QtCore.QSize(160, 160))
-        self.run_main_test.setObjectName("run_main_test")
-        
-        # 创建水平布局居中按钮
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.addItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
-        button_layout.addWidget(self.run_main_test)
-        button_layout.addItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
-        main_layout.addLayout(button_layout)
-        
-        # 添加下方空白
+        # 添加垂直居中的空白
         spacerItem_bottom = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         main_layout.addItem(spacerItem_bottom)
         self.stackedWidget.addWidget(self.page_main)
@@ -534,7 +536,7 @@ class Ui_MainWindow(object):
         
         # 为排行榜页面创建主布局
         highestscore_layout = QtWidgets.QVBoxLayout(self.page_highestscore)
-        highestscore_layout.setContentsMargins(30, 30, 30, 30)
+        highestscore_layout.setContentsMargins(30, 0, 30, 0)
         highestscore_layout.setSpacing(20)
 
         # 标题
@@ -570,265 +572,143 @@ class Ui_MainWindow(object):
         self.leaderboard_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.leaderboard_frame.setObjectName("leaderboard_frame")
         
-        # 为排行榜容器创建垂直布局
-        leaderboard_layout = QtWidgets.QVBoxLayout(self.leaderboard_frame)
-        leaderboard_layout.setContentsMargins(30, 30, 30, 30)
-        leaderboard_layout.setSpacing(25)
-
-        # 表头
-        self.header_frame = QtWidgets.QFrame(self.leaderboard_frame)
-        self.header_frame.setMinimumHeight(70)
-        self.header_frame.setMaximumHeight(80)
-        self.header_frame.setStyleSheet("""
-            QFrame {
-                background-color: rgb(51, 51, 51);
-                border-radius: 12px;
-                border: none;
-            }
-        """)
-        self.header_frame.setObjectName("header_frame")
+        # 为排行榜容器创建网格布局
+        leaderboard_layout = QtWidgets.QGridLayout(self.leaderboard_frame)
+        leaderboard_layout.setContentsMargins(20, 20, 20, 20)
+        leaderboard_layout.setSpacing(0)
         
-        # 为表头创建水平布局
-        header_layout = QtWidgets.QHBoxLayout(self.header_frame)
-        header_layout.setContentsMargins(20, 15, 20, 15)
-        header_layout.setSpacing(10)
+        # 设置列宽比例
+        leaderboard_layout.setColumnStretch(0, 1)  # 排名
+        leaderboard_layout.setColumnStretch(1, 2)  # 用户
+        leaderboard_layout.setColumnStretch(2, 2)  # 准确度
+        leaderboard_layout.setColumnStretch(3, 2)  # 总用时
+        leaderboard_layout.setColumnStretch(4, 2)  # 平均偏差
+        leaderboard_layout.setColumnStretch(5, 1)  # 日期
 
-        self.header_rank = QtWidgets.QLabel(self.header_frame)
-        self.header_rank.setStyleSheet("font: bold 24pt '微软雅黑'; color: white; border: none;")
+        # 表头行 (第0行)
+        self.header_rank = QtWidgets.QLabel("排名")
+        self.header_rank.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_rank.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_rank.setText("排名")
-        self.header_rank.setObjectName("header_rank")
-        header_layout.addWidget(self.header_rank, 1)
+        leaderboard_layout.addWidget(self.header_rank, 0, 0)
 
-        self.header_user = QtWidgets.QLabel(self.header_frame)
-        self.header_user.setStyleSheet("font: bold 24pt '微软雅黑'; color: white; border: none;")
+        self.header_user = QtWidgets.QLabel("用户")
+        self.header_user.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_user.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_user.setText("用户")
-        self.header_user.setObjectName("header_user")
-        header_layout.addWidget(self.header_user, 2)
+        leaderboard_layout.addWidget(self.header_user, 0, 1)
 
-        self.header_accuracy = QtWidgets.QLabel(self.header_frame)
-        self.header_accuracy.setStyleSheet("font: bold 24pt '微软雅黑'; color: white; border: none;")
+        self.header_accuracy = QtWidgets.QLabel("准确度")
+        self.header_accuracy.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_accuracy.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_accuracy.setText("准确度")
-        self.header_accuracy.setObjectName("header_accuracy")
-        header_layout.addWidget(self.header_accuracy, 2)
+        leaderboard_layout.addWidget(self.header_accuracy, 0, 2)
 
-        self.header_time = QtWidgets.QLabel(self.header_frame)
-        self.header_time.setStyleSheet("font: bold 24pt '微软雅黑'; color: white; border: none;")
+        self.header_time = QtWidgets.QLabel("总用时")
+        self.header_time.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_time.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_time.setText("总用时")
-        self.header_time.setObjectName("header_time")
-        header_layout.addWidget(self.header_time, 2)
+        leaderboard_layout.addWidget(self.header_time, 0, 3)
 
-        self.header_deviation = QtWidgets.QLabel(self.header_frame)
-        self.header_deviation.setStyleSheet("font: bold 24pt '微软雅黑'; color: white; border: none;")
+        self.header_deviation = QtWidgets.QLabel("平均偏差")
+        self.header_deviation.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_deviation.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_deviation.setText("平均偏差")
-        self.header_deviation.setObjectName("header_deviation")
-        header_layout.addWidget(self.header_deviation, 2)
+        leaderboard_layout.addWidget(self.header_deviation, 0, 4)
 
-        self.header_date = QtWidgets.QLabel(self.header_frame)
-        self.header_date.setStyleSheet("font: bold 20pt '微软雅黑'; color: white; border: none;")
+        self.header_date = QtWidgets.QLabel("日期")
+        self.header_date.setStyleSheet("font: bold 36pt '微软雅黑'; color: white; background-color: rgb(51, 51, 51); border: 1px solid rgb(40, 40, 40); padding: 20px;")
         self.header_date.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_date.setText("日期")
-        self.header_date.setObjectName("header_date")
-        header_layout.addWidget(self.header_date, 1)
-        
-        leaderboard_layout.addWidget(self.header_frame)
+        leaderboard_layout.addWidget(self.header_date, 0, 5)
 
-        # 第一名
-        self.first_place_frame = QtWidgets.QFrame(self.leaderboard_frame)
-        self.first_place_frame.setMinimumHeight(120)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.first_place_frame.sizePolicy().hasHeightForWidth())
-        self.first_place_frame.setSizePolicy(sizePolicy)
-        self.first_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #FFD700, stop:1 #FFA500);
-                border: 3px solid #DAA520;
-                border-radius: 15px;
-            }
-        """)
-        self.first_place_frame.setObjectName("first_place_frame")
-        
-        # 为第一名创建水平布局
-        first_layout = QtWidgets.QHBoxLayout(self.first_place_frame)
-        first_layout.setContentsMargins(20, 20, 20, 20)
-        first_layout.setSpacing(10)
-
-        self.first_rank_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_rank_label.setMinimumSize(80, 80)
-        self.first_rank_label.setMaximumSize(80, 80)
-        self.first_rank_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; border: none;")
+        # 第一名 (第1行)
+        self.first_rank_label = QtWidgets.QLabel("")
+        self.first_rank_label.setStyleSheet("font: bold 48pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #000000; padding: 20px;")
         self.first_rank_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_rank_label.setObjectName("first_rank_label")
-        first_layout.addWidget(self.first_rank_label, 0)
+        leaderboard_layout.addWidget(self.first_rank_label, 1, 0)
 
-        self.first_user_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_user_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; border: none;")
+        self.first_user_label = QtWidgets.QLabel("用户")
+        self.first_user_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #DAA520; padding: 20px;")
         self.first_user_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_user_label.setObjectName("first_user_label")
-        first_layout.addWidget(self.first_user_label, 2)
+        leaderboard_layout.addWidget(self.first_user_label, 1, 1)
 
-        self.first_accuracy_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_accuracy_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.first_accuracy_label = QtWidgets.QLabel("准确度: -")
+        self.first_accuracy_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #DAA520; padding: 20px;")
         self.first_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_accuracy_label.setObjectName("first_accuracy_label")
-        first_layout.addWidget(self.first_accuracy_label, 2)
+        leaderboard_layout.addWidget(self.first_accuracy_label, 1, 2)
 
-        self.first_time_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_time_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.first_time_label = QtWidgets.QLabel("用时: -")
+        self.first_time_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #DAA520; padding: 20px;")
         self.first_time_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_time_label.setObjectName("first_time_label")
-        first_layout.addWidget(self.first_time_label, 2)
+        leaderboard_layout.addWidget(self.first_time_label, 1, 3)
 
-        self.first_deviation_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_deviation_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.first_deviation_label = QtWidgets.QLabel("偏差: -")
+        self.first_deviation_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #DAA520; padding: 20px;")
         self.first_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_deviation_label.setObjectName("first_deviation_label")
-        first_layout.addWidget(self.first_deviation_label, 2)
+        leaderboard_layout.addWidget(self.first_deviation_label, 1, 4)
 
-        self.first_date_label = QtWidgets.QLabel(self.first_place_frame)
-        self.first_date_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #000000; border: none;")
+        self.first_date_label = QtWidgets.QLabel("日期: -")
+        self.first_date_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; background-color: #FFD700; border: 1px solid #DAA520; padding: 20px;")
         self.first_date_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.first_date_label.setObjectName("first_date_label")
-        first_layout.addWidget(self.first_date_label, 1)
-        
-        leaderboard_layout.addWidget(self.first_place_frame)
+        leaderboard_layout.addWidget(self.first_date_label, 1, 5)
 
-        # 第二名
-        self.second_place_frame = QtWidgets.QFrame(self.leaderboard_frame)
-        self.second_place_frame.setMinimumHeight(110)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.second_place_frame.sizePolicy().hasHeightForWidth())
-        self.second_place_frame.setSizePolicy(sizePolicy)
-        self.second_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #C0C0C0, stop:1 #A9A9A9);
-                border: 3px solid #808080;
-                border-radius: 15px;
-            }
-        """)
-        self.second_place_frame.setObjectName("second_place_frame")
-        
-        # 为第二名创建水平布局
-        second_layout = QtWidgets.QHBoxLayout(self.second_place_frame)
-        second_layout.setContentsMargins(20, 20, 20, 20)
-        second_layout.setSpacing(10)
-
-        self.second_rank_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_rank_label.setMinimumSize(80, 80)
-        self.second_rank_label.setMaximumSize(80, 80)
-        self.second_rank_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; border: none;")
+        # 第二名 (第2行)
+        self.second_rank_label = QtWidgets.QLabel("")
+        self.second_rank_label.setStyleSheet("font: bold 48pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #000000; padding: 20px;")
         self.second_rank_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_rank_label.setObjectName("second_rank_label")
-        second_layout.addWidget(self.second_rank_label, 0)
+        leaderboard_layout.addWidget(self.second_rank_label, 2, 0)
 
-        self.second_user_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_user_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; border: none;")
+        self.second_user_label = QtWidgets.QLabel("用户")
+        self.second_user_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #808080; padding: 20px;")
         self.second_user_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_user_label.setObjectName("second_user_label")
-        second_layout.addWidget(self.second_user_label, 2)
+        leaderboard_layout.addWidget(self.second_user_label, 2, 1)
 
-        self.second_accuracy_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_accuracy_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.second_accuracy_label = QtWidgets.QLabel("准确度: -")
+        self.second_accuracy_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #808080; padding: 20px;")
         self.second_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_accuracy_label.setObjectName("second_accuracy_label")
-        second_layout.addWidget(self.second_accuracy_label, 2)
+        leaderboard_layout.addWidget(self.second_accuracy_label, 2, 2)
 
-        self.second_time_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_time_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.second_time_label = QtWidgets.QLabel("用时: -")
+        self.second_time_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #808080; padding: 20px;")
         self.second_time_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_time_label.setObjectName("second_time_label")
-        second_layout.addWidget(self.second_time_label, 2)
+        leaderboard_layout.addWidget(self.second_time_label, 2, 3)
 
-        self.second_deviation_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_deviation_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.second_deviation_label = QtWidgets.QLabel("偏差: -")
+        self.second_deviation_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #808080; padding: 20px;")
         self.second_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_deviation_label.setObjectName("second_deviation_label")
-        second_layout.addWidget(self.second_deviation_label, 2)
+        leaderboard_layout.addWidget(self.second_deviation_label, 2, 4)
 
-        self.second_date_label = QtWidgets.QLabel(self.second_place_frame)
-        self.second_date_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #000000; border: none;")
+        self.second_date_label = QtWidgets.QLabel("日期: -")
+        self.second_date_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; background-color: #C0C0C0; border: 1px solid #808080; padding: 20px;")
         self.second_date_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.second_date_label.setObjectName("second_date_label")
-        second_layout.addWidget(self.second_date_label, 1)
-        
-        leaderboard_layout.addWidget(self.second_place_frame)
+        leaderboard_layout.addWidget(self.second_date_label, 2, 5)
 
-        # 第三名
-        self.third_place_frame = QtWidgets.QFrame(self.leaderboard_frame)
-        self.third_place_frame.setMinimumHeight(100)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.third_place_frame.sizePolicy().hasHeightForWidth())
-        self.third_place_frame.setSizePolicy(sizePolicy)
-        self.third_place_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #CD7F32, stop:1 #B8860B);
-                border: 3px solid #8B4513;
-                border-radius: 15px;
-            }
-        """)
-        self.third_place_frame.setObjectName("third_place_frame")
-        
-        # 为第三名创建水平布局
-        third_layout = QtWidgets.QHBoxLayout(self.third_place_frame)
-        third_layout.setContentsMargins(20, 20, 20, 20)
-        third_layout.setSpacing(10)
-
-        self.third_rank_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_rank_label.setMinimumSize(80, 80)
-        self.third_rank_label.setMaximumSize(80, 80)
-        self.third_rank_label.setStyleSheet("QLabel{font: bold 32pt '微软雅黑'; color: #000000; border: none;}")
+        # 第三名 (第3行)
+        self.third_rank_label = QtWidgets.QLabel("")
+        self.third_rank_label.setStyleSheet("font: bold 48pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #000000; padding: 20px;")
         self.third_rank_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_rank_label.setObjectName("third_rank_label")
-        third_layout.addWidget(self.third_rank_label, 0)
+        leaderboard_layout.addWidget(self.third_rank_label, 3, 0)
 
-        self.third_user_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_user_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; border: none;")
+        self.third_user_label = QtWidgets.QLabel("用户")
+        self.third_user_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #8B4513; padding: 20px;")
         self.third_user_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_user_label.setObjectName("third_user_label")
-        third_layout.addWidget(self.third_user_label, 2)
+        leaderboard_layout.addWidget(self.third_user_label, 3, 1)
 
-        self.third_accuracy_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_accuracy_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.third_accuracy_label = QtWidgets.QLabel("准确度: -")
+        self.third_accuracy_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #8B4513; padding: 20px;")
         self.third_accuracy_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_accuracy_label.setObjectName("third_accuracy_label")
-        third_layout.addWidget(self.third_accuracy_label, 2)
+        leaderboard_layout.addWidget(self.third_accuracy_label, 3, 2)
 
-        self.third_time_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_time_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.third_time_label = QtWidgets.QLabel("用时: -")
+        self.third_time_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #8B4513; padding: 20px;")
         self.third_time_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_time_label.setObjectName("third_time_label")
-        third_layout.addWidget(self.third_time_label, 2)
+        leaderboard_layout.addWidget(self.third_time_label, 3, 3)
 
-        self.third_deviation_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_deviation_label.setStyleSheet("font: bold 22pt '微软雅黑'; color: #000000; border: none;")
+        self.third_deviation_label = QtWidgets.QLabel("偏差: -")
+        self.third_deviation_label.setStyleSheet("font: bold 32pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #8B4513; padding: 20px;")
         self.third_deviation_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_deviation_label.setObjectName("third_deviation_label")
-        third_layout.addWidget(self.third_deviation_label, 2)
+        leaderboard_layout.addWidget(self.third_deviation_label, 3, 4)
 
-        self.third_date_label = QtWidgets.QLabel(self.third_place_frame)
-        self.third_date_label.setStyleSheet("font: bold 18pt '微软雅黑'; color: #000000; border: none;")
+        self.third_date_label = QtWidgets.QLabel("日期: -")
+        self.third_date_label.setStyleSheet("font: bold 28pt '微软雅黑'; color: #000000; background-color: #CD7F32; border: 1px solid #8B4513; padding: 20px;")
         self.third_date_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.third_date_label.setObjectName("third_date_label")
-        third_layout.addWidget(self.third_date_label, 1)
-        
-        leaderboard_layout.addWidget(self.third_place_frame)
+        leaderboard_layout.addWidget(self.third_date_label, 3, 5)
 
-        # 添加伸缩空间，让排行榜框架占满剩余空间
-        spacerItem_leaderboard = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        leaderboard_layout.addItem(spacerItem_leaderboard)
         
         highestscore_layout.addWidget(self.leaderboard_frame)
         
@@ -852,50 +732,28 @@ class Ui_MainWindow(object):
         
         # 为 page_data 添加布局
         data_layout = QtWidgets.QVBoxLayout(self.page_data)
-        data_layout.setContentsMargins(50, 50, 50, 50)
+        data_layout.setContentsMargins(50, 0, 50, 0)
         data_layout.setSpacing(30)
         
-        # 添加上方空白
+        # 添加垂直居中的空白
         spacerItem_data_top = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         data_layout.addItem(spacerItem_data_top)
         
+        # 数据查看页面标题
         self.label_4 = QtWidgets.QLabel(self.page_data)
-        self.label_4.setStyleSheet("font-size: 50px")
+        self.label_4.setStyleSheet("""
+            QLabel {
+                font: bold 80pt "微软雅黑";
+                color: rgb(51, 51, 51);
+                border: none;
+                text-align: center;
+            }
+        """)
         self.label_4.setAlignment(QtCore.Qt.AlignCenter)
         self.label_4.setObjectName("label_4")
         data_layout.addWidget(self.label_4)
         
-        self.data_check = QtWidgets.QPushButton(self.page_data)
-        self.data_check.setMinimumSize(QtCore.QSize(150, 150))
-        self.data_check.setMaximumSize(QtCore.QSize(200, 200))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.data_check.sizePolicy().hasHeightForWidth())
-        self.data_check.setSizePolicy(sizePolicy)
-        self.data_check.setStyleSheet("QPushButton{\n"
-                                      "    border:none;\n"
-                                      "}\n"
-                                      "\n"
-                                      "QPushButton:hover{\n"
-                                      "    padding-bottom:20px\n"
-                                      "\n"
-                                      "}")
-        self.data_check.setText("")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/images/images/file.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.data_check.setIcon(icon5)
-        self.data_check.setIconSize(QtCore.QSize(150, 150))
-        self.data_check.setObjectName("data_check")
-        
-        # 创建水平布局居中按钮
-        data_button_layout = QtWidgets.QHBoxLayout()
-        data_button_layout.addItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
-        data_button_layout.addWidget(self.data_check)
-        data_button_layout.addItem(QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
-        data_layout.addLayout(data_button_layout)
-        
-        # 添加下方空白
+        # 添加垂直居中的空白
         spacerItem_data_bottom = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         data_layout.addItem(spacerItem_data_bottom)
         self.stackedWidget.addWidget(self.page_data)
@@ -1013,7 +871,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "合作行为能力评估软件主菜单"))
         self.pushButton.setText(_translate("MainWindow", "user"))
         self.pushButton_relogin.setText(_translate("MainWindow", ""))
         # self.pushButton_relogin.setStyleSheet("QPushButton {\
@@ -1069,61 +927,47 @@ class Ui_MainWindow(object):
         # --- Updated instruction text ---
         # self.label_intro_content.setText(_translate("MainWindow",
         #                                             "<html><head/><body><p><span style=\" font-weight:600;\">本实验是一个合作绘图任务。</span>首次使用:请点击【练习任务】，完成练习后进入【正式实验】，熟悉操作后可直接点击【正式实验】</p><p>如下图所示，您的目标是尽可能准确、快速地复现目标图形。</p><p>• <span style=\" font-weight:600;\">练习试次</span>：熟悉系统操作，掌握绘图技巧。</p><p>• <span style=\" font-weight:600;\">正式实验</span>：完成正式的绘图任务测试。</p></body></html>"))
+
+        # 介绍内容将由 InterfaceWindow.py 在用户登录后动态更新
         self.label_intro_content.setText(_translate("MainWindow",
                                                                                                 "<html><head/><body style='line-height: 1.8;'>"
                                                                                                 "<div style='text-align: center; margin-bottom: 30px;'>"
-                                                                                                "<p style='font-size: 42pt; font-weight: bold; color: #2c3e50; margin: 15px 0;'>实验说明</p>"
                                                                                                 "</div>"
-                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>配合要求：被测航天员需与两位辅助航天员依次配合完成绘图任务</p>"
-                                                                                                "</div>"
-                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>操作方式：点击左侧【练习试次】或【正式实验】按钮开始</p>"
-                                                                                                "</div>"
-                                                                                                "<div style='text-align: left; margin-bottom: 25px;'>"
-                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>实验流程：</p>"
-                                                                                                "<p style='font-size: 28pt; margin: 10px 0 10px 35px; color: #000000;'>1. 练习试次 - 需完成3张图片绘制（熟练后可直接进入正式实验）</p>"
-                                                                                                "<p style='font-size: 28pt; margin: 10px 0 10px 35px; color: #000000;'>2. 正式实验 - 依次完成三个阶段的绘图任务</p>"
-                                                                                                "</div>"
-                                                                                                "<div style='text-align: left; margin-left: 70px; margin-bottom: 20px;'>"
-                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段一：被测航天员单独绘图（8张图片）</p>"
-                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段二：被测航天员与辅助航天员A合作（8张图片）</p>"
-                                                                                                "<p style='font-size: 26pt; margin: 8px 0; color: #000000;'>阶段三：被测航天员与辅助航天员B合作（8张图片）</p>"
-                                                                                                "</div>"
-                                                                                                "<div style='text-align: left; margin-top: 20px;'>"
-                                                                                                "<p style='font-size: 32pt; margin: 12px 0; font-weight: bold; color: #000000;'>温馨提示：实验中每个阶段都有详细的指导语</p>"
+                                                                                                "<div style='text-align: left; margin-bottom: 30px; padding: 20px;'>"
+                                                                                                "<p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>"
+                                                                                                "正在加载用户信息..."
+                                                                                                "</p>"
                                                                                                 "</div>"
                                                                                                 "</body></html>"))
-        self.label_2.setText(_translate("MainWindow", "点击进入对应训练模块"))
-        self.pushButton_4.setText(_translate("MainWindow", "人员①绘图练习模块"))
-        self.pushButton_9.setText(_translate("MainWindow", "人员①&人员②绘图练习模块"))
-        self.label_3.setText(_translate("MainWindow", "点击按钮进行正式实验"))
+        self.label_2.setText(_translate("MainWindow", "请点击相应模块进行练习"))
+        self.pushButton_4.setText(_translate("MainWindow", "单独绘图练习模块"))
+        self.pushButton_9.setText(_translate("MainWindow", "合作绘图练习模块"))
+        self.label_3.setText(_translate("MainWindow", ""))
         self.title_label.setText(_translate("MainWindow", "单人准确度排行榜"))
-        self.first_rank_label.setStyleSheet("QLabel { image: url(:/image/1.png); }")
+        self.first_rank_label.setStyleSheet("QLabel { image: url(:/image/1.png); border: 1px solid #000000; }")
         self.first_user_label.setText(_translate("MainWindow", "用户"))
         self.first_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.first_time_label.setText(_translate("MainWindow", "用时: -"))
         self.first_deviation_label.setText(_translate("MainWindow", "偏差: -"))
         self.first_date_label.setText(_translate("MainWindow", "日期: -"))
         # self.second_rank_label.setText(_translate("MainWindow", "🥈"))
-        self.second_rank_label.setStyleSheet("QLabel { image: url(:/image/2.png); }")
+        self.second_rank_label.setStyleSheet("QLabel { image: url(:/image/2.png); border: 1px solid #000000; }")
         self.second_user_label.setText(_translate("MainWindow", "用户"))
         self.second_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.second_time_label.setText(_translate("MainWindow", "用时: -"))
         self.second_deviation_label.setText(_translate("MainWindow", "偏差: -"))
         self.second_date_label.setText(_translate("MainWindow", "日期: -"))
-        # self.third_rank_label.setText(_translate("MainWindow", "🥉"))
-        self.third_rank_label.setStyleSheet("QLabel { image: url(:/image/3.png); }")
+        self.third_rank_label.setStyleSheet("QLabel { image: url(:/image/3.png); border: 1px solid #000000; }")
         self.third_user_label.setText(_translate("MainWindow", "用户"))
         self.third_accuracy_label.setText(_translate("MainWindow", "准确度: -"))
         self.third_time_label.setText(_translate("MainWindow", "用时: -"))
         self.third_deviation_label.setText(_translate("MainWindow", "偏差: -"))
         self.third_date_label.setText(_translate("MainWindow", "日期: -"))
-        self.info_label.setText(_translate("MainWindow", "💡 排名基于准确度高低，偏差面积越小越好，用时越短越好"))
-        self.label_4.setText(_translate("MainWindow", "点击按钮查看行为数据"))
-        self.label_input_method_reminder.setText(_translate("MainWindow", "重要提醒：实验开始前请务必切换到英文输入法"))
+        self.info_label.setText(_translate("MainWindow", "排名基于准确度高低，偏差面积越小越好，用时越短越好"))
+        self.label_4.setText(_translate("MainWindow", ""))
+        self.label_input_method_reminder.setText(_translate("MainWindow", "重要提示：请按Caps Lock键以启用大写锁定功能！"))
         self.pushButton_macro_guidance.setText(_translate("MainWindow", "实验介绍"))
         self.label_status_text.setText(_translate("MainWindow", "未连接"))
 
 
-from src.utils import resouce_rc
+from src.utils import resouce_rc, shared_data

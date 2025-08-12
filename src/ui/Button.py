@@ -14,7 +14,7 @@ class Button:
         self.screen_rect = screen.get_rect()
         # 设置按钮的尺寸和其他属性
         self.width, self.height = 200, 50
-        self.button_color = gray
+        self.button_color = back_color
         self.text = text
         self.text_color = black
         self.hover_color = light_gray
@@ -187,7 +187,7 @@ class Button4:
 
     def render_text_with_green_keys(self, text, font, surface, center_pos):
         """渲染带绿色按键高亮的文本"""
-        GREEN_COLOR = (0, 255, 0)
+        GREEN_COLOR = (0, 0, 255)
         BLACK_COLOR = (0, 0, 0)
         
         # 定义需要高亮的按键

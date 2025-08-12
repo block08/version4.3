@@ -6,6 +6,7 @@ import os
 import random
 import math
 from src.config.config_manager import get_id_file_path
+from src.utils.resource_cleanup import safe_pygame_quit
 
 # 初始化常量
 BLACK = (0, 0, 0)
@@ -128,11 +129,14 @@ class GameDrawing:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                    pygame.quit()
+                    safe_pygame_quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
+                    # 屏蔽Windows键
+                    if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                        continue
                     if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
+                        safe_pygame_quit()
                         # 退出python程序，不捕获异常,不加上这一句也能退出，但是会在中断报错
                         sys.exit()
             elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
@@ -269,11 +273,7 @@ class LineGenerator:
         # 从14个生成器中随机选择8个
         selected_indices = random.sample(range(len(self.all_generators)), 8)
         self.available_generators = [self.all_generators[i] for i in selected_indices]
-        
-        print(f"实验会话选择的8个生成器（种子：{selection_seed}）:")
-        for i, (func, name) in enumerate(self.available_generators):
-            print(f"  生成器{i}: {name}")
-        
+
         random.setstate(temp_random_state)  # 恢复随机状态
     
     def _get_experiment_seed(self):
@@ -1178,6 +1178,9 @@ def test_curve_generator():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
+                # 屏蔽Windows键
+                if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
+                    continue
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_RIGHT:
@@ -1250,9 +1253,9 @@ def test_curve_generator():
             screen.blit(stats_text, (20, 100))
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(50)
 
-    pygame.quit()
+    safe_pygame_quit()
     sys.exit()
 
 

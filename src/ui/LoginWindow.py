@@ -52,7 +52,7 @@ class CustomDialog(QDialog):
         text_label = QLabel(text, self)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setAlignment(Qt.AlignJustify) # <-- 修改：两端对齐
         text_label.setStyleSheet("border: none; color: black;")
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
@@ -82,15 +82,15 @@ class CustomDialog(QDialog):
             yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
             """)
             yes_button.clicked.connect(self.accept)
             
             yes_hint = QLabel("按Y键", self)
             yes_hint.setAlignment(Qt.AlignCenter)
             yes_hint.setFont(QFont("Microsoft YaHei", 25))
-            yes_hint.setStyleSheet("color: #888888; border: none;")
+            yes_hint.setStyleSheet("color: #000000; border: none;")
             
             yes_container.addWidget(yes_button)
             yes_container.addWidget(yes_hint)
@@ -108,15 +108,15 @@ class CustomDialog(QDialog):
             no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
             """)
             no_button.clicked.connect(self.reject)
             
             no_hint = QLabel("按N键", self)
             no_hint.setAlignment(Qt.AlignCenter)
             no_hint.setFont(QFont("Microsoft YaHei", 25))
-            no_hint.setStyleSheet("color: #888888; border: none;")
+            no_hint.setStyleSheet("color: #000000; border: none;")
             
             no_container.addWidget(no_button)
             no_container.addWidget(no_hint)
@@ -206,7 +206,7 @@ class CustomDialog(QDialog):
         text_label = QLabel(text)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setAlignment(Qt.AlignJustify) # <-- 修改：两端对齐
         text_label.setStyleSheet("border: none; color: black;")
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
@@ -234,15 +234,15 @@ class CustomDialog(QDialog):
         enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         enter_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
         """)
         enter_button.clicked.connect(dialog.accept)
         
         enter_hint = QLabel("按Y键")
         enter_hint.setAlignment(Qt.AlignCenter)
         enter_hint.setFont(QFont("Microsoft YaHei", 25))
-        enter_hint.setStyleSheet("color: #888888; border: none;")
+        enter_hint.setStyleSheet("color: #000000; border: none;")
         
         enter_container.addWidget(enter_button)
         enter_container.addWidget(enter_hint)
@@ -260,15 +260,15 @@ class CustomDialog(QDialog):
         cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         cancel_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
         """)
         cancel_button.clicked.connect(dialog.reject)
         
         cancel_hint = QLabel("按N键")
         cancel_hint.setAlignment(Qt.AlignCenter)
         cancel_hint.setFont(QFont("Microsoft YaHei", 25))
-        cancel_hint.setStyleSheet("color: #888888; border: none;")
+        cancel_hint.setStyleSheet("color: #000000; border: none;")
         
         cancel_container.addWidget(cancel_button)
         cancel_container.addWidget(cancel_hint)
@@ -342,7 +342,7 @@ class CustomDialog(QDialog):
         text_label = QLabel(text)
         text_label.setFont(QFont("Microsoft YaHei", font_size))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignCenter) # <-- 修改：让文字在自己的控件内也居中
+        text_label.setAlignment(Qt.AlignJustify) # <-- 修改：两端对齐
         text_label.setStyleSheet("border: none; color: black;")
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
@@ -363,15 +363,15 @@ class CustomDialog(QDialog):
         enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         enter_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
         """)
         enter_button.clicked.connect(dialog.accept)
         
         enter_hint = QLabel("按Y键")
         enter_hint.setAlignment(Qt.AlignCenter)
         enter_hint.setFont(QFont("Microsoft YaHei", 25))
-        enter_hint.setStyleSheet("color: #888888; border: none;")
+        enter_hint.setStyleSheet("color: #000000; border: none;")
         
         enter_container.addWidget(enter_button)
         enter_container.addWidget(enter_hint)
@@ -389,15 +389,15 @@ class CustomDialog(QDialog):
         cancel_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         cancel_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
         """)
         cancel_button.clicked.connect(dialog.reject)
         
         cancel_hint = QLabel("按N键")
         cancel_hint.setAlignment(Qt.AlignCenter)
         cancel_hint.setFont(QFont("Microsoft YaHei", 25))
-        cancel_hint.setStyleSheet("color: #888888; border: none;")
+        cancel_hint.setStyleSheet("color: #000000; border: none;")
         
         cancel_container.addWidget(cancel_button)
         cancel_container.addWidget(cancel_hint)
@@ -451,6 +451,7 @@ class EllipseUserButton(QPushButton):
         self.mark = mark
         self.subject_type = subject_type
         self.selected = False
+        self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setFixedSize(160, 80)
         self.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
         self.update_style()
@@ -458,10 +459,10 @@ class EllipseUserButton(QPushButton):
 
     def update_style(self):
         if self.selected:
-            bg_color = "#D3D3D3"  # <-- 选中时的背景色 (浅灰色)
-            border_color = "#b0b0b0"  # <-- 选中时的边框色 (稍深一点的灰色)
-            hover_color = "#C0C0C0"  # <-- 选中时悬停的颜色 (更亮的灰色)
-            text_color = "black"  # <-- 选中时的文字颜色 (黑色)
+            bg_color = "#1f4788"  # <-- 选中时的背景色 (深蓝色)
+            border_color = "#0d2540"  # <-- 选中时的边框色 (更深蓝色)
+            hover_color = "#2a5ba0"  # <-- 选中时悬停的颜色 (亮蓝色)
+            text_color = "white"  # <-- 选中时的文字颜色 (白色)
 
         else:
             bg_color = "#f8f9fa"
@@ -516,8 +517,7 @@ class LoginWindow(QMainWindow):
         self.setup_connections()
         self.create_task_buttons()
         self.load_users_and_create_buttons()
-        self.m_flag = False
-        self.m_Position = QtCore.QPoint()
+        self.setup_button_cursors()
         self._closing = False  # 添加关闭标志
         self._transitioning = False  # 添加正常切换标志
 
@@ -576,16 +576,16 @@ class LoginWindow(QMainWindow):
         self.ui.right_panel.setGeometry(QtCore.QRect(left_panel_width, 0, right_panel_width, right_panel_height))
 
         # 调整右面板内的组件
-        # 标题
-        title_y = int(100 * scale_y)
-        title_width = int(600 * scale_x * 0.9)
-        title_x = int((right_panel_width - title_width) / 2)
-        self.ui.login_title.setGeometry(QtCore.QRect(title_x, title_y, title_width, int(51 * scale_y)))
-
         # 任务选择卡片
         card_width = int(481 * scale_x * 0.9)
         card_height = int(160 * scale_y)
         card_x = int((right_panel_width - card_width) / 2)
+        
+        # 标题 - 与任务卡片对齐
+        title_y = int(100 * scale_y)
+        title_width = int(481 * scale_x * 0.9)
+        title_x = card_x
+        self.ui.login_title.setGeometry(QtCore.QRect(title_x, title_y, title_width, int(65 * scale_y)))
         card_y = int(180 * scale_y)
         self.ui.task_selection_card.setGeometry(QtCore.QRect(card_x, card_y, card_width, card_height))
 
@@ -640,8 +640,15 @@ class LoginWindow(QMainWindow):
         
         # 更新登录按钮字体
         button_font = self.ui.final_login_button.font()
-        button_font.setPointSize(int(20 * avg_scale))
+        button_font.setPointSize(int(30 * avg_scale))
         self.ui.final_login_button.setFont(button_font)
+
+    def setup_button_cursors(self):
+        """为所有按钮设置手型光标"""
+        # 登录相关按钮
+        self.ui.final_login_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.close_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.minimize_button.setCursor(QCursor(Qt.PointingHandCursor))
 
     def setup_connections(self):
         self.ui.final_login_button.clicked.connect(self.final_login)
@@ -663,6 +670,7 @@ class LoginWindow(QMainWindow):
 
         for task in tasks:
             button = QPushButton(task)
+            button.setCursor(QCursor(Qt.PointingHandCursor))
             button.setFixedSize(160, 80)
             button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             # 3. & 4. 修改样式表，包括圆角和选中时的颜色
@@ -678,10 +686,10 @@ class LoginWindow(QMainWindow):
                                 border: 2px solid #4c63d2; /* 悬停颜色可以统一为A类型的蓝色 */
                             }
                             QPushButton:checked {
-                                /* --- 在这里修改选中颜色为浅灰色 --- */
-                                background-color: #D3D3D3; /* <-- 选中时的背景色 (浅灰色) */
-                                color: black;             /* <-- 选中时的文字颜色 (黑色) */
-                                border: 2px solid #b0b0b0; /* <-- 选中时的边框色 (稍深一点的灰色) */
+                                /* --- 选中时使用深绿色高亮 --- */
+                                background-color: #1f4788; /* <-- 选中时的背景色 (深蓝色) */
+                                color: white;             /* <-- 选中时的文字颜色 (白色) */
+                                border: 2px solid #0d2540; /* <-- 选中时的边框色 (更深蓝色) */
                             }
                         """)
             button.setCheckable(True)
@@ -821,7 +829,7 @@ class LoginWindow(QMainWindow):
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择任务代号")
             return
         if not self.selected_subject_a:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择佩戴脑电帽的航天员")
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "请选择被测航天员")
             return
         if not self.selected_subject_b:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "警告", "系统错误：副航天员未自动选择")
@@ -856,14 +864,14 @@ class LoginWindow(QMainWindow):
             export_to_txt(output_db_path, "data", output_txt_path)
 
             success_text = (f"登录成功！\n\n"
-                            f"任务代号: {self.selected_task}\n"
-                            f"被测航天员: {self.selected_subject_a['mark'].replace('SZ21-', '')} \n"
-                            f"辅助航天员: {self.selected_subject_b['mark'].replace('SZ21-', '')} 和 {self.selected_subject_c['mark'].replace('SZ21-', '')}\n"
+                            f"任务代号   ：{self.selected_task}\n"
+                            f"受试代号   ：{self.selected_subject_a['mark'].replace('SZ21-', '')} \n"
+                            f"辅助代号   ：{self.selected_subject_b['mark'].replace('SZ21-', '')} 和 {self.selected_subject_c['mark'].replace('SZ21-', '')}\n"
                             )
 
             # 显示登录成功确认对话框
             CustomDialog.show_login_success1(self,  "登录成功", success_text,
-                                            font_size=22, callback=self.transition_to_main_interface)
+                                            font_size=25, callback=self.transition_to_main_interface)
 
     def transition_to_main_interface(self):
         """切换到主实验界面"""
@@ -989,19 +997,6 @@ class LoginWindow(QMainWindow):
             if 'conn_output' in locals():
                 conn_output.close()
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.m_flag = True
-            self.m_Position = event.globalPos() - self.pos()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        if Qt.LeftButton and self.m_flag:
-            self.move(event.globalPos() - self.m_Position)
-            event.accept()
-
-    def mouseReleaseEvent(self, event):
-        self.m_flag = False
 
 
 if __name__ == '__main__':

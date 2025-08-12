@@ -66,7 +66,7 @@ class Ui_MainWindow(object):
 "}")
         self.right_panel.setObjectName("right_panel")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(110, 100, 600, 51))
+        self.login_title.setGeometry(QtCore.QRect(50, 100, 481, 65))
         font = QtGui.QFont()
         font.setFamily("Microsoft YaHei UI")
         font.setPointSize(28)
@@ -74,8 +74,9 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.login_title.setFont(font)
         self.login_title.setStyleSheet("QLabel {\n"
-"    color: #333;\n"
-"    background: transparent;\n"
+"    color: white;\n"
+"    background: rgb(34, 92, 102);\n"
+"    border-radius: 15px;\n"
 "}")
         self.login_title.setAlignment(QtCore.Qt.AlignCenter)
         self.login_title.setObjectName("login_title")
@@ -87,8 +88,9 @@ class Ui_MainWindow(object):
 "    border-radius: 16px;\n"
 "}\n"
 "QWidget#task_selection_card:hover {\n"
-"    border: 2px solid #667eea;\n"
-"    background: #f0fff4;\n"
+"    border: 2px solid #1f4788;\n"
+"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
+"        stop:0 rgba(31, 71, 136, 0.08), stop:1 rgba(31, 71, 136, 0.15));\n"
 "}")
         self.task_selection_card.setObjectName("task_selection_card")
         self.task_selection_title = QtWidgets.QLabel(self.task_selection_card)
@@ -119,8 +121,9 @@ class Ui_MainWindow(object):
 "    border-radius: 16px;\n"
 "}\n"
 "QWidget#subject_a_card:hover {\n"
-"    border: 2px solid #667eea;\n"
-"    background: #f8f9ff;\n"
+"    border: 2px solid #1f4788;\n"
+"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
+"        stop:0 rgba(31, 71, 136, 0.08), stop:1 rgba(31, 71, 136, 0.15));\n"
 "}")
         self.subject_a_card.setObjectName("subject_a_card")
         self.subject_a_icon = QtWidgets.QLabel(self.subject_a_card)
@@ -155,24 +158,22 @@ class Ui_MainWindow(object):
         self.final_login_button = QtWidgets.QPushButton(self.right_panel)
         self.final_login_button.setGeometry(QtCore.QRect(150, 580, 300, 60))
         font = QtGui.QFont()
-        font.setPointSize(20)
+        font.setPointSize(30)
         font.setBold(True)
         font.setWeight(75)
         self.final_login_button.setFont(font)
         self.final_login_button.setStyleSheet("QPushButton {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(46, 204, 113, 255), stop:1 rgba(39, 174, 96, 255));\n"
+"    background: #1f4788;\n"
 "    color: white;\n"
 "    border: none;\n"
 "    border-radius: 30px;\n"
+"    font-weight: bold;\n"
 "}\n"
 "QPushButton:hover {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(39, 174, 96, 255), stop:1 rgba(34, 153, 84, 255));\n"
+"    background: #163a6b;\n"
 "}\n"
 "QPushButton:pressed {\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,\n"
-"        stop:0 rgba(34, 153, 84, 255), stop:1 rgba(30, 130, 76, 255));\n"
+"    background: #0d2540;\n"
 "}")
         self.final_login_button.setObjectName("final_login_button")
         self.frame_5 = QtWidgets.QFrame(self.right_panel)
@@ -184,10 +185,13 @@ class Ui_MainWindow(object):
         self.frame_5.setSizePolicy(sizePolicy)
         self.frame_5.setStyleSheet("QPushButton{\n"
 "    border:none;\n"
+"    background: transparent;\n"
 "}\n"
-"QPushButton:hover{\n"
-"    padding-bottom:10px\n"
-"\n"
+"QPushButton#minimize_button:hover{\n"
+"    background-color: rgba(0, 0, 0, 0.1);\n"
+"}\n"
+"QPushButton#close_button:hover{\n"
+"    background-color: #e81123;\n"
 "}")
         self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -217,10 +221,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "实验系统登录"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "合作行为能力评估软件"))
         self.login_title.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">合作行为能力评估软件</span></p></body></html>"))
         self.task_selection_title.setText(_translate("MainWindow", "任务代号"))
         self.subject_a_icon.setText(_translate("MainWindow", "航天员"))
-        self.subject_a_title.setText(_translate("MainWindow", "被测航天员"))
+        self.subject_a_title.setText(_translate("MainWindow", "受试代号"))
         self.final_login_button.setText(_translate("MainWindow", "登录"))
 from src.utils import resouce_rc

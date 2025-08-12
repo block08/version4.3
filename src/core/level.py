@@ -8,10 +8,12 @@ draw_width = 2
 # 颜色定义
 GREY = (128, 128, 128)
 BLACK = (0, 0, 0)
+grey = (230,230,230)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 LINEWIDTH = 4
 RED = (255, 0, 0)
+DARK_BLUE = (0, 0, 139)  # 深蓝色
 TOP_MARGIN = 100  # 顶部预留空间
 BOTTOM_MARGIN = 100  # 底部预留空间
 
@@ -38,6 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.image.fill((0, 255, 0))  # GREEN
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.last_pos = (self.x, self.y)
+        self.initial_pos = (self.x, self.y)  # 记录初始起点位置
         self.turning_left = False
         self.turning_right = False
         self.is_moving = False
@@ -236,7 +239,7 @@ class Level:
             self.display_surface.get_width(),
             self.display_surface.get_height() - TOP_MARGIN - BOTTOM_MARGIN
         ))
-        self.drawing_surface.fill(GREY)
+        self.drawing_surface.fill(grey)
         self.player = None
         self.font = pygame.font.Font(None, 24)
         self.all_sprites = {i: pygame.sprite.Group() for i in range(self.MAX_SPRITES)}
@@ -306,6 +309,11 @@ class Level:
                         LINEWIDTH
                     )
             self.player.draw(screen)
+            
+            # 在原始起点位置绘制固定的绿色标记
+            initial_pos_screen = (int(self.player.initial_pos[0]), int(self.player.initial_pos[1]))
+            pygame.draw.rect(screen, (0, 255, 0), 
+                           (initial_pos_screen[0] - 8, initial_pos_screen[1] - 8, 16, 16))
 
         pygame.draw.rect(screen, BLACK, (
             0, TOP_MARGIN,
@@ -343,7 +351,7 @@ class Level:
         self.draw(screen, stats)
 
     def clear(self):
-        self.drawing_surface.fill(GREY)
+        self.drawing_surface.fill(grey)
         for i in range(self.MAX_SPRITES):
             self.all_sprites[i].empty()
             self.end_sprites[i].empty()

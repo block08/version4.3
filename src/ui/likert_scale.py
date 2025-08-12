@@ -22,7 +22,7 @@ class LikertScale:
         self.WHITE = (211, 211, 211)
         self.BLACK = (0, 0, 0)
         self.GRAY = (211, 211, 211)
-        self.BLUE = (50, 128, 50)
+        self.BLUE = (0, 0, 255)
 
         # 创建量表的surface
         self.surface = pygame.Surface((self.WIDTH, self.HEIGHT))
@@ -36,8 +36,8 @@ class LikertScale:
         self.SCALE_LENGTH = int(self.WIDTH * 0.75)
         self.SCALE_Y = self.HEIGHT // 2
         self.SCALE_START_X = (self.WIDTH - self.SCALE_LENGTH) // 2
-        self.CIRCLE_RADIUS = 25
-        self.SELECTED_CIRCLE_RADIUS = 35
+        self.CIRCLE_RADIUS = 15
+        self.SELECTED_CIRCLE_RADIUS = 20
 
         # 问题文本和回调
         self.question = question
@@ -116,7 +116,7 @@ class LikertScale:
     def _draw_question(self):
         """绘制问题，支持用户名和按键高亮"""
         # 绿色用于按键高亮
-        GREEN_COLOR = (50, 128, 50)
+        GREEN_COLOR = (0, 0, 255)
         
         # 处理问题文本，分离需要高亮的部分
         question = self.question
@@ -124,8 +124,8 @@ class LikertScale:
         
         # 先处理数字键1-7的高亮
         import re
-        # 匹配 "1 到 7" 或 "1到7" 的模式
-        pattern = r'(\d+)-(\d+)'
+        # 匹配多种格式: "1-7", "1至7", "1到7"
+        pattern = r'1[-至到]7'
         match = re.search(pattern, question)
         
         if match:
@@ -180,7 +180,6 @@ class LikertScale:
             feedback_surface.set_alpha(self.animation_alpha)
 
             feedback_text = self.font.render(
-                f"您的评分是: {self.selected_score} - " +
                 next(level["label"] for level in self.LEVELS
                      if level["score"] == self.selected_score),
                 True, self.BLUE)
@@ -250,7 +249,7 @@ class LikertScale:
         if self.selected_score is None:
             # 显示键盘输入提示
             hint_font = pygame.font.SysFont('SimHei', 32)
-            hint_text = hint_font.render("请按下键盘数字键1-7进行选择", True, self.GRAY)
+            hint_text = hint_font.render("请通过数字键1至7对任务难度进行评分", True, self.GRAY)
             hint_rect = hint_text.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 20))
             self.surface.blit(hint_text, hint_rect)
 

@@ -146,7 +146,7 @@ class Game:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     waiting_for_space = False
-            self.clock.tick(60)
+            self.clock.tick(50)
 
         numbers = random.sample(range(1, 9), 3)
         stats.game_score = 11
@@ -179,7 +179,7 @@ class Game:
         action_pending = False
 
         while running:
-            dt = self.clock.tick(60) / 1000
+            dt = self.clock.tick(50) / 1000
             self.screen.fill(grey)
 
             # --- 1. 事件处理 ---
@@ -348,7 +348,7 @@ class Game:
                     return
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     wait = False
-            self.clock.tick(60)
+            self.clock.tick(50)
         pygame.quit()
         return
 
@@ -757,7 +757,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_surface = font.render(f"数据处理中{dots[dot_index]}", True, black)
         self.screen.blit(text_surface, text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)))
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(50)
 
 
 def calculate_pixel_difference_test(image1, image2, t1, t2, timestamp, root_folder, id, participant_folder):

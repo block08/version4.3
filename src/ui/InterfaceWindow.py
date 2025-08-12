@@ -13,7 +13,8 @@ import glob
 import re
 from PyQt5 import QtCore, QtGui
 # 修正并补充所有需要的 PyQt5 类导入，避免 "Qt" 相关的报错
-from PyQt5.QtCore import Qt, QTimer, pyqtSlot
+from PyQt5.QtCore import Qt, QTimer, pyqtSlot, QEvent
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont, QCursor
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QMessageBox, QDialog, QStyle, QFrame,
                              QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, QWidget)
@@ -30,6 +31,7 @@ from src.utils import shared_data
 from src.hardware.check_serial_connection import check_serial_connection
 from src.hardware.serial_marker import serial_marker, initialize_serial, close_serial
 from src.config.serial_config_manager import serial_config
+# from src.utils.input_method_detector import get_input_method_detector  # 已替换为Caps Lock检测
 
 
 # 为了让此文件独立运行，我们在此处进行前向声明。
@@ -77,7 +79,7 @@ class CustomDialog(QDialog):
         text_label.setWordWrap(True)
         text_label.setAlignment(Qt.AlignCenter)  # <-- 修改：让文字在自己的控件内也居中
         text_label.setMinimumWidth(500)  # 设置最小宽度确保文字有足够空间
-        text_label.setStyleSheet("border: none; color: black; padding: 10px;")
+        text_label.setStyleSheet("border: none; color: black;")
         # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
         content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
 
@@ -100,21 +102,21 @@ class CustomDialog(QDialog):
         if button_type == 'yes_no':
             # 创建"是"按钮和其容器
             yes_container = QVBoxLayout()
-            yes_button = QPushButton("是", self)
+            yes_button = QPushButton("确认", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
             yes_button.setFixedSize(220, 65)
             yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             yes_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
             """)
             yes_button.clicked.connect(self.accept)
             
             yes_hint = QLabel("按Y键", self)
             yes_hint.setAlignment(Qt.AlignCenter)
             yes_hint.setFont(QFont("Microsoft YaHei", 25))
-            yes_hint.setStyleSheet("color: #888888; border: none;")
+            yes_hint.setStyleSheet("color: #000000; border: none;")
             
             yes_container.addWidget(yes_button)
             yes_container.addWidget(yes_hint)
@@ -126,21 +128,21 @@ class CustomDialog(QDialog):
 
             # 创建"否"按钮和其容器
             no_container = QVBoxLayout()
-            no_button = QPushButton("否", self)
+            no_button = QPushButton("取消", self)
             no_button.setCursor(QCursor(Qt.PointingHandCursor))
             no_button.setFixedSize(220, 65)
             no_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             no_button.setStyleSheet("""
                 QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
-                QPushButton:hover { background-color: #f0f0f0; border: 2px solid #999999; }
-                QPushButton:pressed { background-color: #e0e0e0; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
             """)
             no_button.clicked.connect(self.reject)
             
             no_hint = QLabel("按N键", self)
             no_hint.setAlignment(Qt.AlignCenter)
             no_hint.setFont(QFont("Microsoft YaHei", 25))
-            no_hint.setStyleSheet("color: #888888; border: none;")
+            no_hint.setStyleSheet("color: #000000; border: none;")
             
             no_container.addWidget(no_button)
             no_container.addWidget(no_hint)
@@ -150,17 +152,31 @@ class CustomDialog(QDialog):
             no_widget.setLayout(no_container)
             button_layout.addWidget(no_widget)
         else:  # 默认为 'ok'
+            # 创建"确定"按钮和其容器
+            ok_container = QVBoxLayout()
             ok_button = QPushButton("确定", self)
             ok_button.setCursor(QCursor(Qt.PointingHandCursor))
             ok_button.setFixedSize(220, 65)
             ok_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
             ok_button.setStyleSheet("""
-                QPushButton { background-color: #3498db; color: white; border: none; border-radius: 25px; }
-                QPushButton:hover { background-color: #2980b9; }
-                QPushButton:pressed { background-color: #2471a3; }
+                QPushButton { background-color: white; color: black; border: 2px solid #cccccc; border-radius: 25px; }
+                QPushButton:hover { background-color: #1f4788; color: white; border: 2px solid #1f4788; }
+                QPushButton:pressed { background-color: #1f4788; color: white; }
             """)
             ok_button.clicked.connect(self.accept)
-            button_layout.addWidget(ok_button)
+            
+            ok_hint = QLabel("按Y键", self)
+            ok_hint.setAlignment(Qt.AlignCenter)
+            ok_hint.setFont(QFont("Microsoft YaHei", 25))
+            ok_hint.setStyleSheet("color: #000000; border: none;")
+            
+            ok_container.addWidget(ok_button)
+            ok_container.addWidget(ok_hint)
+            ok_container.setSpacing(5)
+            
+            ok_widget = QWidget()
+            ok_widget.setLayout(ok_container)
+            button_layout.addWidget(ok_widget)
 
         button_layout.addStretch()
         main_layout.addLayout(button_layout)
@@ -238,10 +254,10 @@ class Interfacewindow(QMainWindow):
 
         # 集中设置所有信号连接
         self.setup_connections()
+        
+        # 设置所有按钮的手型光标
+        self.setup_button_cursors()
 
-        # 用于自定义窗口拖动
-        self.m_flag = False
-        self.m_Position = None
 
         # 用于在重新登录时创建新的登录窗口实例
         self.login_window_instance = None
@@ -254,6 +270,9 @@ class Interfacewindow(QMainWindow):
 
         # 初始化串口状态显示
         self.initialize_serial_ui()
+        
+        # 初始化Caps Lock状态显示
+        self.initialize_caps_lock_ui()
 
     def init_navigation_system(self):
         """初始化导航按钮状态管理系统"""
@@ -284,30 +303,27 @@ class Interfacewindow(QMainWindow):
                 color: rgb(34, 34, 34);
             }
             QPushButton:pressed{
-                background-color: rgb(210, 225, 255);
-                padding-left:3px;
-                padding-top:3px;
+                background-color: #1f4788;
+                border: 2px solid #1f4788;
+                color: white;
+                padding-left:12px;
+                padding-top:12px;
             }
         """
 
-        # 定义按钮的激活状态样式 - 类似微信的深灰色
+        # 定义按钮的激活状态样式 - 使用深蓝色高亮
         self.active_button_style = """
             QPushButton{
-                background-color: rgb(79, 79, 79);
-                border: 2px solid rgb(79, 79, 79);
+                background-color: #1f4788;
+                border: 2px solid #1f4788;
                 color: rgb(255, 255, 255);
                 font: 50pt "微软雅黑";
                 border-radius: 8px;
                 padding: 10px;
                 margin: 5px;
             }
-            QPushButton:hover{
-                background-color: rgb(95, 95, 95);
-                border: 2px solid rgb(95, 95, 95);
-                color: rgb(255, 255, 255);
-            }
             QPushButton:pressed{
-                background-color: rgb(65, 65, 65);
+                background-color: #1f4788;
                 padding-left:3px;
                 padding-top:3px;
             }
@@ -350,10 +366,6 @@ class Interfacewindow(QMainWindow):
         # 直接执行功能，不更新按钮状态（因为不切换页面）
         self.go_main()
 
-    def open_data_folder_with_state(self):
-        """打开数据文件夹"""
-        # 直接执行功能，不更新按钮状态（因为不切换页面）
-        self.open_data_folder()
 
     def initialize_serial_ui(self):
         """初始化串口UI状态"""
@@ -364,27 +376,54 @@ class Interfacewindow(QMainWindow):
         # 动态创建COM状态标签
         self.create_com_status_label()
 
-        # 启动自动检测定时器
-        self.auto_detect_timer = QTimer()
-        self.auto_detect_timer.timeout.connect(self.auto_detect_and_connect)
-        self.auto_detect_timer.start(2000)  # 每2秒检测一次
+        # 启动优化的串口监控（Win7 SP1优化）
+        self.setup_optimized_serial_monitoring()
 
     def create_com_status_label(self):
         """动态创建COM状态标签"""
         try:
-            # 创建COM状态标签
-            self.label_com_status = QLabel("COM未连接")
-            self.label_com_status.setMinimumSize(200, 50)
-            self.label_com_status.setFont(QFont("微软雅黑", 36, QFont.Bold))
-            self.label_com_status.setStyleSheet("""
+            # 创建COM状态容器
+            self.com_status_widget = QWidget()
+            self.com_status_layout = QHBoxLayout(self.com_status_widget)
+            self.com_status_layout.setContentsMargins(0, 0, 0, 0)
+            self.com_status_layout.setSpacing(5)
+            
+            # 创建图标标签
+            self.com_status_icon_label = QLabel()
+            self.com_status_icon_label.setFixedSize(80, 80)  # 增大图标尺寸到最大
+            self.com_status_icon_label.setStyleSheet("""
+                QLabel {
+                    border: none;
+                    background: transparent;
+                }
+            """)
+            self.com_status_icon_label.setAlignment(Qt.AlignCenter)  # 图标居中
+            
+            # 创建文本标签
+            self.com_status_text_label = QLabel("COM未连接")
+            self.com_status_text_label.setMinimumSize(200, 50)
+            self.com_status_text_label.setFont(QFont("微软雅黑", 36, QFont.Bold))
+            self.com_status_text_label.setStyleSheet("""
                 QLabel{
                     border: none;
-                    color: rgb(0, 0, 0);
+                    color: rgb(231, 76, 60);
                     font: bold 36pt "微软雅黑";
                     padding-right: 10px;
                 }
             """)
-            self.label_com_status.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.com_status_text_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            
+            # 添加Qt警告图标
+            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
+            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
+            # 强制缩放到80x80像素
+            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.com_status_icon_label.setPixmap(scaled_pixmap)
+            
+            # 添加到布局
+            self.com_status_layout.addStretch()
+            self.com_status_layout.addWidget(self.com_status_icon_label)
+            self.com_status_layout.addWidget(self.com_status_text_label)
             
             # 找到重新登录按钮的布局
             relogin_button = self.ui.pushButton_relogin
@@ -399,8 +438,8 @@ class Interfacewindow(QMainWindow):
                         break
                 
                 if button_index >= 0:
-                    # 在重新登录按钮前插入COM状态标签
-                    parent_layout.insertWidget(button_index, self.label_com_status)
+                    # 在重新登录按钮前插入COM状态容器
+                    parent_layout.insertWidget(button_index, self.com_status_widget)
                     print("COM状态标签已成功添加到界面")
                 else:
                     print("未找到重新登录按钮的位置")
@@ -409,6 +448,155 @@ class Interfacewindow(QMainWindow):
                 
         except Exception as e:
             print(f"创建COM状态标签时出错: {e}")
+
+    def initialize_caps_lock_ui(self):
+        """初始化Caps Lock状态UI"""
+        try:
+            # 创建输入法状态容器
+            self.input_method_widget = QWidget()
+            self.input_method_layout = QHBoxLayout(self.input_method_widget)
+            self.input_method_layout.setContentsMargins(0, 0, 0, 0)
+            self.input_method_layout.setSpacing(5)
+            
+            # 创建图标标签
+            self.input_method_icon_label = QLabel()
+            self.input_method_icon_label.setFixedSize(80, 80)  # 增大图标尺寸到最大
+            self.input_method_icon_label.setStyleSheet("""
+                QLabel {
+                    border: none;
+                    background: transparent;
+                }
+            """)
+            self.input_method_icon_label.setAlignment(Qt.AlignCenter)  # 图标居中
+            
+            # 创建文本标签
+            self.input_method_text_label = QLabel("大写锁定已开启")
+            self.input_method_text_label.setFont(QFont("微软雅黑", 36, QFont.Bold))
+            
+            # 添加到布局
+            self.input_method_layout.addWidget(self.input_method_icon_label)
+            self.input_method_layout.addWidget(self.input_method_text_label)
+            self.input_method_layout.addStretch()
+            
+            # 设置初始样式（假设Caps Lock开启）
+            self.set_caps_lock_status_style(True)
+            
+            # 将容器添加到COM状态标签的旁边
+            if hasattr(self, 'com_status_widget'):
+                # 获取COM状态容器的父布局
+                com_parent_layout = self.com_status_widget.parent().layout()
+                if com_parent_layout:
+                    # 获取COM状态容器的位置
+                    com_index = -1
+                    for i in range(com_parent_layout.count()):
+                        if com_parent_layout.itemAt(i).widget() == self.com_status_widget:
+                            com_index = i
+                            break
+                    
+                    if com_index >= 0:
+                        # 在COM状态容器前插入Caps Lock状态容器
+                        com_parent_layout.insertWidget(com_index, self.input_method_widget)
+                        print("Caps Lock状态标签已成功添加到界面")
+                    else:
+                        print("未找到COM状态容器的位置")
+                else:
+                    print("未找到COM状态容器的父布局")
+            
+            # 安装事件过滤器来检测按键事件
+            QApplication.instance().installEventFilter(self)
+            print("Caps Lock事件监听已启动")
+            
+            # 立即检查一次当前Caps Lock状态并设置初始显示
+            current_status = self.is_caps_lock_on()
+            self.on_caps_lock_changed(current_status)
+            
+        except Exception as e:
+            print(f"初始化Caps Lock状态UI时出错: {e}")
+
+    def is_caps_lock_on(self):
+        """检测Caps Lock是否打开"""
+        try:
+            import ctypes
+            # 使用Windows API检测Caps Lock状态
+            # VK_CAPITAL = 0x14 是Caps Lock的虚拟键码
+            return bool(ctypes.windll.user32.GetKeyState(0x14) & 1)
+        except Exception as e:
+            print(f"检测Caps Lock状态时出错: {e}")
+            return False
+
+    def eventFilter(self, obj, event):
+        """事件过滤器，监听Caps Lock按键事件"""
+        try:
+            if event.type() == QEvent.KeyPress or event.type() == QEvent.KeyRelease:
+                # 检查是否是Caps Lock键 (Qt.Key_CapsLock)
+                if event.key() == Qt.Key_CapsLock and event.type() == QEvent.KeyPress:
+                    # Caps Lock被按下，延迟检查状态（因为状态变化有延迟）
+                    QTimer.singleShot(50, self.check_caps_lock_status_once)
+        except Exception as e:
+            print(f"事件过滤器错误: {e}")
+        return super().eventFilter(obj, event)
+    
+    def check_caps_lock_status_once(self):
+        """检查一次Caps Lock状态"""
+        try:
+            current_status = self.is_caps_lock_on()
+            # 只有状态改变时才更新
+            if not hasattr(self, '_last_caps_status') or self._last_caps_status != current_status:
+                self._last_caps_status = current_status
+                self.on_caps_lock_changed(current_status)
+        except Exception as e:
+            print(f"检查Caps Lock状态时出错: {e}")
+
+    def set_caps_lock_status_style(self, is_caps_on):
+        """设置Caps Lock状态标签的样式"""
+        if is_caps_on:
+            # Caps Lock打开 - 黑色，无图标
+            self.input_method_text_label.setText("大写锁定已开启")
+            self.input_method_text_label.setStyleSheet("""
+                QLabel{
+                    border: none;
+                    color: rgb(0, 0, 0);
+                    font: bold 36pt "微软雅黑";
+                    padding-right: 10px;
+                }
+            """)
+            # 清除图标
+            self.input_method_icon_label.setPixmap(QtGui.QPixmap())
+        else:
+            # Caps Lock关闭 - 红色警告，添加Qt警告图标
+            self.input_method_text_label.setText("大写锁定未开启")
+            self.input_method_text_label.setStyleSheet("""
+                QLabel{
+                    border: none;
+                    color: rgb(255, 0, 0);
+                    font: bold 36pt "微软雅黑";
+                    padding-right: 10px;
+                }
+            """)
+            # 添加Qt警告图标
+            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
+            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
+            # 强制缩放到80x80像素
+            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.input_method_icon_label.setPixmap(scaled_pixmap)
+
+    def on_caps_lock_changed(self, is_caps_on):
+        """Caps Lock状态改变的处理函数"""
+        try:
+            self.set_caps_lock_status_style(is_caps_on)
+            
+            # 控制Caps Lock提醒标签的显示/隐藏
+            if hasattr(self.ui, 'label_input_method_reminder'):
+                if is_caps_on:
+                    # Caps Lock开启时隐藏提醒
+                    self.ui.label_input_method_reminder.hide()
+                else:
+                    # Caps Lock关闭时显示提醒
+                    self.ui.label_input_method_reminder.show()
+            
+            print(f"Caps Lock状态变更: {'开启' if is_caps_on else '关闭'}")
+        except Exception as e:
+            print(f"处理Caps Lock状态变更时出错: {e}")
 
     def find_ch340_port(self):
         """查找USB-SERIAL CH340设备"""
@@ -462,13 +650,16 @@ class Interfacewindow(QMainWindow):
 
             # 更新顶部用户信息按钮
             if user1 and user2 and user3:
-                user_text = f"| 被测航天员:{user1} | 辅助航天员:{user2} 和 {user3} "
+                user_text = f"| 被测：{user1} | 辅助：{user2} 和 {user3} "
                 self.ui.pushButton.setText(user_text)
             else:
                 self.ui.pushButton.setText("用户")
 
             # 更新练习按钮文本
             self.update_practice_button_texts(user1, user2, user3)
+            
+            # 更新介绍内容中的用户信息
+            self.update_intro_content(user1, user2, user3)
         except Exception as e:
             print(f"更新用户按钮时出错: {e}")
             self.ui.pushButton.setText("用户")
@@ -481,27 +672,88 @@ class Interfacewindow(QMainWindow):
             self.ui.pushButton_9.setText("合作绘图")
         except Exception as e:
             print(f"更新练习按钮文本时出错: {e}")
+    
+    def update_intro_content(self, user1, user2, user3):
+        """更新介绍内容中的用户信息。"""
+        try:
+            # 使用获取到的用户信息，如果为空则使用默认值
+            u1 = user1 or '01'
+            u2 = user2 or '02'
+            u3 = user3 or '03'
+            
+            # 构建介绍内容
+            intro_html = f"""<html><head/><body style='line-height: 1.8;'>
+                            <div style='text-align: center; margin-bottom: 30px;'>
+                            </div>
+                            <div style='text-align: left; margin-bottom: 30px; padding: 20px;'>
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
+                            1、本实验绘图任务分为三部分：{u1}单独绘图、{u1}与{u2}合作绘图、{u1}与{u3}合作绘图。
+                            </p>
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
+                            2、练习试次阶段，共设置3张绘图任务，可随时退出。
+                            </p>
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
+                            3、正式实验阶段，被测{u1}需独立完成8张绘图任务，随后分别与辅助{u2}，{u3}各完成8张合作绘图任务。
+                            </p>
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
+                            4、正式实验阶段，不得中途退出实验以免导致实验数据不完整。
+                            </p>
+                            </div>
+                            </body></html>"""
+            
+            self.ui.label_intro_content.setText(intro_html)
+            print(f"更新介绍内容: user1={u1}, user2={u2}, user3={u3}")
+        except Exception as e:
+            print(f"更新介绍内容时出错: {e}")
 
     def setup_connections(self):
         """设置所有UI控件的信号和槽连接。"""
         self.ui.pushButton_exercise.clicked.connect(self.go_exercise)
-        self.ui.pushButton_main.clicked.connect(self.go_main_with_state)
+        self.ui.pushButton_main.clicked.connect(self.go_main_and_show_page)
         self.ui.pushButton_highestscore.clicked.connect(self.go_highestscore)
-        self.ui.pushButton_data.clicked.connect(self.open_data_folder_with_state)
-        # self.ui.pushButton_setting.clicked.connect(self.go_setting)  # 端口设置按钮已注释
-        self.ui.run_main_test.clicked.connect(self.go_main)
-        self.ui.pushButton_auto_connect.clicked.connect(self.manual_connect_port)
+        self.ui.pushButton_data.clicked.connect(self.go_data_and_open_folder)
+        # self.ui.pushButton_setting.clicked.connect(self.go_setting)  # 端口设置
         self.ui.pushButton_relogin.clicked.connect(self.relogin)
-        self.ui.data_check.clicked.connect(self.open_data_folder)
         self.ui.pushButton_4.clicked.connect(self.start_practice_1)
         self.ui.pushButton_9.clicked.connect(self.start_practice_4)
 
         # 连接宏观指导语按钮
         self.ui.pushButton_macro_guidance.clicked.connect(self.go_home)
 
+    def setup_button_cursors(self):
+        """为所有按钮设置手型光标"""
+        # 导航按钮
+        self.ui.pushButton_macro_guidance.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_exercise.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_main.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_highestscore.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_data.setCursor(QCursor(Qt.PointingHandCursor))
+        
+        # 功能按钮
+        self.ui.pushButton_relogin.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_auto_connect.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_4.setCursor(QCursor(Qt.PointingHandCursor))
+        self.ui.pushButton_9.setCursor(QCursor(Qt.PointingHandCursor))
+        
+        # 窗口控制按钮
+        self.ui.pushButton_2.setCursor(QCursor(Qt.PointingHandCursor))  # 关闭按钮
+        self.ui.pushButton_3.setCursor(QCursor(Qt.PointingHandCursor))  # 最小化按钮
+        
+        # 其他按钮（这些按钮已在页面简化中移除）
+        # if hasattr(self.ui, 'run_main_test'):
+        #     self.ui.run_main_test.setCursor(QCursor(Qt.PointingHandCursor))
+        # if hasattr(self.ui, 'data_check'):
+        #     self.ui.data_check.setCursor(QCursor(Qt.PointingHandCursor))
+
     def start_practice_1(self):
         """启动1的练习模块。"""
         print(f"[练习启动] 开始启动练习模块1")
+        
+        # 检查Caps Lock状态
+        if not self.is_caps_lock_on():
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
+                                    "未检测到大写锁定开启。\n\n请开启后重新点击单独绘图。")
+            return
         
         # 检查是否有游戏正在运行
         if self.is_game_running:
@@ -590,6 +842,12 @@ class Interfacewindow(QMainWindow):
 
     def start_practice_4(self):
         """启动人员①&人员②的练习模块。"""
+        # 检查Caps Lock状态
+        if not self.is_caps_lock_on():
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
+                                    "未检测到大写锁定开启。\n\n请开启后重新点击合作绘图。")
+            return
+            
         # 检查是否有游戏正在运行
         if self.is_game_running:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
@@ -654,6 +912,12 @@ class Interfacewindow(QMainWindow):
 
     def go_main(self):
         """开始主实验。"""
+        # 检查Caps Lock状态
+        if not self.is_caps_lock_on():
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
+                                    "未检测到大写锁定开启。\n\n请开启重新点击正式实验。")
+            return
+            
         # 检查是否有游戏正在运行
         if self.is_game_running:
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
@@ -707,6 +971,9 @@ class Interfacewindow(QMainWindow):
                     game_function = main.Game
 
         if game_function:
+            # 在实验开始前检查串口状态
+            self.check_serial_before_experiment()
+            
             # 设置游戏运行状态
             self.is_game_running = True
             
@@ -720,6 +987,69 @@ class Interfacewindow(QMainWindow):
             
             threading.Thread(target=run_experiment, daemon=True).start()
 
+    def setup_optimized_serial_monitoring(self):
+        """设置优化的串口监控（Win7 SP1优化）"""
+        self.serial_timer = None
+        self.is_serial_connected = False
+        
+        print("[串口监控] 启动优化监控方案")
+        
+        # 创建优化的轮询定时器
+        self.serial_timer = QTimer()
+        self.serial_timer.timeout.connect(self.optimized_serial_check)
+        
+        # 立即检查一次，然后开始监控
+        QTimer.singleShot(500, self.initial_serial_check)
+    
+    def start_optimized_monitoring(self):
+        """启动优化监控（根据连接状态调整频率）"""
+        if self.is_serial_connected:
+            # 已连接：每5秒检查一次（低频率）
+            interval = 5000
+            print("[串口监控] 串口已连接，设置低频率: 5秒")
+        else:
+            # 未连接：每3秒检查一次（高频率）
+            interval = 3000
+            print("[串口监控] 串口未连接，设置高频率: 3秒")
+            
+        self.serial_timer.start(interval)
+    
+    def optimized_serial_check(self):
+        """优化的串口检查"""
+        try:
+            # 执行检测
+            self.auto_detect_and_connect()
+            
+            # 检查状态是否发生变化
+            from src.utils import shared_data
+            current_status = (shared_data.global_flag == 1 and shared_data.global_port is not None)
+            
+            if current_status != self.is_serial_connected:
+                # 状态发生变化，调整监控频率
+                self.is_serial_connected = current_status
+                print(f"[串口监控] 状态变化: {'已连接' if current_status else '未连接'}")
+                
+                # 重新设置监控频率
+                self.serial_timer.stop()
+                self.start_optimized_monitoring()
+                
+        except Exception as e:
+            print(f"[串口监控] 检查错误: {e}")
+    
+    def initial_serial_check(self):
+        """初始串口检查"""
+        print("[串口监控] 开始初始检查...")
+        self.optimized_serial_check()
+        # 启动持续监控
+        self.start_optimized_monitoring()
+        print("[串口监控] 初始检查完成")
+    
+    def check_serial_before_experiment(self):
+        """在实验开始前检查串口状态"""
+        print("[串口监控] 实验前检查串口状态...")
+        self.optimized_serial_check()
+        print("[串口监控] 实验前检查完成")
+    
     def auto_detect_and_connect(self):
         """自动检测端口并连接"""
         try:
@@ -824,9 +1154,9 @@ class Interfacewindow(QMainWindow):
         """)
 
         # 更新COM状态标签
-        if hasattr(self, 'label_com_status'):
-            self.label_com_status.setText(f"{port}已连接")
-            self.label_com_status.setStyleSheet("""
+        if hasattr(self, 'com_status_text_label'):
+            self.com_status_text_label.setText(f"{port}已连接")
+            self.com_status_text_label.setStyleSheet("""
                 QLabel{
                     border: none;
                     color: rgb(0, 0, 0);
@@ -834,6 +1164,8 @@ class Interfacewindow(QMainWindow):
                     padding-right: 10px;
                 }
             """)
+            # 清除警告图标
+            self.com_status_icon_label.setPixmap(QtGui.QPixmap())
 
         # 禁用连接按钮
         self.ui.pushButton_auto_connect.setEnabled(False)
@@ -916,16 +1248,22 @@ class Interfacewindow(QMainWindow):
         """)
 
         # 更新COM状态标签
-        if hasattr(self, 'label_com_status'):
-            self.label_com_status.setText("COM未连接")
-            self.label_com_status.setStyleSheet("""
+        if hasattr(self, 'com_status_text_label'):
+            self.com_status_text_label.setText("COM未连接")
+            self.com_status_text_label.setStyleSheet("""
                 QLabel{
                     border: none;
-                    color: rgb(0, 0, 0);
+                    color: rgb(255, 0, 0);
                     font: bold 36pt "微软雅黑";
                     padding-right: 10px;
                 }
             """)
+            # 添加Qt警告图标
+            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
+            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
+            # 强制缩放到80x80像素
+            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.com_status_icon_label.setPixmap(scaled_pixmap)
 
         # 启用连接按钮
         self.ui.pushButton_auto_connect.setEnabled(True)
@@ -973,14 +1311,12 @@ class Interfacewindow(QMainWindow):
 
         # 根据用户的选择决定是否关闭
         if reply == QDialog.Accepted:
-            # 如果用户点击"是"，则直接退出，跳过closeEvent的确认
-            print("程序已退出。")
             # 清理资源
-            self.stop_current_game()
-            thread_manager.stop_all_threads()
-            # 标记为确认关闭，避免重复弹窗
-            self.confirmed_close = True
-            self.close()
+            self.cleanup_resources()
+            # 如果用户点击"是"，直接强制退出整个程序
+            print("程序已退出。")
+            import os
+            os._exit(0)  # 强制终止整个进程，包括所有线程和子进程
 
     def closeEvent(self, event):
         """重写关闭事件，确保定时器被停止"""
@@ -996,6 +1332,7 @@ class Interfacewindow(QMainWindow):
             print("重新登录，关闭当前界面。")
             # 清理资源
             self.stop_current_game()
+            self.cleanup_resources()
             thread_manager.stop_all_threads()
             event.accept()
             return
@@ -1010,12 +1347,12 @@ class Interfacewindow(QMainWindow):
 
         # 根据用户的选择决定是否关闭
         if reply == QDialog.Accepted:
-            # 如果用户点击"是"，则接受关闭事件，关闭窗口
-            print("程序已退出。")
             # 清理资源
-            self.stop_current_game()
-            thread_manager.stop_all_threads()
-            event.accept()
+            self.cleanup_resources()
+            # 如果用户点击"是"，直接强制退出整个程序
+            print("程序已退出。")
+            import os
+            os._exit(0)  # 强制终止整个进程，包括所有线程和子进程
         else:
             # 如果用户点击"否"，则忽略该事件，窗口不会关闭
             event.ignore()
@@ -1044,75 +1381,109 @@ class Interfacewindow(QMainWindow):
     def go_home(self):
         """切换到首页。"""
         self.ui.stackedWidget.setCurrentIndex(0)
+    
+    def go_main_and_show_page(self):
+        """切换到正式实验页面并启动实验。"""
+        self.ui.stackedWidget.setCurrentIndex(2)
+        # 启动实验
+        self.go_main()
+    
+    def go_data_and_open_folder(self):
+        """切换到数据查看页面并打开文件夹。"""
+        self.ui.stackedWidget.setCurrentIndex(4)
+        # 打开文件夹
+        self.open_behavioral_data()
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and not self.isMaximized():
-            self.m_flag = True
-            self.m_Position = event.globalPos() - self.pos()
-            event.accept()
-            self.setCursor(QCursor(Qt.OpenHandCursor))
-
-    def mouseMoveEvent(self, event):
-        if self.m_flag and event.buttons() == Qt.LeftButton:
-            self.move(event.globalPos() - self.m_Position)
-            event.accept()
-
-    def mouseReleaseEvent(self, event):
-        self.m_flag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
-
-    def open_data_folder(self):
-        """
-        检查并打开根目录下的 Behavioral_data 文件夹。
-        如果文件夹不存在，则提示用户创建。
-        """
+    def open_behavioral_data(self):
+        """打开Behavioral_data文件夹。"""
         try:
-            # 构建 'Behavioral_data' 文件夹的绝对路径
-            data_path = os.path.abspath('Behavioral_data')
-
-            # 检查文件夹是否存在
-            if os.path.isdir(data_path):
-                # 根据不同操作系统执行不同的命令来打开文件夹
-                if sys.platform == 'win32':
-                    os.startfile(data_path)
-                elif sys.platform == 'darwin':  # macOS
-                    subprocess.call(['open', data_path])
-                else:  # Linux
-                    subprocess.call(['xdg-open', data_path])
+            # 获取程序运行的根目录
+            import sys
+            
+            # 优化路径获取逻辑
+            if hasattr(sys, '_MEIPASS'):
+                # 打包后的路径，优先检查可执行文件目录，然后检查工作目录
+                executable_dir = os.path.dirname(sys.executable)
+                current_dir = os.getcwd()
+                
+                # 尝试多个可能的位置
+                possible_paths = [
+                    os.path.join(executable_dir, "Behavioral_data"),
+                    os.path.join(current_dir, "Behavioral_data"),
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Behavioral_data")
+                ]
+                
+                base_path = None
+                behavioral_data_path = None
+                
+                # 查找存在的路径
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        behavioral_data_path = os.path.abspath(path)
+                        base_path = os.path.dirname(behavioral_data_path)
+                        break
+                
+                # 如果都不存在，使用可执行文件目录作为基础路径
+                if behavioral_data_path is None:
+                    base_path = executable_dir
+                    behavioral_data_path = os.path.join(base_path, "Behavioral_data")
             else:
-                # 如果文件夹不存在，询问用户是否创建
-                reply = CustomDialog.ask_question(
-                    self,
-                    QStyle.SP_MessageBoxQuestion,
-                    "文件夹不存在",
-                    f"数据文件夹 'Behavioral_data' 尚未创建。\n您想现在创建它吗？"
-                )
-                if reply == QDialog.Accepted:
-                    try:
-                        os.makedirs(data_path)
-                        CustomDialog.show_message(
-                            self,
-                            QStyle.SP_MessageBoxInformation,
-                            "创建成功",
-                            f"文件夹 '{data_path}' 已成功创建。"
-                        )
-                        # 创建后再次尝试打开
-                        self.open_data_folder()
-                    except OSError as e:
-                        CustomDialog.show_message(
-                            self,
-                            QStyle.SP_MessageBoxCritical,
-                            "创建失败",
-                            f"无法创建文件夹：\n{e}"
-                        )
+                # 开发环境的路径
+                base_path = os.getcwd()
+                behavioral_data_path = os.path.join(base_path, "Behavioral_data")
+            
+            print(f"尝试访问路径：{behavioral_data_path}")
+            
+            # 检查文件夹是否存在，如果不存在则创建
+            if not os.path.exists(behavioral_data_path):
+                try:
+                    os.makedirs(behavioral_data_path, exist_ok=True)
+                    print(f"已创建文件夹：{behavioral_data_path}")
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "文件夹已创建", 
+                                            f"Behavioral_data文件夹已自动创建：\n{behavioral_data_path}")
+                except PermissionError:
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "权限不足", 
+                                            f"没有权限在此位置创建文件夹：\n{behavioral_data_path}\n请以管理员身份运行程序或选择其他位置。")
+                    return
+                except Exception as create_error:
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "创建失败", 
+                                            f"无法创建Behavioral_data文件夹：\n{behavioral_data_path}\n错误：{str(create_error)}")
+                    return
+            
+            # 检查是否有访问权限
+            if not os.access(behavioral_data_path, os.R_OK):
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "访问权限不足", 
+                                        f"没有权限访问文件夹：\n{behavioral_data_path}")
+                return
+            
+            # 使用Windows资源管理器打开文件夹
+            try:
+                # 确保路径正确格式化
+                behavioral_data_path = os.path.normpath(behavioral_data_path)
+                print(f"正在打开文件夹：{behavioral_data_path}")
+                
+                # 不使用check=True，因为explorer经常返回非零退出码但仍能正常工作
+                result = subprocess.run(["explorer", behavioral_data_path], timeout=10)
+                print(f"已打开文件夹：{behavioral_data_path} (退出码: {result.returncode})")
+                
+            except subprocess.TimeoutExpired:
+                print("打开文件夹超时，但可能已成功打开")
+            except FileNotFoundError:
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "系统错误", 
+                                        "无法找到Windows资源管理器程序。")
+            except Exception as explorer_error:
+                print(f"使用资源管理器打开文件夹时出错: {explorer_error}")
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "打开失败", 
+                                        f"无法使用资源管理器打开文件夹：\n{str(explorer_error)}\n\n文件夹路径：{behavioral_data_path}")
+            
         except Exception as e:
-            # 捕获其他未知错误
-            CustomDialog.show_message(
-                self,
-                QStyle.SP_MessageBoxCritical,
-                "操作失败",
-                f"打开数据文件夹时发生错误：\n{e}"
-            )
+            print(f"打开文件夹时出错: {e}")
+            import traceback
+            traceback.print_exc()
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "错误", 
+                                    f"打开文件夹时发生错误：{str(e)}")
+
+
 
     def load_leaderboard_data(self):
         """加载排行榜数据"""
@@ -1318,6 +1689,26 @@ class Interfacewindow(QMainWindow):
         
         # 清除游戏运行状态
         self.is_game_running = False
+
+    def cleanup_resources(self):
+        """清理所有资源"""
+        try:
+            # 停止Caps Lock监控
+            # 取消事件过滤器
+            try:
+                QApplication.instance().removeEventFilter(self)
+            except:
+                pass
+                print("Caps Lock监控已停止")
+            
+            # 停止自动检测定时器
+            # 关闭串口监控
+            if hasattr(self, 'serial_timer') and self.serial_timer:
+                self.serial_timer.stop()
+                print("[串口监控] 优化监控已停止")
+                
+        except Exception as e:
+            print(f"清理资源时出错: {e}")
 
     def start_game_thread(self, game_class):
         """安全启动游戏线程"""

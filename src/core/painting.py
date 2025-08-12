@@ -1,5 +1,6 @@
 from src.config.config_manager import get_id_file_path
 import pygame
+from src.utils.resource_cleanup import safe_pygame_quit
 
 # 初始化 Pygame
 pygame.init()
@@ -70,4 +71,4 @@ while running:
     # 更新显示
     pygame.display.flip()
 
-pygame.quit()
+safe_pygame_quit()
