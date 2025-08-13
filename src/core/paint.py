@@ -81,6 +81,9 @@ class GameDrawing:
 
     def reset_generator(self):
         """重置线条生成器"""
+        # 清理旧生成器的内存
+        if hasattr(self, 'line_generator'):
+            self.line_generator.clear_cache()
         self.line_generator = LineGenerator()  # 创建新的生成器实例
 
     def ensure_directory_exists(self, directory):
@@ -115,11 +118,11 @@ class GameDrawing:
             self.save_screenshot(self_obj.screen, post_screenshot, -1)
 
         self_obj.screen.fill('grey')
-        line_length = 20  # 十字线的长度
-        # 画垂直线
-        pygame.draw.line(self_obj.screen, BLACK, (910, 540), (1010, 540), line_length)
+        line_length = 8  # 十字线的宽度
         # 画水平线
-        pygame.draw.line(self_obj.screen, BLACK, (960, 490), (960, 590), line_length)
+        pygame.draw.line(self_obj.screen, BLACK, (930, 540), (990, 540), line_length)
+        # 画垂直线
+        pygame.draw.line(self_obj.screen, BLACK, (960, 510), (960, 570), line_length)
         pygame.display.update()
         start_ticks = pygame.time.get_ticks()
         running = True
@@ -250,7 +253,6 @@ class LineGenerator:
             (self.generate_wave, "波浪线"),
             (self.generate_zigzag, "锯齿线"),
             (self.generate_sine_wave, "正弦波"),
-            (self.generate_arch, "拱形"),
             (self.generate_spiral_open, "开放螺旋"),
             (self.generate_mountain, "山形线"),
             (self.generate_stair, "阶梯线"),
@@ -275,6 +277,33 @@ class LineGenerator:
         self.available_generators = [self.all_generators[i] for i in selected_indices]
 
         random.setstate(temp_random_state)  # 恢复随机状态
+        
+    def clear_cache(self):
+        """清理LineGenerator的缓存数据，释放内存"""
+        try:
+            print("[LineGenerator] 开始清理缓存数据")
+            
+            # 清理生成器列表
+            if hasattr(self, 'available_generators'):
+                self.available_generators = []
+            if hasattr(self, 'all_generators'):
+                self.all_generators = []
+                
+            # 强制垃圾回收
+            import gc
+            gc.collect()
+            
+            print("[LineGenerator] 缓存清理完成")
+        except Exception as e:
+            print(f"[LineGenerator] 清理缓存时出错: {e}")
+    
+    def get_memory_usage_info(self):
+        """获取内存使用信息（调试用）"""
+        try:
+            generator_count = len(self.available_generators) if hasattr(self, 'available_generators') else 0
+            return f"可用生成器数量: {generator_count}"
+        except Exception as e:
+            return f"获取内存信息失败: {e}"
     
     def _get_experiment_seed(self):
         """获取实验种子，确保同一实验会话的一致性"""
@@ -525,27 +554,19 @@ class LineGenerator:
     def generate_sine_wave(self):
         """生成正弦波"""
         points = []
-        frequency = random.uniform(1, 3)
+        # 确保至少有一个完整周期，频率范围为1-3个完整周期
+        frequency = random.uniform(1, 3)  # 1-3个完整周期
         amplitude = min(200, (DRAW_HEIGHT // 2) - MARGIN)
         center_y = (DRAW_START_Y + DRAW_END_Y) // 2
 
         for x in range(DRAW_START_X, DRAW_END_X, 15):
-            t = (x - DRAW_START_X) * frequency * math.pi / DRAW_WIDTH
+            # 修正计算，确保frequency表示完整周期数
+            t = (x - DRAW_START_X) * frequency * 2 * math.pi / DRAW_WIDTH
             y = center_y + amplitude * math.sin(t)
             points.append(self.constrain_point(x, y))
         return points
 
-    def generate_arch(self):
-        """生成拱形曲线"""
-        points = []
-        height = min(400, DRAW_HEIGHT - 2 * MARGIN)
-        base_y = DRAW_END_Y - MARGIN
 
-        for x in range(DRAW_START_X, DRAW_END_X, 20):
-            t = (x - DRAW_START_X) / DRAW_WIDTH
-            y = base_y - height * (4 * t * (1 - t))
-            points.append(self.constrain_point(x, y))
-        return points
 
     def generate_spiral_open(self):
         """生成开放螺旋"""
@@ -775,15 +796,36 @@ class LineGenerator:
 
     # 新增的曲线生成函数
     def generate_s_curve(self):
-        """生成S形曲线"""
+        """生成竖直S形曲线"""
         points = []
-        amplitude = min(300, DRAW_HEIGHT // 3)
-        center_y = (DRAW_START_Y + DRAW_END_Y) // 2
+        # 增加振幅，让S形更弯曲
+        amplitude = min(280, DRAW_WIDTH // 4)
+        center_x = (DRAW_START_X + DRAW_END_X) // 2
+        
+        # 在绘制区域内留出边距
+        y_start = DRAW_START_Y + 80
+        y_end = DRAW_END_Y - 80
+        total_height = y_end - y_start
 
-        for x in range(DRAW_START_X, DRAW_END_X, 15):
-            t = (x - DRAW_START_X) / DRAW_WIDTH * 2 - 1  # 范围[-1, 1]
-            # 使用tanh函数创建S形
-            y = center_y + amplitude * math.tanh(3 * t)
+        for y in range(y_start, y_end, 6):
+            # 将y坐标映射到[0, 1]范围
+            progress = (y - y_start) / total_height
+            
+            # 创建更弯曲的S形：增强弯曲效果
+            # 使用增强的正弦函数组合
+            angle = progress * math.pi  # 0到π
+            
+            # 增强S形的弯曲：使用幂函数增强弯曲效果
+            s_factor = math.sin(angle)  # 0到1再到0
+            direction = math.cos(angle)  # 1到0到-1
+            
+            # 增强弯曲程度：使用平方来增强两端的弯曲
+            enhanced_factor = s_factor * abs(s_factor)  # 增强弯曲效果
+            
+            # 组合创建更弯曲的S形
+            x_offset = amplitude * direction * enhanced_factor
+            
+            x = center_x + x_offset
             points.append(self.constrain_point(x, y))
         return points
 
@@ -1253,7 +1295,7 @@ def test_curve_generator():
             screen.blit(stats_text, (20, 100))
 
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
     safe_pygame_quit()
     sys.exit()

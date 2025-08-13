@@ -121,7 +121,7 @@ def show_confirm_dialog(screen, title, message):
             screen.blit(hint_surf, hint_surf.get_rect(center=(btn.centerx, btn.bottom + 25)))
 
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 
 class Game:
@@ -210,7 +210,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): pygame.quit(); sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
-            self.clock.tick(50)
+            self.clock.tick(20)
 
         # ------------------- 游戏主循环初始化 -------------------
         numbers = random.sample(range(1, 9), TOTAL_IMAGES)
@@ -230,7 +230,7 @@ class Game:
         # ------------------- 游戏主循环 -------------------
         screenshot_taken = False  # 标记是否已经截图
         while running:
-            dt = self.clock.tick(50) / 1000
+            dt = self.clock.tick(20) / 1000
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); sys.exit()
@@ -395,7 +395,7 @@ class Game:
                 if event.type == pygame.QUIT: wait = False
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): wait = False
-            self.clock.tick(50)
+            self.clock.tick(20)
 
         pygame.quit()
 
@@ -735,7 +735,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_surface = font.render(f"数据处理中{dots[dot_index]}", True, black)
         self.screen.blit(text_surface, text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)))
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 
 def calculate_pixel_difference_test(image1, image2, t1, t2, timestamp, root_folder, id, participant_folder):

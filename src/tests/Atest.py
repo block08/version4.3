@@ -9,6 +9,7 @@ import sys
 import os
 import random
 import re
+import gc
 
 from src.core import game_function_simulation as gf
 from src.utils import shared_data
@@ -174,7 +175,7 @@ def show_minimize_dialog(screen, message):
         screen.blit(hint_text, hint_rect)
 
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 def show_confirm_dialog(screen, title, message):
     """
@@ -338,7 +339,7 @@ def show_confirm_dialog(screen, title, message):
         # 绘制对话框
         draw_dialog()
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 class Game:
     def __init__(self):
@@ -354,6 +355,41 @@ class Game:
         self.screen.fill(grey)
         # 添加初始化状态标志，避免启动时触发VIDEOEXPOSE弹窗
         self.is_initial_startup = True
+        
+    def cleanup_game_resources(self):
+        """游戏结束时清理资源"""
+        try:
+            print("[Atest清理] 开始清理游戏资源")
+            
+            # 1. 清理绘图相关资源
+            if hasattr(self, 'level'):
+                self.level.clear()
+                
+            # 2. 清理绘图生成器
+            try:
+                from src.core.paint import GameDrawing
+                game_drawing = GameDrawing()
+                if hasattr(game_drawing, 'line_generator'):
+                    game_drawing.line_generator.clear_cache()
+                print("[Atest清理] 绘图生成器清理完成")
+            except Exception as e:
+                print(f"[Atest清理] 绘图生成器清理警告: {e}")
+            
+            # 3. 清理pygame表面
+            try:
+                if hasattr(self, 'screen') and self.screen:
+                    self.screen.fill((128, 128, 128))  # 填充灰色释放内存
+                print("[Atest清理] pygame表面清理完成")
+            except Exception as e:
+                print(f"[Atest清理] pygame表面清理警告: {e}")
+            
+            # 4. 强制垃圾回收
+            gc.collect()
+            
+            print("[Atest清理] 游戏资源清理完成")
+            
+        except Exception as e:
+            print(f"[Atest清理] 清理过程出现错误: {e}")
 
     def render_text_with_green_keys(self, text, font, surface, center_pos):
         """渲染带有高亮按键提示的文本"""
@@ -396,7 +432,7 @@ class Game:
                 id = file.read().strip()
         except Exception as e:
             print(f"处理ID文件时出错: {e}");
-            safe_pygame_quit();
+            self.cleanup_game_resources(); safe_pygame_quit();
             sys.exit()
 
         output_image_folder = f"./{ROOT_DATA_FOLDER}/{id}/{PARTICIPANT_ID_FOLDER}/output_image"
@@ -429,7 +465,7 @@ class Game:
         wait = True
         while wait:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: safe_pygame_quit(); sys.exit()
+                if event.type == pygame.QUIT: self.cleanup_game_resources(); safe_pygame_quit(); sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 如果是初始启动，跳过弹窗直接重绘界面
                     if self.is_initial_startup:
@@ -445,10 +481,10 @@ class Game:
                     if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
                         continue
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): safe_pygame_quit(); sys.exit()
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): self.cleanup_game_resources(); safe_pygame_quit(); sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
-            self.clock.tick(50)
+            self.clock.tick(20)
 
         # 初始化游戏
         numbers = random.sample(range(1, 9), TOTAL_IMAGES)
@@ -469,10 +505,10 @@ class Game:
         # 主循环
         screenshot_taken = False  # 标记是否已经截图
         while running:
-            dt = self.clock.tick(50) / 1000
+            dt = self.clock.tick(20) / 1000
             # 事件处理
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: safe_pygame_quit(); sys.exit()
+                if event.type == pygame.QUIT: self.cleanup_game_resources(); safe_pygame_quit(); sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，独立处理暂停时间
                     minimize_pause_start = pygame.time.get_ticks()
@@ -504,7 +540,7 @@ class Game:
                     if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
                         continue
                     if event.key == pygame.K_ESCAPE:
-                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): safe_pygame_quit(); sys.exit()
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): self.cleanup_game_resources(); safe_pygame_quit(); sys.exit()
                     elif event.key == pygame.K_p:
                         paused = not paused
                         if paused:
@@ -644,7 +680,7 @@ class Game:
                                 continue
                             if event.key == pygame.K_ESCAPE:
                                 if show_confirm_dialog(self.screen, "",
-                                                       "您确定要返回主页面吗？"): safe_pygame_quit(); sys.exit()
+                                                       "您确定要返回主页面吗？"): self.cleanup_game_resources(); safe_pygame_quit(); sys.exit()
                             else:
                                 key_pressed = event.key
 
@@ -668,8 +704,9 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): wait = False
-            self.clock.tick(50)
+            self.clock.tick(20)
 
+        self.cleanup_game_resources()
         safe_pygame_quit()
 
     def display_task_instructions_formatted(self, subject='AB'):
@@ -684,7 +721,7 @@ class Game:
         DIVIDER_COLOR = (200, 200, 200)
         PROMPT_GREEN_COLOR = (0, 0, 255)
         HIGHLIGHT_COLOR = (0, 0, 255)
-        GREEN_ICON_COLOR = (40, 167, 69)
+        GREEN_ICON_COLOR = (0, 0, 255)
         RED_ICON_COLOR = (220, 53, 69)
         # 【修改3】为示意图的方块使用一个对比度更高的灰色
         DIAGRAM_BOX_COLOR = (200, 204, 208)
@@ -804,7 +841,7 @@ class Game:
                 draw_single_key(screen, key_rect, key_name, key_font, color_scheme)
 
             # 在键盘下方显示用户代号
-            label_y = overall_frame_rect.bottom + 15
+            label_y = overall_frame_rect.bottom + 30
 
             if subject in ['A', 'B', 'C']:  # 单人模式
                 # 计算单个键盘的中心位置
@@ -895,10 +932,10 @@ class Game:
         colon_x = margin + max_title_width  # 冒号的固定x位置（从左边margin开始）
 
         # 绘制任务描述，让冒号对齐
-        full_desc_text = f"{title_part}：通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点"
+        full_desc_text = f"{title_part}：通过键盘控制光标从蓝色起点沿黑色轨迹移动至红色终点"
         title_surf = body_font_bold.render(title_part, True, TEXT_COLOR)
         colon_surf = body_font.render("：", True, TEXT_COLOR)
-        content_surf = body_font.render("通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点", True, TEXT_COLOR)
+        content_surf = body_font.render("通过键盘控制光标从蓝色起点沿黑色轨迹移动至红色终点", True, TEXT_COLOR)
 
         # 绘制标题部分（右对齐到冒号位置）
         title_x = colon_x - title_surf.get_width()
@@ -1004,6 +1041,7 @@ class Game:
             draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words, subject)
 
         y_pos += 200  # 增加键盘图和第三条分割线之间的间距，让第三条分割线出现在01下面
+        y_pos += 10  # 将第三条分割线往下移动10像素，避免与人员代号重叠
         
         # 在键盘控制光标和速度调节功能之间加一条分割线
         pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
@@ -1207,7 +1245,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_surface = font.render(f"数据处理中{dots[dot_index]}", True, black)
         self.screen.blit(text_surface, text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)))
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 
 def calculate_pixel_difference_test(origin_image, image1, image2, t1, t2, timestamp, root_folder, id, participant_folder, total_pause_time=0):
@@ -1217,10 +1255,10 @@ def calculate_pixel_difference_test(origin_image, image1, image2, t1, t2, timest
     gray_origin = cv2.cvtColor(image1_cropped, cv2.COLOR_BGR2GRAY)
     black_mask = (gray_origin < 50)
     hsv_image2 = cv2.cvtColor(image2_cropped, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 50, 50])
-    upper_green = np.array([85, 255, 255])
-    green_mask = cv2.inRange(hsv_image2, lower_green, upper_green) > 0
-    overlap_mask = black_mask & green_mask
+    lower_blue = np.array([100, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    blue_mask = cv2.inRange(hsv_image2, lower_blue, upper_blue) > 0
+    overlap_mask = black_mask & blue_mask
     total_pixels = np.sum(black_mask)
     overlap_pixels = np.sum(overlap_mask)
     overlap_percentage = (overlap_pixels / total_pixels * 100) if total_pixels > 0 else 0

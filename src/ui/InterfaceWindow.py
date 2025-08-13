@@ -32,6 +32,7 @@ from src.hardware.check_serial_connection import check_serial_connection
 from src.hardware.serial_marker import serial_marker, initialize_serial, close_serial
 from src.config.serial_config_manager import serial_config
 # from src.utils.input_method_detector import get_input_method_detector  # 已替换为Caps Lock检测
+import gc
 
 
 # 为了让此文件独立运行，我们在此处进行前向声明。
@@ -680,27 +681,32 @@ class Interfacewindow(QMainWindow):
             u1 = user1 or '01'
             u2 = user2 or '02'
             u3 = user3 or '03'
-            
+
             # 构建介绍内容
             intro_html = f"""<html><head/><body style='line-height: 1.8;'>
                             <div style='text-align: center; margin-bottom: 30px;'>
                             </div>
                             <div style='text-align: left; margin-bottom: 30px; padding: 20px;'>
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
-                            1、本实验绘图任务分为三部分：{u1}单独绘图、{u1}与{u2}合作绘图、{u1}与{u3}合作绘图。
+
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
+                            1、任务组成：{u1}静息态、{u1}单独绘图、{u1}与{u2}合作绘图、{u1}与{u3}合作绘图、{u1}静息态。
                             </p>
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
-                            2、练习试次阶段，共设置3张绘图任务，可随时退出。
+
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
+                            2、练习试次阶段：共 3 张绘图任务，<span style="font-weight: bold;">如已熟练掌握操作，可直接进入正式实验</span>。
                             </p>
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
-                            3、正式实验阶段，被测{u1}需独立完成8张绘图任务，随后分别与辅助{u2}，{u3}各完成8张合作绘图任务。
+
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
+                            3、正式实验阶段：被测 {u1} 独立完成 8 张绘图任务，随后分别与 {u2}、{u3} 各完成 8 张合作绘图任务。
                             </p>
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000000; line-height: 1.6; text-indent: 60pt;'>
-                            4、正式实验阶段，不得中途退出实验以免导致实验数据不完整。
+
+                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
+                            4、正式实验要求：<span style="font-weight: bold;">不得中途退出</span>，以免数据不完整。
                             </p>
+
                             </div>
                             </body></html>"""
-            
+
             self.ui.label_intro_content.setText(intro_html)
             print(f"更新介绍内容: user1={u1}, user2={u2}, user3={u3}")
         except Exception as e:
@@ -748,6 +754,9 @@ class Interfacewindow(QMainWindow):
     def start_practice_1(self):
         """启动1的练习模块。"""
         print(f"[练习启动] 开始启动练习模块1")
+        
+        # 模式切换前强制清理内存
+        self.force_memory_cleanup("练习模式1")
         
         # 检查Caps Lock状态
         if not self.is_caps_lock_on():
@@ -842,6 +851,10 @@ class Interfacewindow(QMainWindow):
 
     def start_practice_4(self):
         """启动人员①&人员②的练习模块。"""
+        
+        # 模式切换前强制清理内存
+        self.force_memory_cleanup("合作练习模式")
+        
         # 检查Caps Lock状态
         if not self.is_caps_lock_on():
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
@@ -912,6 +925,10 @@ class Interfacewindow(QMainWindow):
 
     def go_main(self):
         """开始主实验。"""
+        
+        # 模式切换前强制清理内存
+        self.force_memory_cleanup("正式实验模式")
+        
         # 检查Caps Lock状态
         if not self.is_caps_lock_on():
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
@@ -1758,6 +1775,58 @@ class Interfacewindow(QMainWindow):
 
         print(f"[游戏启动] 游戏线程启动完成: {thread.name}")
         return thread, stop_event
+
+    def force_memory_cleanup(self, mode_name):
+        """模式切换时强制清理内存"""
+        try:
+            print(f"[内存清理] 开始清理内存 - {mode_name}")
+            
+            # 1. 强制垃圾回收
+            gc.collect()
+            print(f"[内存清理] 垃圾回收完成")
+            
+            # 2. 清理pygame残留（如果存在）
+            try:
+                import pygame
+                if pygame.get_init():
+                    # 清理pygame显示相关
+                    if pygame.display.get_init():
+                        # 获取当前显示表面并填充以释放内存
+                        current_surface = pygame.display.get_surface()
+                        if current_surface:
+                            current_surface.fill((128, 128, 128))  # 用灰色填充
+                    print(f"[内存清理] pygame显示清理完成")
+            except ImportError:
+                pass  # pygame未导入时跳过
+            except Exception as e:
+                print(f"[内存清理] pygame清理警告: {e}")
+            
+            # 3. 清理绘图生成器缓存
+            try:
+                from src.core.paint import GameDrawing
+                # 重置绘图生成器
+                if hasattr(GameDrawing, '_instance_cache'):
+                    GameDrawing._instance_cache = {}
+                print(f"[内存清理] 绘图生成器缓存清理完成")
+            except Exception as e:
+                print(f"[内存清理] 绘图生成器清理警告: {e}")
+            
+            # 4. 系统级内存整理（Windows）
+            try:
+                import ctypes
+                # 请求系统整理工作集内存
+                ctypes.windll.kernel32.SetProcessWorkingSetSize(-1, -1, -1)
+                print(f"[内存清理] 系统内存整理完成")
+            except Exception as e:
+                print(f"[内存清理] 系统内存整理警告: {e}")
+            
+            # 5. 再次强制垃圾回收
+            gc.collect()
+            
+            print(f"[内存清理] {mode_name} 内存清理完成")
+            
+        except Exception as e:
+            print(f"[内存清理] 清理过程出现错误: {e}")
 
 
 if __name__ == '__main__':

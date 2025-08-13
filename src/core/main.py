@@ -27,6 +27,7 @@ from src.utils.font_utils import get_font_path
 from src.utils.resource_cleanup import safe_pygame_quit
 import re
 import keyboard
+import gc
 def speed_level_to_value(level):
     """将1-100级别转换为1-100的实际速度值"""
     return level
@@ -214,7 +215,7 @@ def show_minimize_dialog(screen, message):
         screen.blit(hint_text, hint_rect)
 
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 def show_confirm_dialog(screen, title, message):
     """
@@ -379,7 +380,7 @@ def show_confirm_dialog(screen, title, message):
         # 绘制对话框
         draw_dialog()
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 
 class Game:
@@ -409,6 +410,41 @@ class Game:
 
         # 创建Level对象
         self.level = Level()
+        
+    def cleanup_game_resources(self):
+        """游戏结束时清理资源"""
+        try:
+            print("[游戏清理] 开始清理游戏资源")
+            
+            # 1. 清理绘图相关资源
+            if hasattr(self, 'level'):
+                self.level.clear()
+                
+            # 2. 清理绘图生成器
+            try:
+                from src.core.paint import GameDrawing
+                game_drawing = GameDrawing()
+                if hasattr(game_drawing, 'line_generator'):
+                    game_drawing.line_generator.clear_cache()
+                print("[游戏清理] 绘图生成器清理完成")
+            except Exception as e:
+                print(f"[游戏清理] 绘图生成器清理警告: {e}")
+            
+            # 3. 清理pygame表面
+            try:
+                if hasattr(self, 'screen') and self.screen:
+                    self.screen.fill((128, 128, 128))  # 填充灰色释放内存
+                print("[游戏清理] pygame表面清理完成")
+            except Exception as e:
+                print(f"[游戏清理] pygame表面清理警告: {e}")
+            
+            # 4. 强制垃圾回收
+            gc.collect()
+            
+            print("[游戏清理] 游戏资源清理完成")
+            
+        except Exception as e:
+            print(f"[游戏清理] 清理过程出现错误: {e}")
 
     def run(self):
         global paused, t1, t2, t3, t4, t5, t6, t7, t8, t9, timestamp1, timestamp2, timestamp3, timestamp4, timestamp5, timestamp6, timestamp7, timestamp8
@@ -480,12 +516,14 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
                 elif event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -498,7 +536,7 @@ class Game:
                         show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                         # 重绘流程图指导语界面
                         self.display_flowchart_instructions()
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
         self.display_meditation_instructions()
         wait = True
         while wait:
@@ -509,25 +547,27 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
                 elif event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
                     # 窗口被最小化后恢复，触发暂停确认
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     self.display_meditation_instructions()
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
 
         numbers1 = random.sample(range(1, 9), 8)
         self.screen.fill(grey)
-        line_length = 20
-        pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
-        pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
+        line_length = 8
+        pygame.draw.line(self.screen, green1, (930, 540), (990, 540), line_length)
+        pygame.draw.line(self.screen, green1, (960, 510), (960, 570), line_length)
         pygame.display.update()
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
@@ -545,6 +585,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -576,6 +617,7 @@ class Game:
                             paused = True
 
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                         else:
@@ -598,13 +640,14 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
         # 使用新格式的指导语替换旧的指导语
         self.display_task_instructions_formatted(subject='A')
         waiting_for_space = True
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -618,11 +661,12 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
 
         # 静息态后等待开始第一张绘图
         self.screen.fill(grey)
@@ -643,7 +687,7 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(50) / 1000
+            dt = self.clock.tick(20) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
@@ -656,6 +700,7 @@ class Game:
             # 处理键盘和鼠标事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -701,6 +746,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -977,7 +1023,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(50)
+                    self.clock.tick(20)
                     if score is not None:
                         likert_running = False
 
@@ -1002,6 +1048,7 @@ class Game:
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
@@ -1010,11 +1057,12 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
 
         # 开始被试B，等待显示第一张图片
         self.screen.fill(grey)
@@ -1056,13 +1104,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(50) / 1000
+            dt = self.clock.tick(20) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"{user1}和{user2}绘图", 10, 40)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user2}合作绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1113,6 +1161,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -1390,7 +1439,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(50)
+                    self.clock.tick(20)
                     if score is not None:
                         likert_running = False
 
@@ -1417,6 +1466,7 @@ class Game:
         while waiting_for_space:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1430,11 +1480,12 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
 
         # 开始A+B协作，直接显示第一张图片
         self.screen.fill(grey)
@@ -1476,13 +1527,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(50) / 1000
+            dt = self.clock.tick(20) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"{user1}和{user3}绘图", 10, 40)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user3}合作绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1491,6 +1542,7 @@ class Game:
             # 处理键盘事件
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1535,6 +1587,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_p:  # P键暂停
@@ -1815,7 +1868,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(50)
+                    self.clock.tick(20)
                     if score is not None:
                         likert_running = False
 
@@ -1838,6 +1891,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_SPACE:
@@ -1848,14 +1902,15 @@ class Game:
                         show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                         self.display_meditation_instructions()
                 elif event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
 
         self.screen.fill(grey)
-        line_length = 20
-        pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
-        pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
+        line_length = 8
+        pygame.draw.line(self.screen, green1, (930, 540), (990, 540), line_length)
+        pygame.draw.line(self.screen, green1, (960, 510), (960, 570), line_length)
         pygame.display.update()
         serial_marker(bytes([0x04]))
         start_ticks = pygame.time.get_ticks()
@@ -1873,6 +1928,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1899,6 +1955,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             sys.exit()
                     elif event.key == pygame.K_x:  # x键跳过静息态倒计时
@@ -1909,7 +1966,7 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
         # 实验结束
         self.display_end_screen()
         wait = True
@@ -1925,6 +1982,7 @@ class Game:
                         # 如果取消，重新显示结束界面
                         self.display_end_screen()
                 elif event.type == pygame.QUIT:
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     sys.exit()
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1932,7 +1990,7 @@ class Game:
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     # 重绘结束界面
                     self.display_end_screen()
-            self.clock.tick(50)  # 限制帧率，减少CPU使用
+            self.clock.tick(20)  # 限制帧率，减少CPU使用
         safe_pygame_quit()
         return
 
@@ -2126,7 +2184,7 @@ class Game:
         DIVIDER_COLOR = (200, 200, 200)
         PROMPT_GREEN_COLOR = (0, 0, 255)
         HIGHLIGHT_COLOR = (0, 0, 255)
-        GREEN_ICON_COLOR = (40, 167, 69)
+        GREEN_ICON_COLOR = (0, 0, 255)
         RED_ICON_COLOR = (220, 53, 69)
         # 【修改3】为示意图的方块使用一个对比度更高的灰色
         DIAGRAM_BOX_COLOR = (200, 204, 208)
@@ -2246,7 +2304,7 @@ class Game:
                 draw_single_key(screen, key_rect, key_name, key_font, color_scheme)
 
             # 在键盘下方显示用户代号
-            label_y = overall_frame_rect.bottom + 15
+            label_y = overall_frame_rect.bottom + 30
 
             if subject in ['A', 'B', 'C']:  # 单人模式
                 # 计算单个键盘的中心位置
@@ -2340,10 +2398,10 @@ class Game:
         colon_x = margin + max_title_width  # 冒号的固定x位置（从左边margin开始）
 
         # 绘制任务描述，让冒号对齐
-        full_desc_text = f"{title_part}：通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点"
+        full_desc_text = f"{title_part}：通过键盘控制光标从蓝色起点沿黑色轨迹移动至红色终点"
         title_surf = body_font_bold.render(title_part, True, TEXT_COLOR)
         colon_surf = body_font.render("：", True, TEXT_COLOR)
-        content_surf = body_font.render("通过键盘控制光标从绿色起点沿黑色轨迹移动至红色终点", True, TEXT_COLOR)
+        content_surf = body_font.render("通过键盘控制光标从蓝色起点沿黑色轨迹移动至红色终点", True, TEXT_COLOR)
 
         # 绘制标题部分（右对齐到冒号位置）
         title_x = colon_x - title_surf.get_width()
@@ -2450,6 +2508,7 @@ class Game:
             draw_keyboard_layout(self.screen, screen_w / 2, y_pos, key_font, key_highlight_words, subject)
 
         y_pos += 200  # 增加键盘图和第三条分割线之间的间距，让第三条分割线出现在01下面
+        y_pos += 10  # 将第三条分割线往下移动10像素，避免与人员代号重叠
 
         # 在键盘控制光标和速度调节功能之间加一条分割线
         pygame.draw.line(self.screen, DIVIDER_COLOR, (margin, y_pos), (screen_w - margin, y_pos), 2)
@@ -2922,7 +2981,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_rect = text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.screen.blit(text_surface, text_rect)
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 
 def rest_instructions(self, rest_duration=30):
@@ -3088,7 +3147,7 @@ def rest_instructions(self, rest_duration=30):
                             paused = False
 
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(20)
 
 if __name__ == '__main__':
     game = Game()

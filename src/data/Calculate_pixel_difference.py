@@ -25,15 +25,15 @@ def calculate_pixel_difference(origin_image, image1, image2, t1, t2, timestamp, 
     # 3. 创建黑色轨迹掩码（从image1中提取）
     black_mask = (gray_origin < 50)  # 黑色轨迹掩码
 
-    # 4. 从image2中提取绿色轨迹
+    # 4. 从image2中提取蓝色轨迹
     hsv_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 50, 50])
-    upper_green = np.array([85, 255, 255])
-    green_mask = cv2.inRange(hsv_image2, lower_green, upper_green)
-    green_mask = (green_mask > 0)
+    lower_blue = np.array([100, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    blue_mask = cv2.inRange(hsv_image2, lower_blue, upper_blue)
+    blue_mask = (blue_mask > 0)
 
     # 5. 计算重合部分（交集）
-    overlap_mask = black_mask & green_mask
+    overlap_mask = black_mask & blue_mask
 
     # 6. 统计像素
     total_pixels = np.sum(black_mask)  # 黑色轨迹的总像素
@@ -80,15 +80,15 @@ def calculate_pixel_difference2(origin_image, image1, image2, t1, t2, timestamp,
     # 3. 创建黑色轨迹掩码（从image1中提取）
     black_mask = (gray_origin < 50)  # 黑色轨迹掩码
 
-    # 4. 从image2中提取绿色轨迹
+    # 4. 从image2中提取蓝色轨迹
     hsv_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 50, 50])
-    upper_green = np.array([85, 255, 255])
-    green_mask = cv2.inRange(hsv_image2, lower_green, upper_green)
-    green_mask = (green_mask > 0)
+    lower_blue = np.array([100, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    blue_mask = cv2.inRange(hsv_image2, lower_blue, upper_blue)
+    blue_mask = (blue_mask > 0)
 
     # 5. 计算重合部分（交集）
-    overlap_mask = black_mask & green_mask
+    overlap_mask = black_mask & blue_mask
 
     # 6. 统计像素
     total_pixels = np.sum(black_mask)  # 黑色轨迹的总像素
@@ -132,15 +132,15 @@ def calculate_pixel_difference3(origin_image, image1, image2, t1, t2, timestamp,
     # 3. 创建黑色轨迹掩码（从image1中提取）
     black_mask = (gray_origin < 50)  # 黑色轨迹掩码
 
-    # 4. 从image2中提取绿色轨迹
+    # 4. 从image2中提取蓝色轨迹
     hsv_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([35, 50, 50])
-    upper_green = np.array([85, 255, 255])
-    green_mask = cv2.inRange(hsv_image2, lower_green, upper_green)
-    green_mask = (green_mask > 0)
+    lower_blue = np.array([100, 50, 50])
+    upper_blue = np.array([130, 255, 255])
+    blue_mask = cv2.inRange(hsv_image2, lower_blue, upper_blue)
+    blue_mask = (blue_mask > 0)
 
     # 5. 计算重合部分（交集）
-    overlap_mask = black_mask & green_mask
+    overlap_mask = black_mask & blue_mask
 
     # 6. 统计像素
     total_pixels = np.sum(black_mask)  # 黑色轨迹的总像素

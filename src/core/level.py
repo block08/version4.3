@@ -13,6 +13,7 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 LINEWIDTH = 4
 RED = (255, 0, 0)
+BLUE = (0, 0, 255)  # 蓝色
 DARK_BLUE = (0, 0, 139)  # 深蓝色
 TOP_MARGIN = 100  # 顶部预留空间
 BOTTOM_MARGIN = 100  # 底部预留空间
@@ -37,7 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.angle_speed = 0.8
         self.last_speed_check = 0  # 上次检查速度文件的时间
         self.image = pygame.Surface((6, 6))
-        self.image.fill((0, 255, 0))  # GREEN
+        self.image.fill((0, 0, 255))  # BLUE
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.last_pos = (self.x, self.y)
         self.initial_pos = (self.x, self.y)  # 记录初始起点位置
@@ -145,19 +146,19 @@ class Player(pygame.sprite.Sprite):
 
         # 确定移动方向
         if move_left:  # 左
-            dx = -self.base_speed
+            dx = -self.base_speed * 2
             moved = True
             self.current_direction = 'left'
         if move_right:  # 右
-            dx = self.base_speed
+            dx = self.base_speed * 2
             moved = True
             self.current_direction = 'right'
         if move_up:  # 上
-            dy = -self.base_speed
+            dy = -self.base_speed * 2
             moved = True
             self.current_direction = 'up'
         if move_down:  # 下
-            dy = self.base_speed
+            dy = self.base_speed * 2
             moved = True
             self.current_direction = 'down'
 
@@ -304,15 +305,15 @@ class Level:
                 # 【重要修正】使用与上面相同的条件变量
                 if condition_met:
                     pygame.draw.line(
-                        self.drawing_surface, GREEN,
+                        self.drawing_surface, BLUE,
                         last_pos_adjusted, current_pos_adjusted,
                         LINEWIDTH
                     )
             self.player.draw(screen)
             
-            # 在原始起点位置绘制固定的绿色标记
+            # 在原始起点位置绘制固定的蓝色标记
             initial_pos_screen = (int(self.player.initial_pos[0]), int(self.player.initial_pos[1]))
-            pygame.draw.rect(screen, (0, 255, 0), 
+            pygame.draw.rect(screen, (0, 0, 255), 
                            (initial_pos_screen[0] - 8, initial_pos_screen[1] - 8, 16, 16))
 
         pygame.draw.rect(screen, BLACK, (
@@ -335,10 +336,10 @@ class Level:
                     if sprite.rect.colliderect(endpoint.rect):
                         start_pos = (sprite.x - sprite.rect.width / 2, sprite.y - TOP_MARGIN - sprite.rect.height / 2)
                         end_pos = (endpoint.rect.centerx, endpoint.rect.centery - TOP_MARGIN)
-                        pygame.draw.line(self.drawing_surface, GREEN,
+                        pygame.draw.line(self.drawing_surface, BLUE,
                                          (sprite.last_pos[0], sprite.last_pos[1] - TOP_MARGIN), start_pos, LINEWIDTH)
-                        pygame.draw.line(self.drawing_surface, GREEN, start_pos, end_pos, LINEWIDTH)
-                        endpoint.image.fill((0, 255, 0))
+                        pygame.draw.line(self.drawing_surface, BLUE, start_pos, end_pos, LINEWIDTH)
+                        endpoint.image.fill((0, 0, 255))
                         self.endpoint_reached = True
             sprite_group.empty()
             self.player = None

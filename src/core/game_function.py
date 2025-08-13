@@ -43,29 +43,6 @@ def get_resource_path(relative_path):
     
     return full_path
 
-try:
-    # 设置音频驱动为DirectSound，避免WASAPI问题
-    os.environ['SDL_AUDIODRIVER'] = 'directsound'
-    
-    # 使用新的资源路径获取方式
-    sound_path = get_resource_path('sound/click.wav')
-    
-    # 检查音频文件是否存在
-    if os.path.exists(sound_path):
-        # 预初始化音频系统，设置合适的参数
-        pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
-        pygame.mixer.init()
-        click_sound = pygame.mixer.Sound(sound_path)
-
-    else:
-        print(f"警告：找不到音频文件 {sound_path}，将禁用声音功能")
-        click_sound = None
-
-except Exception as e:
-    print(f"音频初始化失败: {e}")
-    print(f"尝试加载的路径是: {sound_path if 'sound_path' in locals() else '未知路径'}")
-    print("程序将在无声音模式下继续运行")
-    click_sound = None
 
 game_drawing = GameDrawing()
 
@@ -117,18 +94,8 @@ def check_events(self, stats, button1, button2, numbers, paused, t1, t2, t3, t4,
                         f.write('50')
         # 使用新的按钮事件处理方法
         if button1.handle_event(event, current_time):
-            try:
-                if click_sound is not None:
-                    click_sound.play()
-            except:
-                pass  # 静默处理音频播放错误
             paused = not paused
         if button2.handle_event(event, current_time):
-            try:
-                if click_sound is not None:
-                    click_sound.play()
-            except:
-                pass  # 静默处理音频播放错误
             stats.game_active = True
             if stats.game_active:
                 if stats.game_score == 0:

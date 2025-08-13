@@ -228,7 +228,7 @@ class CustomDialog(QDialog):
 
         # 创建"进入主界面"按钮和其容器
         enter_container = QVBoxLayout()
-        enter_button = QPushButton("进入主界面")
+        enter_button = QPushButton("确认")
         enter_button.setCursor(QCursor(Qt.PointingHandCursor))
         enter_button.setFixedSize(220, 65)
         enter_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))

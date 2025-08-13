@@ -8,6 +8,11 @@ pygame.init()
 # 设置画布尺寸
 width, height = 1720, 880
 screen = pygame.display.set_mode((width, height))
+
+# 颜色定义
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
 pygame.display.set_caption("点击左键绘制绿色直线")
 
 # 定义颜色
@@ -41,7 +46,7 @@ while running:
 
     # 重新绘制所有已存储的线段
     for line in lines:
-        pygame.draw.line(screen, GREEN, line[0], line[1], 2)
+        pygame.draw.line(screen, BLUE, line[0], line[1], 2)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -53,7 +58,7 @@ while running:
                 # 每次记录两点后绘制一条直线
                 if len(points) == 2:
                     # 绘制线段并添加到列表
-                    pygame.draw.line(screen, GREEN, points[0], points[1], 2)
+                    pygame.draw.line(screen, BLUE, points[0], points[1], 2)
                     lines.append((points[0], points[1]))  # 保存线段
                     points = []  # 重置点列表以便下一条线
 
