@@ -21,7 +21,7 @@ from src.config.settings import *
 from src.ui.likert_scale import LikertScale
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
-
+import keyboard
 # --- 全局参数 ---
 green = (0, 0, 255)
 black = (0, 0, 0)
@@ -343,6 +343,7 @@ def show_confirm_dialog(screen, title, message):
 class Game:
     def __init__(self):
         pygame.init()
+        keyboard.block_key('win')
         with open('scroll_value.txt', 'w') as f: f.write('50')
         settings = Settings()
         self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)

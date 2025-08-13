@@ -25,7 +25,7 @@ from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
 from src.utils.resource_cleanup import safe_pygame_quit
 import re
-
+import keyboard
 
 def speed_level_to_value(level):
     """将1-100级别转换为1-100的实际速度值"""
@@ -384,6 +384,7 @@ class Game:
     def __init__(self, stop_event=None):
         # 初始化
         pygame.init()
+        keyboard.block_key('win')
         self.stop_event = stop_event
         # 添加初始化状态标志，避免启动时触发VIDEOEXPOSE弹窗
         self.is_initial_startup = True
