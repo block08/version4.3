@@ -24,6 +24,7 @@ from datetime import datetime
 from src.core.paint import GameDrawing
 from src.utils.font_utils import get_font_path
 from src.utils.resource_cleanup import safe_pygame_quit
+from src.utils.caps_lock_blocker import block_caps_lock, unblock_caps_lock
 import re
 import keyboard
 import gc
@@ -129,11 +130,11 @@ def show_minimize_dialog(screen, message):
 
     # 字体设置（与show_confirm_dialog保持一致）
     try:
-        message_font = pygame.font.Font(get_font_path(), 50)
+        message_font = pygame.font.Font(get_font_path(), 60)
         button_font = pygame.font.Font(get_font_path(), 50)
         hint_font = pygame.font.Font(get_font_path(), 35)
     except:
-        message_font = pygame.font.Font(None, 50)
+        message_font = pygame.font.Font(None, 60)
         button_font = pygame.font.Font(None, 50)
         hint_font = pygame.font.Font(None, 35)
 
@@ -156,7 +157,7 @@ def show_minimize_dialog(screen, message):
                 if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or 
                     event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
                     continue
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_y:
                     return
             elif event.type == pygame.MOUSEMOTION:
                 mouse_pos = pygame.mouse.get_pos()
@@ -203,12 +204,12 @@ def show_minimize_dialog(screen, message):
         screen.blit(button_text, button_text_rect)
 
         # 绘制Y键提示
-        hint_text = hint_font.render("按F键", True, hint_text_color)
+        hint_text = hint_font.render("按Y键", True, hint_text_color)
         hint_rect = hint_text.get_rect(center=(dialog_x + dialog_width // 2, button_y + button_height + 30))
         screen.blit(hint_text, hint_rect)
 
         pygame.display.flip()
-        clock.tick(20)
+        clock.tick(30)
 
 
 def show_confirm_dialog(screen, title, message):
@@ -241,12 +242,12 @@ def show_confirm_dialog(screen, title, message):
 
     # 字体设置
     try:
-        title_font = pygame.font.Font(get_font_path(), 60)
-        message_font = pygame.font.Font(get_font_path(), 50)
+        title_font = pygame.font.Font(get_font_path(), 70)
+        message_font = pygame.font.Font(get_font_path(), 70)
         button_font = pygame.font.Font(get_font_path(), 50)
     except:
-        title_font = pygame.font.Font(None, 60)
-        message_font = pygame.font.Font(None, 50)
+        title_font = pygame.font.Font(None, 70)
+        message_font = pygame.font.Font(None, 70)
         button_font = pygame.font.Font(None, 50)
 
     # 按钮设置
@@ -280,13 +281,18 @@ def show_confirm_dialog(screen, title, message):
         pygame.draw.rect(screen, border_color, dialog_rect, 2, border_radius=20)
 
         # 绘制标题
-        title_surface = title_font.render(title, True, text_color)
-        title_rect = title_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 60))
-        screen.blit(title_surface, title_rect)
+        if title:
+            title_surface = title_font.render(title, True, text_color)
+            title_rect = title_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 80))
+            screen.blit(title_surface, title_rect)
+            message_y = dialog_y + 180
+        else:
+            message_y = dialog_y + 140
 
         # 绘制消息
         message_surface = message_font.render(message, True, text_color)
-        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2, dialog_y + 160))
+        # 稍微向右偏移15像素，解决问号导致的视觉居中问题
+        message_rect = message_surface.get_rect(center=(dialog_x + dialog_width // 2 + 15, message_y))
         screen.blit(message_surface, message_rect)
 
         # 绘制按钮（匹配CustomDialog样式）
@@ -304,20 +310,20 @@ def show_confirm_dialog(screen, title, message):
         # 绘制按钮文字
         yes_text_color = (255, 255, 255) if yes_hover else button_text_color
         no_text_color = (255, 255, 255) if no_hover else button_text_color
-        yes_text = button_font.render("是", True, yes_text_color)
+        yes_text = button_font.render("确定", True, yes_text_color)
         yes_text_rect = yes_text.get_rect(center=yes_button.center)
         screen.blit(yes_text, yes_text_rect)
 
-        no_text = button_font.render("否", True, no_text_color)
+        no_text = button_font.render("取消", True, no_text_color)
         no_text_rect = no_text.get_rect(center=no_button.center)
         screen.blit(no_text, no_text_rect)
 
         # 绘制按钮下方的提示文字
-        yes_hint = pygame.font.Font(get_font_path(), 35).render("按F键", True, hint_text_color)
+        yes_hint = pygame.font.Font(get_font_path(), 35).render("按Y键", True, hint_text_color)
         yes_hint_rect = yes_hint.get_rect(center=(yes_button.centerx, yes_button.bottom + 25))
         screen.blit(yes_hint, yes_hint_rect)
 
-        no_hint = pygame.font.Font(get_font_path(), 35).render("按J键", True, hint_text_color)
+        no_hint = pygame.font.Font(get_font_path(), 35).render("按N键", True, hint_text_color)
         no_hint_rect = no_hint.get_rect(center=(no_button.centerx, no_button.bottom + 25))
         screen.blit(no_hint, no_hint_rect)
 
@@ -360,15 +366,15 @@ def show_confirm_dialog(screen, title, message):
 
             elif event.type == pygame.KEYDOWN:
                 # 屏蔽Windows键 - 增强版（包含原始键值）
-                if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or 
-                    event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
+                if (event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER] or
+                        event.key == 91 or event.key == 92):  # 91=左Win键, 92=右Win键
                     continue
-                if event.key == pygame.K_RETURN or event.key == pygame.K_f:
+                if event.key == pygame.K_RETURN or event.key == pygame.K_y:
                     # 恢复原始屏幕内容并刷新显示
                     screen.blit(original_screen, (0, 0))
                     pygame.display.flip()
                     return True
-                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_j:
+                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_n:
                     # 恢复原始屏幕内容并刷新显示
                     screen.blit(original_screen, (0, 0))
                     pygame.display.flip()
@@ -377,15 +383,21 @@ def show_confirm_dialog(screen, title, message):
         # 绘制对话框
         draw_dialog()
         pygame.display.flip()
-        clock.tick(20)
+        clock.tick(30)
 
 
 class Game:
 
     def __init__(self, stop_event=None):
         # 初始化
-        pygame.init()
-        keyboard.block_key('win')
+        # 检查pygame是否已初始化，避免重复初始化
+        if not pygame.get_init():
+            pygame.init()
+        # keyboard.block_key('win')  # 暂时注释，避免线程中的键盘屏蔽导致崩溃
+        
+        # 禁用CapsLock功能
+        block_caps_lock('main_simulation')
+        
         self.stop_event = stop_event
         # 添加初始化状态标志，避免启动时触发VIDEOEXPOSE弹窗
         self.is_initial_startup = True
@@ -404,9 +416,23 @@ class Game:
         # 设置时钟
         self.clock = pygame.time.Clock()
         self.screen.fill(grey)
+        
+        # 强制pygame窗口获得焦点，解决窗口最小化问题
+        try:
+            from src.utils.window_focus_clean import ensure_pygame_window_focus
+            ensure_pygame_window_focus()
+        except Exception as e:
+            print(f"[main_simulation] 窗口焦点设置警告: {e}")
 
         # 创建Level对象
         self.level = Level()
+    
+    def __del__(self):
+        """析构函数，恢复CapsLock功能"""
+        try:
+            unblock_caps_lock('main_simulation')
+        except:
+            pass
         
     def cleanup_game_resources(self):
         """游戏结束时清理资源"""
@@ -481,7 +507,7 @@ class Game:
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
-        speed_min, speed_max = 0, 100
+        speed_min, speed_max = 10, 100
         speed_step = 10
 
         # 按钮状态用于长按功能
@@ -511,7 +537,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
@@ -529,7 +555,7 @@ class Game:
                         show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                         # 重绘流程图指导语界面
                         self.display_flowchart_instructions()
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
         self.display_meditation_instructions()
         wait = True
         while wait:
@@ -542,7 +568,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
@@ -554,7 +580,7 @@ class Game:
                     # 窗口被最小化后恢复，触发暂停确认
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     self.display_meditation_instructions()
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
 
         numbers1 = random.sample(range(1, 9), 8)
         self.screen.fill(grey)
@@ -612,7 +638,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                         else:
                             # 用户选择继续，恢复计时器
                             if paused:
@@ -633,7 +659,7 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
         # 使用指导语
         self.display_task_instructions_formatted(subject='A')
         waiting_for_space = True
@@ -656,10 +682,10 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
 
         # 静息态后等待开始第一张绘图
         self.screen.fill(grey)
@@ -668,6 +694,7 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
+        force_ui_update = False  # 标记是否需要强制更新UI
 
         # 读取id变量
         with open(get_id_file_path(), "r") as file:
@@ -679,12 +706,12 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(20) / 1000
+            dt = self.clock.tick(30) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
-            user_button2 = Button3(settings, self.screen, f"{user1}绘图", 10, 40)
+            user_button2 = Button3(settings, self.screen, f"{user1}单独绘图", 10, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -743,7 +770,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
                             pause_start_time = pygame.time.get_ticks()
@@ -751,13 +778,19 @@ class Game:
                             total_pause_time += pygame.time.get_ticks() - pause_start_time
                         paused = not paused
                     elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
+                        old_speed = speed_value
                         speed_value = min(speed_max, speed_value + speed_step)
                         with open('scroll_value.txt', 'w') as f:
                             f.write(str(int(speed_value)))
+                        if old_speed != speed_value:
+                            force_ui_update = True
                     elif event.key == pygame.K_MINUS:  # -键降低速度
+                        old_speed = speed_value
                         speed_value = max(speed_min, speed_value - speed_step)
                         with open('scroll_value.txt', 'w') as f:
                             f.write(str(int(speed_value)))
+                        if old_speed != speed_value:
+                            force_ui_update = True
 
                     elif event.key == pygame.K_SPACE and not paused:  # 空格键下一张（需要到达终点）
                         if not first_image_shown:
@@ -911,12 +944,12 @@ class Game:
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
-                if first_image_shown and 1 <= stats.game_score <= 8:
+                if first_image_shown and 1 <= stats.game_score < 8:
                     step_button2.text = f"{stats.game_score} / 8"
                     hint_text = "按P键暂停"
                     # 只有到达终点时才显示空格键提示
                     if self.level.is_endpoint_reached():
-                        center_button.text = "按空格键继续"
+                        center_button.text = "按空格键进入下一试次"
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
@@ -925,14 +958,20 @@ class Game:
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
-                elif stats.game_score > 8:
-                    step_button2.text = "完成"
-                    hint_text = "任务已完成"
-                    center_button.text = ""
-                    # 完成时显示右下角按钮和顶部提示
+                elif stats.game_score == 8:
+                    step_button2.text = f"{stats.game_score} / 8"
+                    hint_text = "按P键暂停"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键结束绘图"
+                    else:
+                        center_button.text = ""
+                    # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
                                                      (settings.screen_width // 2, 60))
                     step_button2.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                     # 完成时不显示中下方按钮
                 else:
                     # 等待开始时：不显示右下角按钮，中下方显示"按空格键开始"
@@ -944,15 +983,27 @@ class Game:
                     gf.update_screen(button)
 
             # 处理长按（即使没有事件也要检查）
+            old_speed = speed_value
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
+            if old_speed != speed_value:
+                force_ui_update = True
 
+            # 使用脏矩形优化的游戏绘制 - SubA模式
             if not paused:
-                self.level.run(dt, stats, [], self.screen)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                self.level.draw(self.screen, stats)
-            pygame.display.update()
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+            
+            # 使用脏矩形优化的显示更新
+            if force_ui_update:
+                pygame.display.update()
+                force_ui_update = False
+            elif dirty_rects and len(dirty_rects) > 0:
+                pygame.display.update(dirty_rects)
+            else:
+                pygame.display.update()
             if stats.game_score == 9:
                 self.level.clear()
                 loading_animation(self, settings.screen_width, settings.screen_height, self.font)
@@ -990,7 +1041,7 @@ class Game:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
                                     safe_pygame_quit()
-                                    sys.exit()
+                                    return
                             else:
                                 key_pressed = event.key
                         elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1005,7 +1056,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(20)
+                    self.clock.tick(30)
                     if score is not None:
                         likert_running = False
 
@@ -1046,10 +1097,10 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
 
         # 开始被试B，等待显示第一张图片
         self.screen.fill(grey)
@@ -1060,6 +1111,7 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
+        force_ui_update = False  # 标记是否需要强制更新UI
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
@@ -1090,13 +1142,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(20) / 1000
+            dt = self.clock.tick(30) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"{user1}和{user2}合作绘图", 10, 40)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user2}合作绘图", 90, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1149,7 +1201,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
                             pause_start_time = pygame.time.get_ticks()
@@ -1316,12 +1368,12 @@ class Game:
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
-                if first_image_shown and 12 <= stats.game_score <= 19:
+                if first_image_shown and 12 <= stats.game_score < 19:
                     step_button2.text = f"{stats.game_score - 11} / 8"
                     hint_text = "按P键暂停"
                     # 只有到达终点时才显示空格键提示
                     if self.level.is_endpoint_reached():
-                        center_button.text = "按空格键继续"
+                        center_button.text = "按空格键进入下一试次"
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
@@ -1330,14 +1382,20 @@ class Game:
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
-                elif stats.game_score > 19:
-                    step_button2.text = "完成"
-                    hint_text = "任务已完成"
-                    center_button.text = ""
-                    # 完成时显示右下角按钮和顶部提示
+                elif stats.game_score == 19:
+                    step_button2.text = f"{stats.game_score - 11} / 8"
+                    hint_text = "按P键暂停"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键结束绘图"
+                    else:
+                        center_button.text = ""
+                    # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
                                                      (settings.screen_width // 2, 60))
                     step_button2.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                     # 完成时不显示中下方按钮
                 else:
                     # 等待开始时：不显示右下角按钮，中下方显示"按空格键开始"
@@ -1349,16 +1407,27 @@ class Game:
                     gf.update_screen(button)
 
             # 处理长按（即使没有事件也要检查）
+            old_speed = speed_value
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
+            if old_speed != speed_value:
+                force_ui_update = True
 
-            # 更新游戏等级
+            # 使用脏矩形优化的游戏绘制 - SubAB模式
             if not paused:
-                self.level.run(dt, stats, [], self.screen)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                self.level.draw(self.screen, stats)
-            pygame.display.update()
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+            
+            # 使用脏矩形优化的显示更新
+            if force_ui_update:
+                pygame.display.update()
+                force_ui_update = False
+            elif dirty_rects and len(dirty_rects) > 0:
+                pygame.display.update(dirty_rects)
+            else:
+                pygame.display.update()
             # 处理游戏结束逻辑
             if stats.game_score == 20:
                 self.level.clear()  # 调用clear方法彻底清除
@@ -1397,7 +1466,7 @@ class Game:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
                                     safe_pygame_quit()
-                                    sys.exit()
+                                    return
                             else:
                                 key_pressed = event.key
                         elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1411,7 +1480,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(20)
+                    self.clock.tick(30)
                     if score is not None:
                         likert_running = False
 
@@ -1454,10 +1523,10 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         waiting_for_space = False
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
 
         # 开始A+B协作，直接显示第一张图片
         self.screen.fill(grey)
@@ -1468,6 +1537,7 @@ class Game:
         first_image_shown = False
         running = True
         current_image_index = 0  # 当前图片索引
+        force_ui_update = False  # 标记是否需要强制更新UI
 
         # 速度调整按钮设置
         speed_value = read_speed_value()
@@ -1498,13 +1568,13 @@ class Game:
         first_image_shown = True
 
         while running:
-            dt = self.clock.tick(20) / 1000
+            dt = self.clock.tick(30) / 1000
 
             # 确保背景正确刷新
             self.screen.fill(grey)
 
             # 设置按钮
-            user_button2 = Button3(settings, self.screen, f"{user1}和{user3}合作绘图", 10, 40)
+            user_button2 = Button3(settings, self.screen, f"{user1}和{user3}合作绘图", 90, 40)
             step_button2 = Button(settings, self.screen, "", 1700, 1000)
 
             mouse_pos = pygame.mouse.get_pos()
@@ -1560,7 +1630,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_p:  # P键暂停
                         if not paused:
                             pause_start_time = pygame.time.get_ticks()
@@ -1730,12 +1800,12 @@ class Game:
                 step_button2.draw_button()
                 center_button.draw_button()
             else:
-                if first_image_shown and 24 <= stats.game_score <= 31:
+                if first_image_shown and 24 <= stats.game_score < 31:
                     step_button2.text = f"{stats.game_score - 23} / 8"
                     hint_text = "按P键暂停"
                     # 只有到达终点时才显示空格键提示
                     if self.level.is_endpoint_reached():
-                        center_button.text = "按空格键继续"
+                        center_button.text = "按空格键进入下一试次"
                     else:
                         center_button.text = ""
                     # 进行中时显示右下角按钮和顶部提示
@@ -1744,14 +1814,20 @@ class Game:
                     step_button2.draw_button()
                     if center_button.text:  # 只有有文字时才绘制按钮
                         center_button.draw_button()
-                elif stats.game_score > 31:
-                    step_button2.text = "完成"
-                    hint_text = "任务已完成"
-                    center_button.text = ""
-                    # 完成时显示右下角按钮和顶部提示
+                elif stats.game_score == 31:
+                    step_button2.text = f"{stats.game_score - 23} / 8"
+                    hint_text = "按P键暂停"
+                    # 只有到达终点时才显示空格键提示
+                    if self.level.is_endpoint_reached():
+                        center_button.text = "按空格键结束绘图"
+                    else:
+                        center_button.text = ""
+                    # 进行中时显示右下角按钮和顶部提示
                     self.render_text_with_green_keys(hint_text, key_hint_font, self.screen,
                                                      (settings.screen_width // 2, 60))
                     step_button2.draw_button()
+                    if center_button.text:  # 只有有文字时才绘制按钮
+                        center_button.draw_button()
                     # 完成时不显示中下方按钮
                 else:
                     # 等待开始时：不显示右下角按钮，中下方显示"按空格键开始"
@@ -1763,16 +1839,27 @@ class Game:
                     gf.update_screen(button)
 
             # 处理长按（即使没有事件也要检查）
+            old_speed = speed_value
             speed_value = handle_button_event(None, minus_button_rect, plus_button_rect, speed_min, speed_max,
                                               speed_value, speed_step, button_states)
+            if old_speed != speed_value:
+                force_ui_update = True
 
-            # 更新游戏等级
+            # 使用脏矩形优化的游戏绘制 - SubAC模式
             if not paused:
-                self.level.run(dt, stats, [], self.screen)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                self.level.draw(self.screen, stats)
-            pygame.display.update()
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+            
+            # 使用脏矩形优化的显示更新
+            if force_ui_update:
+                pygame.display.update()
+                force_ui_update = False
+            elif dirty_rects and len(dirty_rects) > 0:
+                pygame.display.update(dirty_rects)
+            else:
+                pygame.display.update()
             # 处理游戏结束逻辑
             if stats.game_score == 32:
                 self.level.clear()  # 调用clear方法彻底清除
@@ -1811,7 +1898,7 @@ class Game:
                                 # 二次确认退出
                                 if show_confirm_dialog(self.screen, "确认退出", "确定要退出实验吗？"):
                                     safe_pygame_quit()
-                                    sys.exit()
+                                    return
                             else:
                                 key_pressed = event.key
                         elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -1825,7 +1912,7 @@ class Game:
                                           key_pressed=key_pressed)
 
                     pygame.display.flip()
-                    self.clock.tick(20)
+                    self.clock.tick(30)
                     if score is not None:
                         likert_running = False
 
@@ -1850,7 +1937,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_SPACE:
                         wait = False
                         self.screen.fill(grey)
@@ -1863,7 +1950,7 @@ class Game:
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     # 重绘冥想指导语界面
                     self.display_meditation_instructions()
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
 
         self.screen.fill(grey)
         line_length = 8
@@ -1915,7 +2002,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
                             self.cleanup_game_resources()
                             safe_pygame_quit()
-                            sys.exit()
+                            return
                     elif event.key == pygame.K_x:  # x键跳过静息态倒计时
                         running = False
                         self.screen.fill(grey)
@@ -1924,7 +2011,7 @@ class Game:
             if remaining_time == 0:
                 running = False
                 self.screen.fill(grey)
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
         # 实验结束
         self.display_end_screen()
         wait = True
@@ -1949,7 +2036,7 @@ class Game:
                     show_minimize_dialog(self.screen, "检测到最小化，点击继续")
                     # 重绘结束界面
                     self.display_end_screen()
-            self.clock.tick(20)  # 限制帧率，减少CPU使用
+            self.clock.tick(30)  # 限制帧率，减少CPU使用
         safe_pygame_quit()
         return
 
@@ -2055,15 +2142,15 @@ class Game:
         # The core change is in this data structure to reflect the new experimental flow.
         flow_steps = [
             {"header": "第1阶段", "main": f"{user1}静息态", "sub": "（2分钟）"},
-            {"header": "第2阶段", "main": f"{user1}绘图", "sub": "（约7分钟）"},
-            {"header": "第3阶段", "main": f"{user1}&{user2}绘图", "sub": "（约7分钟）"},
-            {"header": "第4阶段", "main": f"{user1}&{user3}绘图", "sub": "（约7分钟）"},
+            {"header": "第2阶段", "main": f"{user1}单独绘图", "sub": "（约7分钟）"},
+            {"header": "第3阶段", "main": f"{user1}&{user2}合作绘图", "sub": "（约7分钟）"},
+            {"header": "第4阶段", "main": f"{user1}&{user3}合作绘图", "sub": "（约7分钟）"},
             {"header": "第5阶段", "main": f"{user1}静息态", "sub": "（2分钟）"}
         ]
 
         # --- Layout Calculations for Centering the Flowchart ---
-        box_width, box_height = 340, 220  # 增大流程图方框尺寸
-        box_gap = 30  # 减小间距让方框更靠近箭头
+        box_width, box_height = 360, 220  # 最大化方框尺寸，让文字显示完整
+        box_gap = 25  # 增大方框之间的间距
         total_width = len(flow_steps) * box_width + (len(flow_steps) - 1) * box_gap
         start_x = (screen_width - total_width) / 2
         y_pos = screen_height / 2 - box_height / 2 + 30  # 向下调整位置
@@ -2096,12 +2183,13 @@ class Game:
             start_point = box_rects[i].midright
             end_point = box_rects[i + 1].midleft
             
-            # 计算箭头位置 (在两个方框中间)
-            arrow_x = (start_point[0] + end_point[0]) // 2
+            # 计算箭头位置 (紧贴方框边界，不重叠)
+            arrow_x = start_point[0] + (end_point[0] - start_point[0]) // 2
             arrow_y = start_point[1]
             
-            # 绘制Unicode箭头符号 (使用较小字体避免重合)
-            arrow_surf = sub_font.render("→", True, ARROW_COLOR)
+            # 绘制Unicode箭头符号 (使用更小字体避免重合)
+            arrow_font = pygame.font.Font(get_font_path(), 28) if get_font_path() else pygame.font.SysFont(None, 32)
+            arrow_surf = arrow_font.render("→", True, ARROW_COLOR)
             arrow_rect = arrow_surf.get_rect(center=(arrow_x, arrow_y))
             self.screen.blit(arrow_surf, arrow_rect)
 
@@ -2194,8 +2282,8 @@ class Game:
             screen.blit(text_surf, text_surf.get_rect(center=rect.center))
 
         def draw_keyboard_layout(screen, center_x, top_y, key_font, is_highlighted, subject):
-            KEY_SIZE = 60
-            GAP = 8
+            KEY_SIZE = 45  # 减小按键尺寸
+            GAP = 6     # 减小间距
             highlight_color_scheme = {'face': HIGHLIGHT_COLOR, 'border': (25, 135, 84), 'text': (255, 255, 255),
                                       'shadow': (150, 150, 150)}
             default_color_scheme = {'face': (245, 245, 245), 'border': (180, 180, 180), 'text': (0, 0, 0),
@@ -2938,7 +3026,7 @@ def loading_animation(self, WINDOW_WIDTH, WINDOW_HEIGHT, font):
         text_rect = text_surface.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.screen.blit(text_surface, text_rect)
         pygame.display.flip()
-        clock.tick(20)
+        clock.tick(30)
 
 
 def rest_instructions(self, rest_duration=30):
@@ -3104,7 +3192,7 @@ def rest_instructions(self, rest_duration=30):
                             paused = False
 
         pygame.display.flip()
-        clock.tick(20)
+        clock.tick(30)
 
 
 if __name__ == '__main__':

@@ -66,19 +66,19 @@ class Ui_MainWindow(object):
 "}")
         self.right_panel.setObjectName("right_panel")
         self.login_title = QtWidgets.QLabel(self.right_panel)
-        self.login_title.setGeometry(QtCore.QRect(50, 100, 481, 65))
+        self.login_title.setGeometry(QtCore.QRect(50, 100, 500, 100))
         font = QtGui.QFont()
         font.setFamily("Microsoft YaHei UI")
-        font.setPointSize(28)
-        font.setBold(False)
-        font.setWeight(50)
+        font.setPointSize(45)
+        font.setBold(True)
+        font.setWeight(75)
         self.login_title.setFont(font)
         self.login_title.setStyleSheet("QLabel {\n"
-"    color: white;\n"
-"    background: rgb(34, 92, 102);\n"
-"    border-radius: 15px;\n"
+"    color: black;\n"
+"    background: transparent;\n"
 "}")
         self.login_title.setAlignment(QtCore.Qt.AlignCenter)
+        self.login_title.setWordWrap(True)
         self.login_title.setObjectName("login_title")
         self.task_selection_card = QtWidgets.QWidget(self.right_panel)
         self.task_selection_card.setGeometry(QtCore.QRect(50, 180, 481, 160))

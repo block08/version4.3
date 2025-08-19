@@ -295,7 +295,7 @@ class Ui_MainWindow(object):
                                    "\n"
                                    "    background-color: rgb(255, 255, 255);\n"
                                    "    border-bottom-right-radius:8px;\n"
-                                   "    border: 1px solid rgb(240, 240, 240);\n"
+                                   "    border: none;\n"
                                    "}")
         self.frame_7.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_7.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -806,7 +806,7 @@ class Ui_MainWindow(object):
         self.pushButton_auto_connect.setStyleSheet("""
             QPushButton {
                 background-color: rgb(255, 255, 255);
-                border: 2px solid rgb(51, 51, 51);
+                border: none;
                 color: rgb(51, 51, 51);
                 font: 20pt "微软雅黑";
                 border-radius: 8px;
@@ -814,7 +814,7 @@ class Ui_MainWindow(object):
             }
             QPushButton:hover {
                 background-color: rgb(245, 245, 245);
-                border: 2px solid rgb(34, 34, 34);
+                border: none;
             }
             QPushButton:pressed {
                 background-color: rgb(230, 230, 230);
@@ -823,7 +823,7 @@ class Ui_MainWindow(object):
             }
             QPushButton:disabled {
                 background-color: rgb(245, 245, 245);
-                border: 2px solid rgb(200, 200, 200);
+                border: none;
                 color: rgb(150, 150, 150);
             }
         """)

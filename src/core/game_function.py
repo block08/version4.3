@@ -9,7 +9,7 @@ from src.core.paint import GameDrawing
 from src.utils.resource_cleanup import safe_pygame_quit
 
 
-grey = (128, 128, 128)
+grey = (230, 230, 230)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)

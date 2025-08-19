@@ -32,6 +32,14 @@ from src.hardware.check_serial_connection import check_serial_connection
 from src.hardware.serial_marker import serial_marker, initialize_serial, close_serial
 from src.config.serial_config_manager import serial_config
 # from src.utils.input_method_detector import get_input_method_detector  # 已替换为Caps Lock检测
+from src.utils.caps_lock_detector import (
+    get_global_caps_lock_detector, 
+    start_global_caps_lock_monitoring,
+    stop_global_caps_lock_monitoring,
+    add_caps_lock_callback,
+    remove_caps_lock_callback,
+    is_caps_lock_on
+)
 import gc
 
 
@@ -66,35 +74,21 @@ class CustomDialog(QDialog):
 
         # 在主框架内创建布局
         main_layout = QVBoxLayout(main_frame)
-        main_layout.setContentsMargins(25, 25, 25, 25)
-        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(25, 15, 25, 25)  # 减少上边距
+        main_layout.setSpacing(15)  # 减少间距
         main_layout.addStretch(1)
 
-        # --- 修改为 QGridLayout 来实现特殊对齐 ---
-        content_layout = QGridLayout()  # <-- 修改：使用网格布局
-        content_layout.setSpacing(20)
-
-        # 文字标签
+        # 简化布局 - 不再需要复杂的网格布局
+        # 文字标签 - 修复两行文字显示不全问题
         text_label = QLabel(text, self)
-        text_label.setFont(QFont("Microsoft YaHei", font_size))
+        text_label.setFont(QFont("Microsoft YaHei", int(font_size * 1.8)))
         text_label.setWordWrap(True)
-        text_label.setAlignment(Qt.AlignCenter)  # <-- 修改：让文字在自己的控件内也居中
-        text_label.setMinimumWidth(500)  # 设置最小宽度确保文字有足够空间
-        text_label.setStyleSheet("border: none; color: black;")
-        # <-- 修改：将文字放置在0行0列，并让它在单元格内居中
-        content_layout.addWidget(text_label, 0, 0, Qt.AlignCenter)
-
-        # 图标标签
-        icon_label = QLabel(self)
-        icon_pixmap = self.style().standardIcon(icon_type).pixmap(64, 64)
-        icon_label.setPixmap(icon_pixmap)
-        icon_label.setFixedSize(64, 64)
-        icon_label.setStyleSheet("border: none;")
-        # <-- 修改：将图标也放置在0行0列，但让它在单元格内靠左
-        content_layout.addWidget(icon_label, 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
-        # --- 修改区域结束 ---
-
-        main_layout.addLayout(content_layout)
+        text_label.setAlignment(Qt.AlignCenter)
+        text_label.setMinimumWidth(750)
+        text_label.setMinimumHeight(120)  # 增加高度适应更大字体
+        text_label.setStyleSheet("border: none; color: black; padding: 5px;")  # 增加内边距
+        
+        main_layout.addWidget(text_label)
         main_layout.addStretch(1)
 
         button_layout = QHBoxLayout()
@@ -103,7 +97,7 @@ class CustomDialog(QDialog):
         if button_type == 'yes_no':
             # 创建"是"按钮和其容器
             yes_container = QVBoxLayout()
-            yes_button = QPushButton("确认", self)
+            yes_button = QPushButton("确定", self)
             yes_button.setCursor(QCursor(Qt.PointingHandCursor))
             yes_button.setFixedSize(220, 65)
             yes_button.setFont(QFont("Microsoft YaHei", 30, QFont.Bold))
@@ -208,14 +202,19 @@ class CustomDialog(QDialog):
 
     @staticmethod
     def show_message(parent, icon_type, title, text, font_size=22):
-        # 根据文字长度自动调整对话框尺寸
+        # 根据文字长度和行数自动调整对话框尺寸
         text_length = len(text)
-        if text_length > 12:  # 对于较长文字使用更大尺寸
-            width, height = 750, 380
+        line_count = text.count('\n') + 1  # 计算行数
+        
+        # 根据行数和文字长度调整高度
+        if line_count >= 2 or text_length > 15:  # 两行或长文字
+            width, height = 900, 500  # 增加宽度和高度适应更大字体
+        elif text_length > 12:  # 较长文字
+            width, height = 850, 450
         elif text_length > 8:  # 中等长度文字
-            width, height = 700, 350
+            width, height = 800, 400
         else:  # 短文字
-            width, height = 600, 300
+            width, height = 700, 350
         dialog = CustomDialog(parent, icon_type, title, text, font_size, width, height, button_type='ok')
         return dialog.exec_()
 
@@ -224,11 +223,11 @@ class CustomDialog(QDialog):
         # 根据文字长度自动调整对话框尺寸
         text_length = len(text)
         if text_length > 12:  # 对于较长文字使用更大尺寸
-            width, height = 750, 380
+            width, height = 850, 450
         elif text_length > 8:  # 中等长度文字
-            width, height = 700, 350
+            width, height = 800, 400
         else:  # 短文字
-            width, height = 600, 300
+            width, height = 700, 350
         dialog = CustomDialog(parent, icon_type, title, text, font_size, width, height, button_type='yes_no')
         return dialog.exec_()
 
@@ -249,6 +248,16 @@ class Interfacewindow(QMainWindow):
         self.current_game_thread = None
         self.current_stop_event = None
         self.is_game_running = False  # 游戏运行状态标志
+        self.is_cleaning_resources = False  # 资源清理状态标志
+        self.startup_cleanup_done = False  # 启动清理完成标志
+        
+        # 在主线程中设置键盘屏蔽，避免在游戏线程中调用
+        try:
+            import keyboard
+            keyboard.block_key('win')
+            print("[主界面] Windows键已屏蔽")
+        except Exception as e:
+            print(f"[主界面] 键盘屏蔽设置失败: {e}")
 
         # 初始化导航按钮状态管理
         self.init_navigation_system()
@@ -385,17 +394,21 @@ class Interfacewindow(QMainWindow):
         try:
             # 创建COM状态容器
             self.com_status_widget = QWidget()
+            self.com_status_widget.setStyleSheet("QWidget { border: none; border-bottom: none; border-top: none; background: transparent; }")
             self.com_status_layout = QHBoxLayout(self.com_status_widget)
             self.com_status_layout.setContentsMargins(0, 0, 0, 0)
             self.com_status_layout.setSpacing(5)
             
             # 创建图标标签
             self.com_status_icon_label = QLabel()
-            self.com_status_icon_label.setFixedSize(80, 80)  # 增大图标尺寸到最大
+            self.com_status_icon_label.setFixedSize(80, 80)  # 恢复图标尺寸
             self.com_status_icon_label.setStyleSheet("""
                 QLabel {
                     border: none;
                     background: transparent;
+                    outline: none;
+                    margin: 0px;
+                    padding: 0px;
                 }
             """)
             self.com_status_icon_label.setAlignment(Qt.AlignCenter)  # 图标居中
@@ -414,11 +427,27 @@ class Interfacewindow(QMainWindow):
             """)
             self.com_status_text_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             
-            # 添加Qt警告图标
-            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
-            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
-            # 强制缩放到80x80像素
-            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # 使用自定义警告图标
+            try:
+                # 获取当前文件的目录
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                # 构建相对于当前文件的图标路径
+                icon_path = os.path.join(current_dir, "ui", "res", "warn.png")
+                warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 如果上述路径不存在，尝试其他可能的路径
+                if warning_pixmap.isNull():
+                    # 尝试相对于项目根目录的路径
+                    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                    icon_path = os.path.join(project_root, "src", "ui", "ui", "res", "warn.png")
+                    warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 强制缩放到80x80像素
+                scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            except Exception as e:
+                print(f"加载自定义警告图标失败: {e}")
+                # 备用方案：不显示图标
+                scaled_pixmap = QtGui.QPixmap()
             self.com_status_icon_label.setPixmap(scaled_pixmap)
             
             # 添加到布局
@@ -451,21 +480,25 @@ class Interfacewindow(QMainWindow):
             print(f"创建COM状态标签时出错: {e}")
 
     def initialize_caps_lock_ui(self):
-        """初始化Caps Lock状态UI"""
+        """初始化Caps Lock状态UI（使用全局检测器）"""
         try:
             # 创建输入法状态容器
             self.input_method_widget = QWidget()
+            self.input_method_widget.setStyleSheet("QWidget { border: none; border-bottom: none; border-top: none; background: transparent; }")
             self.input_method_layout = QHBoxLayout(self.input_method_widget)
             self.input_method_layout.setContentsMargins(0, 0, 0, 0)
             self.input_method_layout.setSpacing(5)
             
             # 创建图标标签
             self.input_method_icon_label = QLabel()
-            self.input_method_icon_label.setFixedSize(80, 80)  # 增大图标尺寸到最大
+            self.input_method_icon_label.setFixedSize(80, 80)  # 恢复图标尺寸
             self.input_method_icon_label.setStyleSheet("""
                 QLabel {
                     border: none;
                     background: transparent;
+                    outline: none;
+                    margin: 0px;
+                    padding: 0px;
                 }
             """)
             self.input_method_icon_label.setAlignment(Qt.AlignCenter)  # 图标居中
@@ -503,50 +536,21 @@ class Interfacewindow(QMainWindow):
                 else:
                     print("未找到COM状态容器的父布局")
             
-            # 安装事件过滤器来检测按键事件
-            QApplication.instance().installEventFilter(self)
-            print("Caps Lock事件监听已启动")
+            # 使用全局CapsLock检测器替代Qt事件过滤器
+            start_global_caps_lock_monitoring()
+            add_caps_lock_callback(self.on_caps_lock_changed)
+            print("全局Caps Lock监控已启动")
             
             # 立即检查一次当前Caps Lock状态并设置初始显示
-            current_status = self.is_caps_lock_on()
+            current_status = is_caps_lock_on()
             self.on_caps_lock_changed(current_status)
             
         except Exception as e:
             print(f"初始化Caps Lock状态UI时出错: {e}")
 
     def is_caps_lock_on(self):
-        """检测Caps Lock是否打开"""
-        try:
-            import ctypes
-            # 使用Windows API检测Caps Lock状态
-            # VK_CAPITAL = 0x14 是Caps Lock的虚拟键码
-            return bool(ctypes.windll.user32.GetKeyState(0x14) & 1)
-        except Exception as e:
-            print(f"检测Caps Lock状态时出错: {e}")
-            return False
-
-    def eventFilter(self, obj, event):
-        """事件过滤器，监听Caps Lock按键事件"""
-        try:
-            if event.type() == QEvent.KeyPress or event.type() == QEvent.KeyRelease:
-                # 检查是否是Caps Lock键 (Qt.Key_CapsLock)
-                if event.key() == Qt.Key_CapsLock and event.type() == QEvent.KeyPress:
-                    # Caps Lock被按下，延迟检查状态（因为状态变化有延迟）
-                    QTimer.singleShot(50, self.check_caps_lock_status_once)
-        except Exception as e:
-            print(f"事件过滤器错误: {e}")
-        return super().eventFilter(obj, event)
-    
-    def check_caps_lock_status_once(self):
-        """检查一次Caps Lock状态"""
-        try:
-            current_status = self.is_caps_lock_on()
-            # 只有状态改变时才更新
-            if not hasattr(self, '_last_caps_status') or self._last_caps_status != current_status:
-                self._last_caps_status = current_status
-                self.on_caps_lock_changed(current_status)
-        except Exception as e:
-            print(f"检查Caps Lock状态时出错: {e}")
+        """检测Caps Lock是否打开（使用全局检测器）"""
+        return is_caps_lock_on()
 
     def set_caps_lock_status_style(self, is_caps_on):
         """设置Caps Lock状态标签的样式"""
@@ -574,11 +578,27 @@ class Interfacewindow(QMainWindow):
                     padding-right: 10px;
                 }
             """)
-            # 添加Qt警告图标
-            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
-            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
-            # 强制缩放到80x80像素
-            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # 使用自定义警告图标
+            try:
+                # 获取当前文件的目录
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                # 构建相对于当前文件的图标路径
+                icon_path = os.path.join(current_dir, "ui", "res", "warn.png")
+                warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 如果上述路径不存在，尝试其他可能的路径
+                if warning_pixmap.isNull():
+                    # 尝试相对于项目根目录的路径
+                    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                    icon_path = os.path.join(project_root, "src", "ui", "ui", "res", "warn.png")
+                    warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 强制缩放到80x80像素
+                scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            except Exception as e:
+                print(f"加载自定义警告图标失败: {e}")
+                # 备用方案：不显示图标
+                scaled_pixmap = QtGui.QPixmap()
             self.input_method_icon_label.setPixmap(scaled_pixmap)
 
     def on_caps_lock_changed(self, is_caps_on):
@@ -638,8 +658,15 @@ class Interfacewindow(QMainWindow):
             return []
 
     def showEvent(self, event):
-        """重写 showEvent，在窗口显示时更新用户信息。"""
+        """重写 showEvent，在窗口显示时更新用户信息和清理遗留资源。"""
         super().showEvent(event)
+        
+        # 只在首次显示时执行启动清理，避免重复执行
+        if not self.startup_cleanup_done:
+            self.startup_cleanup_done = True
+            # 延迟执行启动清理，确保窗口完全显示后再清理
+            QTimer.singleShot(100, self.cleanup_startup_resources)
+        
         self.update_user_button_text()
 
     def update_user_button_text(self):
@@ -683,29 +710,34 @@ class Interfacewindow(QMainWindow):
             u3 = user3 or '03'
 
             # 构建介绍内容
-            intro_html = f"""<html><head/><body style='line-height: 1.8;'>
-                            <div style='text-align: center; margin-bottom: 30px;'>
-                            </div>
-                            <div style='text-align: left; margin-bottom: 30px; padding: 20px;'>
+            intro_html = f"""<html><head/>
+            <style>
+              body {{
+                line-height: 1.7;
+                font-size: 37pt;
+                color: #000;
+              }}
+              p {{
+                margin: 10px 0;
+                text-indent: 60pt;
+              }}
+            </style>
+            <body>
+            <div style='text-align: left; margin-bottom: 30px; padding: 20px;'>
+            <p>
+            1、实验组成：实验包括 <b>单独绘图任务</b> 和 <b>合作绘图任务</b>。 
+            </p>
+            <p>
+            2、实验流程：依次完成<b>{u1}</b>单独绘图、<b>{u1}</b>与<b>{u2}</b>合作绘图、<b>{u1}</b>与<b>{u3}</b>合作绘图。
+            </p>
+            <p>
+            3、练习说明：单独绘图和合作绘图任务均可练习。若已熟练掌握操作，可<b>直接进入</b>正式实验。
+            </p>
+            <p>
+            4、实验要求：请按照指导语依次完成单人绘图与合作绘图任务，<b>尽量不要中途退出</b>，以确保数据完整。
+            </p>
 
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
-                            1、任务组成：{u1}静息态、{u1}单独绘图、{u1}与{u2}合作绘图、{u1}与{u3}合作绘图、{u1}静息态。
-                            </p>
-
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
-                            2、练习试次阶段：共 3 张绘图任务，<span style="font-weight: bold;">如已熟练掌握操作，可直接进入正式实验</span>。
-                            </p>
-
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
-                            3、正式实验阶段：被测 {u1} 独立完成 8 张绘图任务，随后分别与 {u2}、{u3} 各完成 8 张合作绘图任务。
-                            </p>
-
-                            <p style='font-size: 37pt; margin: 10px 0; color: #000; line-height: 1.6; text-indent: 60pt;'>
-                            4、正式实验要求：<span style="font-weight: bold;">不得中途退出</span>，以免数据不完整。
-                            </p>
-
-                            </div>
-                            </body></html>"""
+            </div></body></html>"""
 
             self.ui.label_intro_content.setText(intro_html)
             print(f"更新介绍内容: user1={u1}, user2={u2}, user3={u3}")
@@ -764,10 +796,23 @@ class Interfacewindow(QMainWindow):
                                     "未检测到大写锁定开启。\n\n请开启后重新点击单独绘图。")
             return
         
-        # 检查是否有游戏正在运行
-        if self.is_game_running:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
-                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+        # 统一检查实验状态，避免竞态条件导致的误导信息
+        if self.is_cleaning_resources or self.is_game_running:
+            # 检查是否真的有线程在运行
+            thread_is_alive = self.current_game_thread and self.current_game_thread.is_alive()
+            
+            if self.is_cleaning_resources:
+                # 正在清理资源
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
+            elif thread_is_alive:
+                # 真的有实验在运行
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            else:
+                # is_game_running=True但线程已结束，说明是状态清理延迟
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
             return
             
         try:
@@ -861,10 +906,23 @@ class Interfacewindow(QMainWindow):
                                     "未检测到大写锁定开启。\n\n请开启后重新点击合作绘图。")
             return
             
-        # 检查是否有游戏正在运行
-        if self.is_game_running:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
-                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+        # 统一检查实验状态，避免竞态条件导致的误导信息
+        if self.is_cleaning_resources or self.is_game_running:
+            # 检查是否真的有线程在运行
+            thread_is_alive = self.current_game_thread and self.current_game_thread.is_alive()
+            
+            if self.is_cleaning_resources:
+                # 正在清理资源
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
+            elif thread_is_alive:
+                # 真的有实验在运行
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            else:
+                # is_game_running=True但线程已结束，说明是状态清理延迟
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
             return
             
         try:
@@ -893,10 +951,23 @@ class Interfacewindow(QMainWindow):
 
     def start_practice_5(self):
         """启动人员①&人员③的练习模块。"""
-        # 检查是否有游戏正在运行
-        if self.is_game_running:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
-                                    "有练习正在进行中，请等待当前练习结束后再开始新的练习。")
+        # 统一检查实验状态，避免竞态条件导致的误导信息
+        if self.is_cleaning_resources or self.is_game_running:
+            # 检查是否真的有线程在运行
+            thread_is_alive = self.current_game_thread and self.current_game_thread.is_alive()
+            
+            if self.is_cleaning_resources:
+                # 正在清理资源
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
+            elif thread_is_alive:
+                # 真的有实验在运行
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            else:
+                # is_game_running=True但线程已结束，说明是状态清理延迟
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
             return
             
         try:
@@ -932,26 +1003,34 @@ class Interfacewindow(QMainWindow):
         # 检查Caps Lock状态
         if not self.is_caps_lock_on():
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
-                                    "未检测到大写锁定开启。\n\n请开启重新点击正式实验。")
+                                    "未检测到大写锁定开启。\n\n请开启后重新点击正式实验。")
             return
             
-        # 检查是否有游戏正在运行
-        if self.is_game_running:
-            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
-                                    "有实验正在进行中，请等待当前实验结束后再开始新的实验。")
+        # 统一检查实验状态，避免竞态条件导致的误导信息
+        if self.is_cleaning_resources or self.is_game_running:
+            # 检查是否真的有线程在运行
+            thread_is_alive = self.current_game_thread and self.current_game_thread.is_alive()
+            
+            if self.is_cleaning_resources:
+                # 正在清理资源
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
+            elif thread_is_alive:
+                # 真的有实验在运行
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            else:
+                # is_game_running=True但线程已结束，说明是状态清理延迟
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "正在清理资源，请等待2-3秒后再开始新的实验")
             return
             
         game_function = None
 
         # 检查端口连接状态
         if shared_data.global_flag is None:
-            # 没有设置端口，询问是否仿真模式
-            reply = CustomDialog.ask_question(self, QStyle.SP_MessageBoxQuestion, "运行模式",
-                                              "未检测到端口连接。\n\n您想在仿真模式下运行吗？")
-            if reply == QDialog.Accepted:
-                game_function = main_simulation.Game
-            else:
-                return
+            # 没有设置端口，直接使用仿真模式
+            game_function = main_simulation.Game
         else:
             # 已设置端口，但需要验证端口是否仍然连接
             current_port = shared_data.global_port
@@ -1001,6 +1080,18 @@ class Interfacewindow(QMainWindow):
                     # 实验结束后清除运行状态
                     self.is_game_running = False
                     print("[正式实验] 实验结束，清除运行状态")
+                    
+                    # 实验结束后进行深度资源清理
+                    try:
+                        self.is_cleaning_resources = True
+                        print("[正式实验] 开始深度资源清理...")
+                        from src.utils.resource_cleanup import cleanup_all_resources
+                        cleanup_all_resources()
+                        print("[正式实验] 深度资源清理完成")
+                    except Exception as e:
+                        print(f"[正式实验] 资源清理警告: {e}")
+                    finally:
+                        self.is_cleaning_resources = False
             
             threading.Thread(target=run_experiment, daemon=True).start()
 
@@ -1275,11 +1366,27 @@ class Interfacewindow(QMainWindow):
                     padding-right: 10px;
                 }
             """)
-            # 添加Qt警告图标
-            warning_icon = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
-            warning_pixmap = warning_icon.pixmap(32, 32)  # 先获取标准尺寸
-            # 强制缩放到80x80像素
-            scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # 使用自定义警告图标
+            try:
+                # 获取当前文件的目录
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                # 构建相对于当前文件的图标路径
+                icon_path = os.path.join(current_dir, "ui", "res", "warn.png")
+                warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 如果上述路径不存在，尝试其他可能的路径
+                if warning_pixmap.isNull():
+                    # 尝试相对于项目根目录的路径
+                    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                    icon_path = os.path.join(project_root, "src", "ui", "ui", "res", "warn.png")
+                    warning_pixmap = QtGui.QPixmap(icon_path)
+                
+                # 强制缩放到80x80像素
+                scaled_pixmap = warning_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            except Exception as e:
+                print(f"加载自定义警告图标失败: {e}")
+                # 备用方案：不显示图标
+                scaled_pixmap = QtGui.QPixmap()
             self.com_status_icon_label.setPixmap(scaled_pixmap)
 
         # 启用连接按钮
@@ -1328,9 +1435,10 @@ class Interfacewindow(QMainWindow):
 
         # 根据用户的选择决定是否关闭
         if reply == QDialog.Accepted:
+            # 清理游戏状态
+            self.is_game_running = False
             # 清理资源
             self.cleanup_resources()
-            # 如果用户点击"是"，直接强制退出整个程序
             print("程序已退出。")
             import os
             os._exit(0)  # 强制终止整个进程，包括所有线程和子进程
@@ -1364,9 +1472,12 @@ class Interfacewindow(QMainWindow):
 
         # 根据用户的选择决定是否关闭
         if reply == QDialog.Accepted:
-            # 清理资源
+            # 清理游戏状态
+            self.is_game_running = False
+            # 清理所有资源
             self.cleanup_resources()
-            # 如果用户点击"是"，直接强制退出整个程序
+            # 设置已确认关闭标志，避免重复弹窗
+            self.confirmed_close = True
             print("程序已退出。")
             import os
             os._exit(0)  # 强制终止整个进程，包括所有线程和子进程
@@ -1399,11 +1510,47 @@ class Interfacewindow(QMainWindow):
         """切换到首页。"""
         self.ui.stackedWidget.setCurrentIndex(0)
     
+    def try_start_main_experiment(self):
+        """检查是否可以启动正式实验，返回True/False"""
+        # 检查Caps Lock状态
+        if not self.is_caps_lock_on():
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "大写锁定警告", 
+                                    "未检测到大写锁定开启。\n\n请开启后重新点击正式实验。")
+            return False
+            
+        # 优先检查是否正在清理资源
+        if self.is_cleaning_resources:
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                    "正在清理资源，请等待2-3秒后再开始新的实验")
+            return False
+            
+        # 检查是否有游戏正在运行
+        if self.is_game_running:
+            # 检查是否真的有线程在运行
+            if self.current_game_thread and self.current_game_thread.is_alive():
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            else:
+                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "提示", 
+                                        "有实验正在进行中，请退出后台实验后再开始新的实验。")
+            return False
+        
+        # 检查端口连接状态（如果没有连接则提示用户连接端口）
+        if shared_data.global_flag is None:
+            # 没有设置端口，提示用户连接后再开始实验
+            CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "端口未连接",
+                                    "未检测到端口。\n\n请连接后再点击正式实验。")
+            return False
+        
+        return True
+
     def go_main_and_show_page(self):
         """切换到正式实验页面并启动实验。"""
-        self.ui.stackedWidget.setCurrentIndex(2)
-        # 启动实验
-        self.go_main()
+        # 先尝试启动实验，只有成功启动才跳转页面（这样按钮状态也只有成功时才会改变）
+        if self.try_start_main_experiment():
+            self.ui.stackedWidget.setCurrentIndex(2)  # 页面跳转会触发按钮状态更新
+            # 实际启动实验
+            self.go_main()
     
     def go_data_and_open_folder(self):
         """切换到数据查看页面并打开文件夹。"""
@@ -1414,8 +1561,10 @@ class Interfacewindow(QMainWindow):
     def open_behavioral_data(self):
         """打开Behavioral_data文件夹。"""
         try:
-            # 获取程序运行的根目录
+            # 导入安全文件操作工具
+            from src.utils.safe_file_operations import SafeFileManager
             import sys
+            import platform
             
             # 优化路径获取逻辑
             if hasattr(sys, '_MEIPASS'):
@@ -1451,6 +1600,9 @@ class Interfacewindow(QMainWindow):
             
             print(f"尝试访问路径：{behavioral_data_path}")
             
+            # 使用安全文件管理器检查目录访问权限
+            access_ok, access_msg = SafeFileManager.check_directory_access(behavioral_data_path)
+            
             # 检查文件夹是否存在，如果不存在则创建
             if not os.path.exists(behavioral_data_path):
                 try:
@@ -1458,6 +1610,10 @@ class Interfacewindow(QMainWindow):
                     print(f"已创建文件夹：{behavioral_data_path}")
                     CustomDialog.show_message(self, QStyle.SP_MessageBoxInformation, "文件夹已创建", 
                                             f"Behavioral_data文件夹已自动创建：\n{behavioral_data_path}")
+                    
+                    # 重新检查访问权限
+                    access_ok, access_msg = SafeFileManager.check_directory_access(behavioral_data_path)
+                    
                 except PermissionError:
                     CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "权限不足", 
                                             f"没有权限在此位置创建文件夹：\n{behavioral_data_path}\n请以管理员身份运行程序或选择其他位置。")
@@ -1467,10 +1623,10 @@ class Interfacewindow(QMainWindow):
                                             f"无法创建Behavioral_data文件夹：\n{behavioral_data_path}\n错误：{str(create_error)}")
                     return
             
-            # 检查是否有访问权限
-            if not os.access(behavioral_data_path, os.R_OK):
+            # 检查访问权限
+            if not access_ok:
                 CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "访问权限不足", 
-                                        f"没有权限访问文件夹：\n{behavioral_data_path}")
+                                        f"无法访问文件夹：\n{behavioral_data_path}\n原因：{access_msg}\n\n建议：\n1. 以管理员身份运行程序\n2. 检查文件夹是否被其他程序占用")
                 return
             
             # 使用Windows资源管理器打开文件夹
@@ -1479,19 +1635,39 @@ class Interfacewindow(QMainWindow):
                 behavioral_data_path = os.path.normpath(behavioral_data_path)
                 print(f"正在打开文件夹：{behavioral_data_path}")
                 
-                # 不使用check=True，因为explorer经常返回非零退出码但仍能正常工作
-                result = subprocess.run(["explorer", behavioral_data_path], timeout=10)
-                print(f"已打开文件夹：{behavioral_data_path} (退出码: {result.returncode})")
+                # 检测系统版本，针对Win7优化
+                system_version = platform.release()
+                
+                if system_version == "7":
+                    # Win7使用os.startfile更兼容
+                    import time
+                    time.sleep(0.2)  # Win7需要短暂延迟
+                    os.startfile(behavioral_data_path)
+                    print(f"已使用os.startfile打开文件夹：{behavioral_data_path}")
+                else:
+                    # Win10/11使用subprocess
+                    result = subprocess.run(["explorer", behavioral_data_path], timeout=10)
+                    print(f"已打开文件夹：{behavioral_data_path} (退出码: {result.returncode})")
                 
             except subprocess.TimeoutExpired:
                 print("打开文件夹超时，但可能已成功打开")
             except FileNotFoundError:
-                CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "系统错误", 
-                                        "无法找到Windows资源管理器程序。")
+                # 备用方案：使用os.startfile
+                try:
+                    os.startfile(behavioral_data_path)
+                    print(f"使用备用方案打开文件夹：{behavioral_data_path}")
+                except Exception as backup_error:
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxCritical, "系统错误", 
+                                            f"无法打开文件夹。\n错误：{str(backup_error)}")
             except Exception as explorer_error:
                 print(f"使用资源管理器打开文件夹时出错: {explorer_error}")
-                CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "打开失败", 
-                                        f"无法使用资源管理器打开文件夹：\n{str(explorer_error)}\n\n文件夹路径：{behavioral_data_path}")
+                # 备用方案：使用os.startfile
+                try:
+                    os.startfile(behavioral_data_path)
+                    print(f"使用备用方案打开文件夹：{behavioral_data_path}")
+                except Exception as backup_error:
+                    CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "打开失败", 
+                                            f"无法打开文件夹：\n主要错误：{str(explorer_error)}\n备用错误：{str(backup_error)}\n\n文件夹路径：{behavioral_data_path}")
             
         except Exception as e:
             print(f"打开文件夹时出错: {e}")
@@ -1710,13 +1886,12 @@ class Interfacewindow(QMainWindow):
     def cleanup_resources(self):
         """清理所有资源"""
         try:
-            # 停止Caps Lock监控
-            # 取消事件过滤器
+            # 停止全局Caps Lock监控
             try:
-                QApplication.instance().removeEventFilter(self)
+                remove_caps_lock_callback(self.on_caps_lock_changed)
+                print("Caps Lock回调已移除")
             except:
                 pass
-                print("Caps Lock监控已停止")
             
             # 停止自动检测定时器
             # 关闭串口监控
@@ -1727,44 +1902,311 @@ class Interfacewindow(QMainWindow):
         except Exception as e:
             print(f"清理资源时出错: {e}")
 
+    def cleanup_startup_resources(self):
+        """程序启动时智能清理可能遗留的资源"""
+        print("[启动清理] 智能检测遗留资源...")
+        
+        cleanup_needed = False
+        cleanup_actions = []
+        
+        try:
+            # 1. 检测键盘钩子遗留
+            if self.check_keyboard_hooks_needed():
+                cleanup_actions.append("键盘钩子")
+                cleanup_needed = True
+                
+            # 2. 检测Pygame显示资源
+            if self.check_pygame_cleanup_needed():
+                cleanup_actions.append("Pygame资源")
+                cleanup_needed = True
+                
+            # 3. 检测临时文件配置
+            temp_files_count = self.check_temporary_files_needed()
+            if temp_files_count > 0:
+                cleanup_actions.append(f"{temp_files_count}个临时配置文件")
+                cleanup_needed = True
+                
+            # 4. 检测僵尸进程
+            zombie_count = self.check_zombie_processes()
+            if zombie_count > 0:
+                cleanup_actions.append(f"{zombie_count}个僵尸进程")
+                cleanup_needed = True
+            
+            if cleanup_needed:
+                print(f"[启动清理] 检测到遗留资源: {', '.join(cleanup_actions)}")
+                # 执行必要的清理
+                if "键盘钩子" in cleanup_actions:
+                    self.cleanup_keyboard_hooks()
+                if "Pygame资源" in cleanup_actions:
+                    self.cleanup_pygame_resources()
+                if any("临时配置文件" in action for action in cleanup_actions):
+                    self.cleanup_temporary_files()
+                
+                print("[启动清理] 遗留资源清理完成")
+            else:
+                print("[启动清理] 未检测到遗留资源，跳过清理")
+            
+        except Exception as e:
+            print(f"[启动清理] 清理遗留资源时出错: {e}")
+
+    def check_keyboard_hooks_needed(self):
+        """检测是否有键盘钩子需要清理"""
+        try:
+            import keyboard
+            # 简单检测：如果keyboard模块已导入且有hook，可能需要清理
+            return hasattr(keyboard, '_hooks') and len(getattr(keyboard, '_hooks', {})) > 0
+        except:
+            return False
+
+    def check_pygame_cleanup_needed(self):
+        """检测pygame是否需要清理"""
+        try:
+            import pygame
+            # 如果pygame已初始化，说明可能有遗留资源
+            return pygame.get_init()
+        except:
+            return False
+
+    def check_temporary_files_needed(self):
+        """检测需要重置的临时文件数量"""
+        try:
+            import os
+            temp_files = [
+                'config.txt',
+                'scroll_value.txt', 
+                'src/core/config.txt',
+                'src/core/scroll_value.txt',
+                'src/tests/scroll_value.txt'
+            ]
+            
+            count = 0
+            for file_path in temp_files:
+                if os.path.exists(file_path):
+                    # 检查文件内容是否需要重置
+                    try:
+                        with open(file_path, 'r') as f:
+                            content = f.read().strip()
+                            # 如果不是默认值，需要重置
+                            if 'scroll_value.txt' in file_path and content != '50':
+                                count += 1
+                            elif 'config.txt' in file_path and content != '1':
+                                count += 1
+                    except:
+                        count += 1
+            return count
+        except:
+            return 0
+
+    def check_zombie_processes(self):
+        """检测僵尸进程数量"""
+        try:
+            import psutil
+            import os
+            current_pid = os.getpid()
+            current_name = psutil.Process(current_pid).name()
+            
+            zombie_count = 0
+            for proc in psutil.process_iter(['pid', 'name', 'status']):
+                try:
+                    if (proc.info['name'] == current_name and 
+                        proc.info['pid'] != current_pid):
+                        proc_obj = psutil.Process(proc.info['pid'])
+                        if proc_obj.status() == psutil.STATUS_ZOMBIE:
+                            zombie_count += 1
+                except:
+                    pass
+            return zombie_count
+        except:
+            return 0
+
+    def cleanup_keyboard_hooks(self):
+        """清理键盘钩子遗留"""
+        try:
+            import keyboard
+            # 先解除所有可能的键盘屏蔽
+            try:
+                keyboard.unhook_all()
+            except:
+                pass  # 如果没有钩子可清理，忽略错误
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"[启动清理] 清理键盘钩子时出错: {e}")
+
+    def cleanup_pygame_resources(self):
+        """清理Pygame显示资源"""
+        try:
+            import pygame
+            if pygame.get_init():
+                pygame.display.quit()
+                pygame.quit()
+        except:
+            pass  # Pygame未初始化时忽略
+
+    def cleanup_temporary_files(self):
+        """清理临时文件和配置"""
+        try:
+            import os
+            temp_files = [
+                'config.txt',
+                'scroll_value.txt',
+                'src/core/config.txt',
+                'src/core/scroll_value.txt',
+                'src/tests/scroll_value.txt'
+            ]
+            
+            cleaned_files = []
+            for file_path in temp_files:
+                try:
+                    if os.path.exists(file_path):
+                        # 不删除文件，而是重置为默认值
+                        if 'scroll_value.txt' in file_path:
+                            with open(file_path, 'w') as f:
+                                f.write('50')  # 默认速度值
+                            cleaned_files.append(file_path)
+                        elif 'config.txt' in file_path:
+                            with open(file_path, 'w') as f:
+                                f.write('1')  # 默认配置值
+                            cleaned_files.append(file_path)
+                except:
+                    pass
+            
+            pass  # 移除打印输出
+                
+        except Exception as e:
+            print(f"[启动清理] 清理临时文件时出错: {e}")
+
+    def cleanup_zombie_processes(self):
+        """检查并清理僵尸进程"""
+        try:
+            import psutil
+            import os
+            current_pid = os.getpid()
+            current_name = psutil.Process(current_pid).name()
+            
+            zombie_count = 0
+            for proc in psutil.process_iter(['pid', 'name', 'status']):
+                try:
+                    # 查找同名进程或可能的僵尸进程
+                    if (proc.info['name'] == current_name and 
+                        proc.info['pid'] != current_pid):
+                        # 发现同名进程，检查是否响应
+                        try:
+                            proc_obj = psutil.Process(proc.info['pid'])
+                            if proc_obj.status() == psutil.STATUS_ZOMBIE:
+                                zombie_count += 1
+                        except:
+                            pass
+                except:
+                    pass
+            
+            pass  # 移除打印输出
+                
+        except ImportError:
+            print("[启动清理] psutil未安装，跳过僵尸进程检查")
+        except Exception as e:
+            print(f"[启动清理] 检查僵尸进程时出错: {e}")
+
+    def cleanup_all_resources_on_exit(self):
+        """程序退出时彻底清理所有资源"""
+        print("[退出清理] 开始彻底清理所有资源...")
+        
+        try:
+            # 1. 停止所有游戏线程
+            self.stop_current_game()
+            
+            # 2. 清理线程管理器
+            if 'thread_manager' in globals():
+                thread_manager.stop_all_threads()
+            
+            # 3. 清理键盘钩子
+            try:
+                import keyboard
+                keyboard.unhook_all()
+                print("[退出清理] 已清理键盘钩子")
+            except:
+                pass
+            
+            # 4. 清理Pygame资源
+            try:
+                import pygame
+                if pygame.get_init():
+                    pygame.display.quit()
+                    pygame.quit()
+                print("[退出清理] 已清理Pygame资源")
+            except:
+                pass
+            
+            # 5. 调用原有清理方法
+            self.cleanup_resources()
+            
+            print("[退出清理] 所有资源清理完成")
+            
+        except Exception as e:
+            print(f"[退出清理] 清理资源时出错: {e}")
+
     def start_game_thread(self, game_class):
         """安全启动游戏线程"""
-        print(f"[游戏启动] 开始启动游戏线程，游戏类: {game_class}")
+        print("=" * 80)
+        print(f"[游戏启动调试] 开始启动游戏线程，游戏类: {game_class}")
+        print(f"[游戏启动调试] 游戏类模块: {game_class.__module__}")
+        print(f"[游戏启动调试] 游戏类名称: {game_class.__name__}")
+        print("=" * 80)
 
         # 先停止当前游戏
-        print(f"[游戏启动] 停止当前游戏")
+        print(f"[游戏启动调试] 停止当前游戏")
         self.stop_current_game()
 
         # 设置游戏运行状态
         self.is_game_running = True
+        print(f"[游戏启动调试] 设置游戏运行状态: {self.is_game_running}")
 
         # 检查游戏类的构造函数是否支持stop_event参数
         import inspect
         sig = inspect.signature(game_class.__init__)
-        print(f"[游戏启动] 游戏类构造函数签名: {sig}")
+        print(f"[游戏启动调试] 游戏类构造函数签名: {sig}")
 
         if 'stop_event' in sig.parameters:
             # 支持stop_event参数的游戏类（如main.py中的Game类）
-            print(f"[游戏启动] 游戏类支持stop_event参数")
+            print(f"[游戏启动调试] 游戏类支持stop_event参数")
             original_target = lambda: game_class(stop_event=None).run()
         else:
             # 不支持stop_event参数的游戏类（如测试文件中的Game类）
-            print(f"[游戏启动] 游戏类不支持stop_event参数")
+            print(f"[游戏启动调试] 游戏类不支持stop_event参数")
             original_target = lambda: game_class().run()
 
         # 包装target函数以在结束后清除游戏运行状态
         def wrapped_target():
+            print(f"[游戏启动调试] wrapped_target开始执行")
             try:
+                print(f"[游戏启动调试] 调用original_target()...")
                 original_target()
+                print(f"[游戏启动调试] original_target()执行完成")
+            except Exception as e:
+                print(f"[游戏启动调试] original_target()执行出错: {e}")
+                import traceback
+                print(f"[游戏启动调试] 错误详情: {traceback.format_exc()}")
             finally:
                 # 游戏结束后清除运行状态
                 self.is_game_running = False
-                print(f"[游戏启动] 游戏结束，清除运行状态")
+                print(f"[游戏启动调试] 游戏结束，清除运行状态: {self.is_game_running}")
+                
+                # 游戏结束后进行深度资源清理
+                try:
+                    self.is_cleaning_resources = True
+                    print("[游戏结束] 开始深度资源清理...")
+                    from src.utils.resource_cleanup import cleanup_all_resources
+                    cleanup_all_resources()
+                    print("[游戏结束] 深度资源清理完成")
+                except Exception as e:
+                    print(f"[游戏结束] 资源清理警告: {e}")
+                finally:
+                    self.is_cleaning_resources = False
 
-        print(f"[游戏启动] 目标函数准备完成")
+        print(f"[游戏启动调试] 目标函数准备完成")
 
         # 启动新游戏
-        print(f"[游戏启动] 调用线程管理器启动线程")
+        print(f"[游戏启动调试] 调用线程管理器启动线程")
         thread, stop_event = thread_manager.start_thread(
             target=wrapped_target,
             timeout=60
@@ -1773,12 +2215,15 @@ class Interfacewindow(QMainWindow):
         self.current_game_thread = thread
         self.current_stop_event = stop_event
 
-        print(f"[游戏启动] 游戏线程启动完成: {thread.name}")
+        print(f"[游戏启动调试] 游戏线程启动完成: {thread.name}")
+        print(f"[游戏启动调试] 线程是否存活: {thread.is_alive()}")
+        print("=" * 80)
         return thread, stop_event
 
     def force_memory_cleanup(self, mode_name):
         """模式切换时强制清理内存"""
         try:
+            self.is_cleaning_resources = True  # 设置清理状态
             print(f"[内存清理] 开始清理内存 - {mode_name}")
             
             # 1. 强制垃圾回收
@@ -1827,6 +2272,8 @@ class Interfacewindow(QMainWindow):
             
         except Exception as e:
             print(f"[内存清理] 清理过程出现错误: {e}")
+        finally:
+            self.is_cleaning_resources = False  # 清理完成后重置状态
 
 
 if __name__ == '__main__':
