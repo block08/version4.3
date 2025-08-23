@@ -200,7 +200,9 @@ class GameDrawing:
 
     def update_current_timestamp(self, total_pause_time=0):
         """更新当前时间戳，用于处理最小化等暂停事件后的时间校正"""
-        self.t = (pygame.time.get_ticks() - total_pause_time) / 1000
+        # 使用传入的total_pause_time正确计算当前时间，确保最小化时间被正确排除
+        current_time = pygame.time.get_ticks()
+        self.t = (current_time - total_pause_time) / 1000
         return self.t
 
     def random_painting(self, number, self_obj, gamescore, total_pause_time=0):

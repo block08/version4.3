@@ -454,6 +454,7 @@ class Game:
                 id = file.read().strip()
         except Exception as e:
             print(f"处理ID文件时出错: {e}")
+            self.cleanup_game_resources()
             safe_pygame_quit()
             return
 
@@ -488,6 +489,7 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     return
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -506,6 +508,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): 
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             return
                     elif event.key == pygame.K_SPACE:
@@ -536,6 +539,7 @@ class Game:
             # 事件处理
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
+                    self.cleanup_game_resources()
                     safe_pygame_quit()
                     return
                 elif event.type == pygame.VIDEOEXPOSE:  # 处理窗口重绘事件
@@ -569,6 +573,7 @@ class Game:
                         continue
                     if event.key == pygame.K_ESCAPE:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): 
+                            self.cleanup_game_resources()
                             safe_pygame_quit()
                             return
                     elif event.key == pygame.K_p:
@@ -594,8 +599,8 @@ class Game:
                         if old_speed != speed_value:
                             force_ui_update = True  # 强制更新UI
 
-                    # 统一的下一张图逻辑 (空格需到终点，N键可跳过)
-                    is_next_trigger = (  event.key == pygame.K_SPACE and self.level.is_endpoint_reached()) or event.key == pygame.K_n
+                    # 统一的下一张图逻辑 (空格需到终点)
+                    is_next_trigger = (event.key == pygame.K_SPACE and self.level.is_endpoint_reached())
                     if is_next_trigger and not paused:
                         # 使用 -24 作为偏移量来计算当前是第几张图 (0, 1, 2)
                         current_img_idx = stats.game_score - 24
@@ -637,10 +642,10 @@ class Game:
             # 绘制游戏内容 - 使用脏矩形优化
             if not paused:
                 # 使用脏矩形优化的绘制方法
-                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=False)
             else:
                 # 暂停时只绘制，不更新
-                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=False)
 
             Button3(settings, self.screen, f"{user_id1}和辅助合作绘图", 90, 40).draw_button()
 
@@ -744,6 +749,7 @@ class Game:
                             if event.key == pygame.K_ESCAPE:
                                 if show_confirm_dialog(self.screen, "",
                                                        "您确定要返回主页面吗？"): 
+                                    self.cleanup_game_resources()
                                     safe_pygame_quit()
                                     return
                             else:
@@ -773,6 +779,7 @@ class Game:
                         if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"): wait = False
             self.clock.tick(30)
 
+        self.cleanup_game_resources()
         safe_pygame_quit()
 
     def display_task_instructions_formatted(self, subject='AB'):

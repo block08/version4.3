@@ -638,8 +638,8 @@ class Game:
                         pause_start_time = minimize_pause_end
                     # 重绘静息态界面（绿色十字）
                     self.screen.fill(grey)
-                    pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
-                    pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
+                    pygame.draw.line(self.screen, green1, (930, 540), (990, 540), line_length)
+                    pygame.draw.line(self.screen, green1, (960, 510), (960, 570), line_length)
                     pygame.display.update()
                 if event.type == pygame.KEYDOWN:
                     # 屏蔽Windows键
@@ -660,9 +660,6 @@ class Game:
                             if paused:
                                 total_pause_time += pygame.time.get_ticks() - pause_start_time
                                 paused = False
-                    elif event.key == pygame.K_x:  # x键跳过静息态倒计时
-                        running = False
-                        self.screen.fill(grey)
 
             # 计算实际经过的时间（不包括暂停时间）
             current_ticks = pygame.time.get_ticks()
@@ -791,6 +788,7 @@ class Game:
                         else:
                             total_pause_time += pygame.time.get_ticks() - pause_start_time
                         paused = not paused
+                        force_ui_update = True  # 暂停/取消暂停时强制刷新整个页面
                     elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
                         old_speed = speed_value
                         speed_value = min(speed_max, speed_value + speed_step)
@@ -849,59 +847,6 @@ class Game:
                                                                                   total_pause_time)
                                 stats.game_score += 1
                                 self.level.reset_endpoint_reached()
-                        elif stats.game_score == 8:
-                            # 确保绘制内容已经显示到屏幕上
-                            self.level.run(dt, stats, [], self.screen)
-                            pygame.display.update()
-
-                            # 保存最后一张图的post_screenshot
-                            post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot7.png"
-                            pygame.image.save(self.screen, post_screenshot_path)
-
-                            t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
-                            stats.game_score = 9
-                    elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
-                        if not first_image_shown:
-                            # 显示第一张图
-                            serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers1[0], self, 0, total_pause_time)
-                            stats.game_score = 1
-                            first_image_shown = True
-                        elif stats.game_score < 8:
-                            # 在进入下一张图前先截图保存当前用户绘制的内容
-                            current_image_index = stats.game_score
-                            if current_image_index < 8:
-                                # 确保绘制内容已经显示到屏幕上
-                                self.level.run(dt, stats, [], self.screen)
-                                pygame.display.update()
-
-                                # 保存当前绘制内容为post_screenshot
-                                post_screenshot_path = f"./Behavioral_data/{id}/subA/output_image/post_screenshot{current_image_index - 1}.png"
-                                pygame.image.save(self.screen, post_screenshot_path)
-
-                                serial_marker(bytes([0x01]))
-                                if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers1[1], self, 1,
-                                                                                  total_pause_time)
-                                elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers1[2], self, 2,
-                                                                                  total_pause_time)
-                                elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers1[3], self, 3,
-                                                                                  total_pause_time)
-                                elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers1[4], self, 4,
-                                                                                  total_pause_time)
-                                elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers1[5], self, 5,
-                                                                                  total_pause_time)
-                                elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers1[6], self, 6,
-                                                                                  total_pause_time)
-                                elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers1[7], self, 7,
-                                                                                  total_pause_time)
-                                stats.game_score += 1
                         elif stats.game_score == 8:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
@@ -1018,10 +963,10 @@ class Game:
 
             # 使用脏矩形优化的游戏绘制 - SubA模式
             if not paused:
-                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=False)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=False)
             
             # 使用脏矩形优化的显示更新
             if force_ui_update:
@@ -1230,6 +1175,7 @@ class Game:
                         else:
                             total_pause_time += pygame.time.get_ticks() - pause_start_time
                         paused = not paused
+                        force_ui_update = True  # 暂停/取消暂停时强制刷新整个页面
                     elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
                         speed_value = min(speed_max, speed_value + speed_step)
                         with open('scroll_value.txt', 'w') as f:
@@ -1283,58 +1229,6 @@ class Game:
                                                                                   total_pause_time)
                                 stats.game_score += 1
                                 self.level.reset_endpoint_reached()
-                        elif stats.game_score == 19:
-                            # 确保绘制内容已经显示到屏幕上
-                            self.level.run(dt, stats, [], self.screen)
-                            pygame.display.update()
-
-                            # 保存最后一张图的post_screenshot
-                            post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot7.png"
-                            pygame.image.save(self.screen, post_screenshot_path)
-                            t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
-                            stats.game_score = 20
-                    elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
-                        if not first_image_shown:
-                            # 显示第一张图
-                            serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers2[0], self, 11, total_pause_time)
-                            stats.game_score = 12
-                            first_image_shown = True
-                        elif stats.game_score < 19:
-                            # 在进入下一张图前先截图保存当前用户绘制的内容
-                            current_image_index = stats.game_score - 11
-                            if current_image_index < 8:
-                                # 确保绘制内容已经显示到屏幕上
-                                self.level.run(dt, stats, [], self.screen)
-                                pygame.display.update()
-
-                                # 保存当前绘制内容为post_screenshot
-                                post_screenshot_path = f"./Behavioral_data/{id}/subAB/output_image/post_screenshot{current_image_index - 1}.png"
-                                pygame.image.save(self.screen, post_screenshot_path)
-
-                                serial_marker(bytes([0x02]))
-                                if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers2[1], self, 12,
-                                                                                  total_pause_time)
-                                elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers2[2], self, 13,
-                                                                                  total_pause_time)
-                                elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers2[3], self, 14,
-                                                                                  total_pause_time)
-                                elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers2[4], self, 15,
-                                                                                  total_pause_time)
-                                elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers2[5], self, 16,
-                                                                                  total_pause_time)
-                                elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers2[6], self, 17,
-                                                                                  total_pause_time)
-                                elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers2[7], self, 18,
-                                                                                  total_pause_time)
-                                stats.game_score += 1
                         elif stats.game_score == 19:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
@@ -1451,10 +1345,10 @@ class Game:
 
             # 使用脏矩形优化的游戏绘制 - SubAB模式
             if not paused:
-                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=False)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=False)
             
             # 使用脏矩形优化的显示更新
             if force_ui_update:
@@ -1674,6 +1568,7 @@ class Game:
                         else:
                             total_pause_time += pygame.time.get_ticks() - pause_start_time
                         paused = not paused
+                        force_ui_update = True  # 暂停/取消暂停时强制刷新整个页面
                     elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS:  # +键增加速度
                         speed_value = min(speed_max, speed_value + speed_step)
                         with open('scroll_value.txt', 'w') as f:
@@ -1730,59 +1625,6 @@ class Game:
                                 self.level.reset_endpoint_reached()
                         elif stats.game_score == 31:
 
-                            # 确保绘制内容已经显示到屏幕上
-                            self.level.run(dt, stats, [], self.screen)
-                            pygame.display.update()
-
-                            # 保存最后一张图的post_screenshot
-                            post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot7.png"
-                            pygame.image.save(self.screen, post_screenshot_path)
-                            t9 = (pygame.time.get_ticks() - total_pause_time) / 1000
-                            stats.game_score = 32
-                    elif event.key == pygame.K_n and not paused:  # N键下一张（原功能，不需要到达终点）
-                        if not first_image_shown:
-                            # 显示第一张图
-                            serial_marker(bytes([0x01]))
-                            t1, timestamp1 = game_drawing.random_painting(numbers3[0], self, 23, total_pause_time)
-                            stats.game_score = 24
-                            first_image_shown = True
-                        elif stats.game_score < 31:
-                            current_image_index = stats.game_score - 23
-                            if current_image_index < 8:
-                                # 确保绘制内容已经显示到屏幕上
-                                self.level.run(dt, stats, [], self.screen)
-                                pygame.display.update()
-
-                                # 保存当前绘制内容为post_screenshot
-                                with open(get_id_file_path(), "r") as file:
-                                    id = file.read().strip()
-                                post_screenshot_path = f"./Behavioral_data/{id}/subAC/output_image/post_screenshot{current_image_index - 1}.png"
-                                pygame.image.save(self.screen, post_screenshot_path)
-
-                                serial_marker(bytes([0x03]))
-                                if current_image_index == 1:
-                                    t2, timestamp2 = game_drawing.random_painting(numbers3[1], self, 24,
-                                                                                  total_pause_time)
-                                elif current_image_index == 2:
-                                    t3, timestamp3 = game_drawing.random_painting(numbers3[2], self, 25,
-                                                                                  total_pause_time)
-                                elif current_image_index == 3:
-                                    t4, timestamp4 = game_drawing.random_painting(numbers3[3], self, 26,
-                                                                                  total_pause_time)
-                                elif current_image_index == 4:
-                                    t5, timestamp5 = game_drawing.random_painting(numbers3[4], self, 27,
-                                                                                  total_pause_time)
-                                elif current_image_index == 5:
-                                    t6, timestamp6 = game_drawing.random_painting(numbers3[5], self, 28,
-                                                                                  total_pause_time)
-                                elif current_image_index == 6:
-                                    t7, timestamp7 = game_drawing.random_painting(numbers3[6], self, 29,
-                                                                                  total_pause_time)
-                                elif current_image_index == 7:
-                                    t8, timestamp8 = game_drawing.random_painting(numbers3[7], self, 30,
-                                                                                  total_pause_time)
-                                stats.game_score += 1
-                        elif stats.game_score == 31:
                             # 确保绘制内容已经显示到屏幕上
                             self.level.run(dt, stats, [], self.screen)
                             pygame.display.update()
@@ -1898,10 +1740,10 @@ class Game:
 
             # 使用脏矩形优化的游戏绘制 - SubAC模式
             if not paused:
-                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=False)
             else:
                 # 暂停时只绘制，不更新精灵位置
-                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=False)
             
             # 使用脏矩形优化的显示更新
             if force_ui_update:
@@ -2041,8 +1883,8 @@ class Game:
                         pause_start_time = minimize_pause_end
                     # 重绘静息态界面（绿色十字）
                     self.screen.fill(grey)
-                    pygame.draw.line(self.screen, green1, (910, 540), (1010, 540), line_length)
-                    pygame.draw.line(self.screen, green1, (960, 490), (960, 590), line_length)
+                    pygame.draw.line(self.screen, green1, (930, 540), (990, 540), line_length)
+                    pygame.draw.line(self.screen, green1, (960, 510), (960, 570), line_length)
                     pygame.display.update()
                 if event.type == pygame.KEYDOWN:
                     # 屏蔽Windows键
@@ -2053,9 +1895,6 @@ class Game:
                             self.cleanup_game_resources()
                             safe_pygame_quit()
                             return
-                    elif event.key == pygame.K_x:  # x键跳过静息态倒计时
-                        running = False
-                        self.screen.fill(grey)
             elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
             remaining_time = max(0, countdown_time - elapsed_time)
             if remaining_time == 0:
@@ -2071,11 +1910,12 @@ class Game:
                     # 屏蔽Windows键
                     if event.key in [pygame.K_LMETA, pygame.K_RMETA, pygame.K_LSUPER, pygame.K_RSUPER]:
                         continue
-                    if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
-                        wait = False
-                    else:
-                        # 如果取消，重新显示结束界面
-                        self.display_end_screen()
+                    if event.key == pygame.K_ESCAPE:
+                        if show_confirm_dialog(self.screen, "", "您确定要返回主页面吗？"):
+                            wait = False
+                        else:
+                            # 如果取消，重新显示结束界面
+                            self.display_end_screen()
                 elif event.type == pygame.QUIT:
                     self.cleanup_game_resources()
                     safe_pygame_quit()

@@ -613,7 +613,7 @@ class Game:
                             force_ui_update = True  # 强制更新UI
 
                     # 统一的下一张图逻辑
-                    is_next_trigger = (event.key == pygame.K_SPACE and self.level.is_endpoint_reached()) or event.key == pygame.K_n
+                    is_next_trigger = (event.key == pygame.K_SPACE and self.level.is_endpoint_reached())
                     if is_next_trigger and not paused:
                         if stats.game_score < TOTAL_IMAGES:
                             current_idx = stats.game_score - 1
@@ -649,13 +649,13 @@ class Game:
             if old_speed != speed_value:
                 force_ui_update = True  # 强制更新UI
 
-            # 绘制游戏内容 - 使用脏矩形优化
+            # 绘制游戏内容 - 强制全屏刷新，确保所有UI元素正确显示
             if not paused:
-                # 使用脏矩形优化的绘制方法
-                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=True)
+                # 禁用脏矩形优化，使用完整屏幕绘制
+                dirty_rects = self.level.run(dt, stats, [], self.screen, use_dirty_rect=False)
             else:
-                # 暂停时只绘制，不更新
-                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=True)
+                # 暂停时也使用完整屏幕绘制
+                dirty_rects = self.level.draw(self.screen, stats, use_dirty_rect=False)
 
             # UI元素只在必要时重绘（可以根据需要扩展这部分的脏矩形逻辑）
             Button3(settings, self.screen, f"{user_id_display}单独绘图", 10, 40).draw_button()
@@ -715,18 +715,9 @@ class Game:
                     step_button.draw_button()
                     if center_button.text: center_button.draw_button()
 
-            # 使用脏矩形优化的显示更新
-            if force_ui_update or screenshot_taken:
-                # 有UI变化（如速度值更新）时，强制更新整个屏幕
-                pygame.display.update()
-                force_ui_update = False  # 重置UI更新标志
-            elif dirty_rects and len(dirty_rects) > 0:
-                # 只更新变化的区域，显著降低CPU占用
-                pygame.display.update(dirty_rects)
-            else:
-                # 如果没有游戏区域变化，只更新UI区域（进一步优化）
-                # 暂时更新整个屏幕以确保UI正常显示
-                pygame.display.update()
+            # 强制全屏刷新，确保所有UI元素正确显示
+            pygame.display.update()
+            force_ui_update = False  # 重置UI更新标志
 
             # 任务结束处理
             if stats.game_score == TOTAL_IMAGES + 1:

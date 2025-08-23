@@ -126,8 +126,8 @@ class Player(pygame.sprite.Sprite):
 
         playable_left = 0
         playable_right = screen.get_width()
-        playable_top = 50  # TOP_MARGIN
-        playable_bottom = screen.get_height() - 50  # BOTTOM_MARGIN
+        playable_top = TOP_MARGIN  # 使用实际的TOP_MARGIN
+        playable_bottom = screen.get_height() - BOTTOM_MARGIN  # 使用实际的BOTTOM_MARGIN
 
         # 从current_key_states获取移动键状态
         move_up = current_key_states['up']

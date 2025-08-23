@@ -10,6 +10,7 @@ class LoginInfoHandler:
         self.subject2_info = None
         self.subject3_info = None
         self.login_time = None
+        self.task_code = None
 
     def set_subject1_info(self, id, gender, hand_preference, mark):
         """设置被试1的信息"""
@@ -42,14 +43,25 @@ class LoginInfoHandler:
         """设置登录时间"""
         self.login_time = login_time
 
+    def set_task_code(self, task_code):
+        """设置任务代号"""
+        self.task_code = task_code
+
     def create_experiment_folder(self):
         """创建实验文件夹"""
         if not (self.subject1_info and self.subject2_info and self.subject3_info):
             raise ValueError("被试信息不完整，无法创建文件夹")
+        
+        if not self.task_code:
+            raise ValueError("任务代号不能为空，无法创建文件夹")
 
-        # 创建文件夹名称
+        # 创建文件夹名称：时间_任务代号_三个受试者代号
         time_str = time.strftime("%m_%d_%H_%M")
-        folder_name = f"{time_str}_Sub1_{self.subject1_info['id']}_Sub2_{self.subject2_info['id']}_Sub3_{self.subject3_info['id']}"
+        # 将受试者ID格式化为两位数字
+        sub1_id = f"{int(self.subject1_info['id']):02d}"
+        sub2_id = f"{int(self.subject2_info['id']):02d}"
+        sub3_id = f"{int(self.subject3_info['id']):02d}"
+        folder_name = f"{time_str}_{self.task_code}_{sub1_id}_{sub2_id}_{sub3_id}"
 
         # 在 Behavioral_data 下创建主文件夹
         base_path = "./Behavioral_data"
@@ -93,11 +105,12 @@ class LoginInfoHandler:
         return full_path
 
 
-def create_experiment_structure(subject1_id, subject2_id, subject1_gender, subject2_gender,
+def create_experiment_structure(task_code, subject1_id, subject2_id, subject1_gender, subject2_gender,
                                 subject1_hand, subject2_hand, subject1_mark, subject2_mark, login_time,
                                 subject3_id=None, subject3_gender=None, subject3_hand=None, subject3_mark=None):
     """创建实验目录结构的便捷函数"""
     handler = LoginInfoHandler()
+    handler.set_task_code(task_code)
     handler.set_subject1_info(subject1_id, subject1_gender, subject1_hand, subject1_mark)
     handler.set_subject2_info(subject2_id, subject2_gender, subject2_hand, subject2_mark)
     if subject3_id is not None:

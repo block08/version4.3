@@ -1539,7 +1539,7 @@ class Interfacewindow(QMainWindow):
         if shared_data.global_flag is None:
             # 没有设置端口，提示用户连接后再开始实验
             CustomDialog.show_message(self, QStyle.SP_MessageBoxWarning, "端口未连接",
-                                    "未检测到端口。\n\n请连接后再点击正式实验。")
+                                    "<span style='color: red;'>未检测到端口</span>。<br><br>请连接后再点击正式实验。")
             return False
         
         return True
@@ -2026,6 +2026,9 @@ class Interfacewindow(QMainWindow):
             # 先解除所有可能的键盘屏蔽
             try:
                 keyboard.unhook_all()
+                # 重新设置Windows键屏蔽（启动清理后恢复）
+                keyboard.block_key('win')
+                print("[启动清理] 已重新屏蔽Windows键")
             except:
                 pass  # 如果没有钩子可清理，忽略错误
         except ImportError:
@@ -2119,7 +2122,7 @@ class Interfacewindow(QMainWindow):
             if 'thread_manager' in globals():
                 thread_manager.stop_all_threads()
             
-            # 3. 清理键盘钩子
+            # 3. 清理键盘钩子（退出时才完全清理）
             try:
                 import keyboard
                 keyboard.unhook_all()

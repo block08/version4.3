@@ -735,6 +735,7 @@ class LoginWindow(QMainWindow):
             self.save_subjects_info()
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
             create_experiment_structure(
+                task_code=self.selected_task,
                 subject1_id=self.selected_subject_a['id'], subject2_id=self.selected_subject_b['id'],
                 subject1_gender=self.selected_subject_a['gender'], subject2_gender=self.selected_subject_b['gender'],
                 subject1_hand=self.selected_subject_a['hand_preference'],
